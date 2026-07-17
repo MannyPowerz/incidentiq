@@ -44,19 +44,16 @@ CREATE TABLE users (
 CREATE TABLE refresh_tokens (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
-
   -- Hash, never the raw token — same never-store-the-secret principle as users.password_hash. The hashing
   -- algorithm is an auth-code decision, not a schema one; TEXT just holds whatever that code produces.
   token_hash TEXT NOT NULL,
-
   -- expires_at is the token's built-in lifetime (checked automatically on every use); revoked_at is a separate,
   -- explicit kill switch (logout, rotation) — a token can be un-expired but revoked, or vice versa. Don't collapse
   -- these into one column: they answer different questions ("is this still fresh?" vs "did someone kill it?").
   expires_at TIMESTAMPTZ NOT NULL,
-  revoked_at TIMESTAMPTZ,  -- nullable: NULL means still valid; set (not deleted) on logout/rotation, which keeps a revocation audit trail instead of erasing it
-
+  revoked_at TIMESTAMPTZ,
+  -- nullable: NULL means still valid; set (not deleted) on logout/rotation, which keeps a revocation audit trail instead of erasing it
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
   -- ON DELETE CASCADE, unlike the SET NULL pattern used for users.created_by/resolved_by elsewhere in this schema:
   -- those preserve a historical record after the user is gone; a refresh token has zero value with no user to
   -- refresh a session for, so there is nothing here worth preserving.
