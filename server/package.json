@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "tsx src/db/migrate.ts",
-    "test": "NODE_ENV=test vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

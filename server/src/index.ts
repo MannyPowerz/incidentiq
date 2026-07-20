@@ -29,7 +29,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-io.on('connection', (socket:Socket) => {
+io.on('connect', (socket:Socket) => {
   console.log('User joined: ', socket.id)
 
   socketHandlerFunction(io, socket)
