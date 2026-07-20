@@ -7,7 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import { pool } from './db/pool.js';
 import * as http from 'node:http'
-import {Server} from 'socket.io'
+import {Server, Socket} from 'socket.io'
 import type { ClientToServerJoining } from './InterfaceTypes/socket.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
 
@@ -29,7 +29,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-io.on('connection', (socket) => {
+io.on('connection', (socket:Socket) => {
   console.log('User joined: ', socket.id)
 
   socketHandlerFunction(io, socket)
