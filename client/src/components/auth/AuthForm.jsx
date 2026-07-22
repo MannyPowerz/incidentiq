@@ -9,6 +9,9 @@ export default function AuthForm() {
         rememberMe: false,
     });
 
+    // Control if password is visible text or not
+    const [ showPassword, setShowPassword ] = useState(false);
+
     // Update the field is the user is changing an input
     const handleChange = (event) => {
         const { name, value, type, checked } = event.target;
@@ -45,14 +48,26 @@ export default function AuthForm() {
             <div className="form-group">
                 <label htmlFor="password">Password</label>
 
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter you password"
-                    value={formData.password}
-                    onChange={handleChange}
-                />
+                <div className="password-input-wrapper">
+                    <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter you password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
+
+                    {/* Button to allow to show or hide password */}
+                    <button
+                        className="password-toggle"
+                        type="button"
+                        onClick={() => setShowPassword((currentValue) => !currentValue)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                        {showPassword ? "Hide" : "Show"}
+                    </button>
+                </div>
             </div>
 
             {/* Additional options */}
