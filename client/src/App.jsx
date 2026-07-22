@@ -1,9 +1,9 @@
-import Banner from "./components/layout/Banner";
+import SignInPage from "./pages/SignInPage";
 
 export default function App() {
   return (
     <>
-      <Banner />
+      <SignInPage />
     </>
   );
 }
