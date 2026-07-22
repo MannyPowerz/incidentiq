@@ -12,7 +12,10 @@ export default function AuthForm() {
     // Control if password is visible text or not
     const [ showPassword, setShowPassword ] = useState(false);
 
-    // Update the field is the user is changing an input
+    // Store validation messages for each field
+    const [ errors, setErrors ] = useState({})
+
+    // Update the field if the user is changing an input
     const handleChange = (event) => {
         const { name, value, type, checked } = event.target;
 
@@ -20,11 +23,51 @@ export default function AuthForm() {
             ...previousData,
             [name]: type === "checkbox" ? checked : value,
         }));
+
+        // Clear the field error once the user begins to correct it
+        setErrors((previousErrors) => ({
+            ...previousErrors,
+            [name]: "",
+        }));
+    }
+
+    // Check the form values and return any errors
+    const validateForm = () => {
+        const newErrors = {}
+
+        // Require the correct format for the email
+        if (!formData.email.trim()) {
+            newErrors.email = "Email is required"
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "Enter a valid email address"
+        }
+
+        // Require a password 
+        if (!formData.password) {
+            newErrors.password = "Password is required"
+        } 
+
+        return newErrors;
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault()
+
+        const validationErrors = validateForm()
+        setErrors(validationErrors)
+
+        // Stop submission when there is a validation error
+        if (Object.keys(validationErrors).length > 0){
+            return
+        }
+
+        // Temporary confirmation
+        console.log("valid sign-in form:", formData)
     }
 
     // Authentication form structure
     return (
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
             {/* Show title and instructions for the form */}
             <div className="auth-heading">
                 <h1>Welcome back!</h1>
@@ -41,10 +84,18 @@ export default function AuthForm() {
                     placeholder="you@example.com"
                     value={formData.email}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.email)}
                 />
+
+                {/* Display error */}
+                {errors.email && (
+                    <p className="form-error" role="alert">
+                        {errors.email}
+                    </p>
+                )}
             </div>
 
-            {/* Get the users password */}
+            {/* Get the user's password */}
             <div className="form-group">
                 <label htmlFor="password">Password</label>
 
@@ -53,9 +104,10 @@ export default function AuthForm() {
                         id="password"
                         name="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter you password"
+                        placeholder="Enter your password"
                         value={formData.password}
                         onChange={handleChange}
+                        aria-invalid={Boolean(errors.password)}
                     />
 
                     {/* Button to allow to show or hide password */}
@@ -68,6 +120,14 @@ export default function AuthForm() {
                         {showPassword ? "Hide" : "Show"}
                     </button>
                 </div>
+
+                {/* Display error */}
+                {errors.password && (
+                    <p className="form-error" role="alert">
+                        {errors.password}
+                    </p>
+                )}
+
             </div>
 
             {/* Additional options */}
@@ -94,7 +154,7 @@ export default function AuthForm() {
 
             {/* Direct users to an admin if they don't have an account */}
             <p className="admin-message">
-                Don't have an account?
+                Don&apos;t have an account?{" "}
                 <button type="button">Contact your admin</button>
             </p>
         </form>
