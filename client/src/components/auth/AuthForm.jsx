@@ -1,6 +1,24 @@
 import "./AuthForm.css"
+import { useState } from "react";
 
 export default function AuthForm() {
+    // Store values entered in the form
+    const [ formData, setFormData ] = useState({
+        email: "",
+        password: "",
+        rememberMe: false,
+    });
+
+    // Update the field is the user is changing an input
+    const handleChange = (event) => {
+        const { name, value, type, checked } = event.target;
+
+        setFormData((previousData) => ({
+            ...previousData,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    }
+
     // Authentication form structure
     return (
         <form className="auth-form">
@@ -18,6 +36,8 @@ export default function AuthForm() {
                     name="email"
                     type="email"
                     placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
                 />
             </div>
 
@@ -30,13 +50,20 @@ export default function AuthForm() {
                     name="password"
                     type="password"
                     placeholder="Enter you password"
+                    value={formData.password}
+                    onChange={handleChange}
                 />
             </div>
 
             {/* Additional options */}
             <div className="form-options">
                 <label className="remember-me">
-                    <input name="rememberMe" type="checkbox" />
+                    <input 
+                        name="rememberMe" 
+                        type="checkbox" 
+                        checked={formData.rememberMe}
+                        onChange={handleChange}
+                    />
                     <span>Remember me</span>
                 </label>
 
