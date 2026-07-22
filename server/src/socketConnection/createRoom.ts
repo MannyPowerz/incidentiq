@@ -22,7 +22,8 @@ export function createRooms(io: Server, socket: Socket) {
             //checks if the incident's org_id is the same as the sockets org_id
             if(incident.org_id !== socket.data.orgId) { //socket.data.orgId will be initalized in socket middlware 
                 console.log('Org Id\'s don\'t match')
-                socket.emit('Invalid-org', {error: "Org Id\'s don\'t match"})
+                socket.emit('Invalid-org', {error: "Org Id's don't match"})
+                return
             }
 
             const roomName = String(data.rows[0].id)
