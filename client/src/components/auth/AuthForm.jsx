@@ -15,6 +15,9 @@ export default function AuthForm() {
     // Store validation messages for each field
     const [ errors, setErrors ] = useState({})
 
+    // Track if sign in request is being loading
+    const [ isLoading, setIsLoading ] = useState(false)
+
     // Update the field if the user is changing an input
     const handleChange = (event) => {
         const { name, value, type, checked } = event.target;
@@ -61,8 +64,15 @@ export default function AuthForm() {
             return
         }
 
-        // Temporary confirmation
-        console.log("valid sign-in form:", formData)
+        // Simulate time needed to process sign in
+        setIsLoading(true)
+
+        setTimeout(() => {
+            setIsLoading(false)
+
+            // Temp confirmation (changed w/ backend integration)
+            console.log("Valid sign-in form:", formData)
+        }, 1000)
     }
 
     // Authentication form structure
@@ -148,8 +158,12 @@ export default function AuthForm() {
             </div>
 
             {/* Submit form */}
-            <button className="sign-in-button" type="submit">
-                Sign in
+            <button 
+                className="sign-in-button" 
+                type="submit"
+                disabled={isLoading}    
+            >
+                {isLoading ? "Signing in..." : "Sign in"}
             </button>
 
             {/* Direct users to an admin if they don't have an account */}
