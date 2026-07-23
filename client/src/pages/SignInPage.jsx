@@ -1,7 +1,8 @@
 import AuthForm from "../components/auth/AuthForm";
+import "./SignInPage.css"
 
 export default function SignInPage() {
-    // Display reusable authetication form
+    // Display reusable authentication form
     return (
         <main className="sign-in-page">
             <div className="background-glow background-glow-left" />
