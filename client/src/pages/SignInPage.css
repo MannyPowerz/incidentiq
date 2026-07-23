@@ -1,4 +1,4 @@
-/* Fill the browser with the dark IncidentIQ background */
+/* Dark background */
 .sign-in-page {
   position: relative;
   display: flex;
@@ -13,7 +13,7 @@
   overflow: hidden;
 }
 
-/* Keep the branding and form above the decorative background */
+/* Have evrything above the bg */
 .sign-in-content {
   position: relative;
   z-index: 1;
