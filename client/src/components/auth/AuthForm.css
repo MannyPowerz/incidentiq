@@ -1,0 +1,196 @@
+/* White card containing the form */
+.auth-form {
+    width: 100%;
+    max-width: 420px;
+    padding: 36px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.2);
+}
+
+/* Center form title and other text */
+.auth-heading {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.auth-heading h1 {
+    margin: 0 0 8px;
+    color: #172033;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.auth-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* group label, input, and errors */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Styling for email and password inputs */
+.form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    color: #172033;
+    background-color: #ffffff;
+    font: inherit;
+    box-sizing: border-box;
+    outline: none;
+    transition: 
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Highlight active input */
+.form-group input:focus {
+  border-color: #6d4aff;
+  box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.14);
+}
+
+.form-group input::placeholder {
+  color: #94a3b8;
+}
+
+/* Highlight fields w/ errors */
+.form-group input[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
+.form-group input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+/* Put the visibility button inside the input field */
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 64px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  padding: 4px;
+  border: none;
+  color: #6d4aff;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+/* Show validation feedback */
+.form-error {
+  margin: 6px 0 0;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+/* Remember me and Forgot password on the same row */
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #6d4aff;
+}
+
+.forgot-password {
+  padding: 0;
+  border: none;
+  color: #6d4aff;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Style the sign-in action */
+.sign-in-button {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 7px;
+  color: #ffffff;
+  background: linear-gradient(90deg, #5b38db, #7657ee);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.sign-in-button:hover:not(:disabled) {
+  box-shadow: 0 8px 18px rgba(91, 56, 219, 0.28);
+  transform: translateY(-1px);
+}
+
+.sign-in-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Style account assist message */
+.admin-message {
+  margin: 22px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.admin-message button {
+  padding: 0;
+  border: none;
+  color: #6d4aff;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Show a clear keyboard focus indicator on buttons */
+.password-toggle:focus-visible,
+.forgot-password:focus-visible,
+.admin-message button:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #6d4aff;
+  outline-offset: 3px;
+}
