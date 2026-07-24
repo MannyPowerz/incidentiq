@@ -7,12 +7,17 @@ export function createRooms(io: Server, socket: Socket) {
     console.log('User joined room')
     socket.on('join-room', async(incidentId) => {
         try {
+            if(typeof incidentId !== 'number') {
+                console.log('Invalid type for incidentId')
+                socket.emit('invalid-type', {error: 'Invalid type for incidentId'})
+                return
+            }
             //I will Validate incidentId before querying Postgres with zod soon...
-            const data = await pool.query(`SELECT id FROM incidents WHERE id = $1`, [incidentId]);
+            const data = await pool.query(`SELECT id, org_id FROM incidents WHERE id = $1`, [incidentId]);
 
             //Validates if the incident actually exist
             if(data.rows.length === 0) {
-                console.log('Incident room does\'t exist')
+                console.log('Incident room doesn\'t exist')
                 socket.emit('no-incidentID', {error: 'Incident room/id does not exist'})
                 return
             }
@@ -27,6 +32,7 @@ export function createRooms(io: Server, socket: Socket) {
             }
 
             const roomName = String(data.rows[0].id)
+            console.log(roomName)
             await socket.join(roomName)
             socket.emit('success', {success: `User joined room ${roomName}`})
         }catch(err) {
