@@ -5,11 +5,13 @@
  */
 import 'dotenv/config';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
-import * as http from 'node:http'
-import {Server, Socket} from 'socket.io'
+import * as http from 'node:http';
+import { Server, Socket } from 'socket.io';
 import type { ClientToServerJoining } from './InterfaceTypes/socket.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
+import { authRouter } from './auth/routes/index.js';
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
 // booted on a dead pool would still pass its own /health check and only start
@@ -18,8 +20,12 @@ const client = await pool.connect();
 client.release();
 
 const app = express();
-const server = http.createServer(app) //wraps our existing app
-const io = new Server<ClientToServerJoining>(server)//intergrate socket.io and implemented as an instance
+const server = http.createServer(app); //wraps our existing app
+const io = new Server<ClientToServerJoining>(server); //intergrate socket.io and implemented as an instance
+
+app.use(express.json());
+
+app.use(cookieParser());
 
 const port = process.env.PORT ?? 3000;
 
@@ -29,11 +35,16 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-io.on('connect', (socket:Socket) => {
-  console.log('User joined: ', socket.id)
+// mount the auth router ONCE at /auth — the router already owns /register, /login, etc.
+// internally, so this prefixes all four (e.g. /auth/register). Mounting per-path would
+// double the prefix (/register/register) and 404.
+app.use('/auth', authRouter);
 
-  socketHandlerFunction(io, socket)
-})
+io.on('connect', (socket: Socket) => {
+  console.log('User joined: ', socket.id);
+
+  socketHandlerFunction(io, socket);
+});
 
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
