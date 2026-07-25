@@ -1,0 +1,146 @@
+/* Dark background */
+.sign-in-page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 48px 24px;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(37, 99, 235, 0.2), transparent 30%),
+    linear-gradient(145deg, #06152d 0%, #09264b 55%, #071b35 100%);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Have evrything above the bg */
+.sign-in-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Position the IncidentIQ logo above the form */
+.sign-in-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  color: #ffffff;
+}
+
+/* Create the circular IncidentIQ logo using CSS */
+.logo {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #7257f5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  box-shadow: 0 0 20px rgba(114, 87, 245, 0.45);
+}
+
+/* Create the center circle of the logo */
+.logo-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #d8d1ff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Create the diagonal handle of the logo */
+.logo::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  bottom: -7px;
+  width: 20px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: #7257f5;
+  transform: rotate(45deg);
+}
+
+/* Keep the logo name and tagline together */
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style the IncidentIQ name */
+.logo-name {
+  margin: 0;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.logo-name span {
+  color: #9a87ff;
+  font-weight: 700;
+}
+
+/* Style the text displayed below the logo name */
+.logo-tagline {
+  margin: 7px 0 0;
+  color: #a9b8d0;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
+/* Add soft decorative glows behind the page content */
+.background-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.background-glow-left {
+  bottom: -140px;
+  left: -100px;
+  width: 340px;
+  height: 340px;
+  background-color: rgba(37, 99, 235, 0.12);
+}
+
+.background-glow-right {
+  top: -130px;
+  right: -90px;
+  width: 300px;
+  height: 300px;
+  background-color: rgba(109, 74, 255, 0.12);
+}
+
+/* Adjust the page for smaller screens */
+@media (max-width: 520px) {
+  .sign-in-page {
+    padding: 32px 16px;
+  }
+
+  .sign-in-brand {
+    margin-bottom: 22px;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+  }
+
+  .logo-name {
+    font-size: 26px;
+  }
+
+  .auth-form {
+    padding: 28px 22px;
+  }
+}

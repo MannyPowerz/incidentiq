@@ -36,5 +36,10 @@
   },
   "allowScripts": {
     "bcrypt@6.0.0": true
+    "nodemon": "^3.1.14",
+    "socket.io-client": "^4.8.3",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.10"
   }
 }
