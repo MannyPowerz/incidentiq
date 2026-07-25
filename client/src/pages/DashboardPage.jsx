@@ -2,6 +2,7 @@ import "./DashboardPage.css"
 import DashboardHeader from "../components/dashboard/DashboardHeader"
 import StatisticsGrid from "../components/dashboard/StatisticsGrid"
 import RecentIncidents from "../components/dashboard/RecentIncidents"
+import QuickActions from "../components/dashboard/QuickActions"
 
 export default function DashboardPage() {
     return (
@@ -10,6 +11,7 @@ export default function DashboardPage() {
                 <DashboardHeader />
                 <StatisticsGrid />
                 <RecentIncidents />
+                <QuickActions />
             </div>
         </main>
     )
