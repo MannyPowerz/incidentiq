@@ -8,5 +8,8 @@ export default defineConfig({
     // Test files share one Postgres pool that gets truncated between tests —
     // running files in parallel would let them stomp on each other's rows.
     fileParallelism: false,
+    env: {
+      NODE_ENV: 'test',
+    },
   },
 });
