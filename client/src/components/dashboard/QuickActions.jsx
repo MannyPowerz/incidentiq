@@ -26,7 +26,7 @@ export default function QuickActions () {
                 </button>
 
                 <button type="button" className="quick-action-button">
-                    <span className="quick-action-icon">*check*</span>
+                    <span className="quick-action-icon">✔</span>
                     <span>
                         <strong>Resolved Rooms</strong>
                         <small>View recently solved incidents</small>

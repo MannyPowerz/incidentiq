@@ -12,8 +12,8 @@ export default function DashboardHeader () {
             </div>
 
             <div className="dashboard-header-actions">
-                <button className="icon-button">*Bell*</button>
-                <button className="icon-button">*Profile*</button>
+                <button className="icon-button">🔔</button>
+                <button className="icon-button">👤</button>
             </div>
         </header>
     )
