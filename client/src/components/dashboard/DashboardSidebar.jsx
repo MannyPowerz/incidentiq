@@ -4,7 +4,7 @@ export default function DashboardSidebar () {
     return (
         <aside className="dashboard-sidebar">
             <div className="sidebar-brand">
-                <span className="sidebar-logo">JD</span>
+                <span className="sidebar-logo">IQ</span>
                 <span className="sidebar-brand-name">IncidentIQ</span>
             </div>
 
