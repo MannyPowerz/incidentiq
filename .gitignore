@@ -145,3 +145,10 @@ vite.config.ts.timestamp-*
 
 CLAUDE.local.md
 .claude/
+
+# macOS junk
+.DS_Store
+
+# graphify + obsidian knowledge-graph artifacts (committed separately, on purpose)
+graphify-out/
+obsidian/

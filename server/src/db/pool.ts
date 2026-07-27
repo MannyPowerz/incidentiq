@@ -18,7 +18,17 @@
  *   globalSetup.ts deliberately builds its OWN pool from TEST_DATABASE_URL, not this one.
  */
 import 'dotenv/config';
-import { Pool } from 'pg';
+import { Pool, types } from 'pg';
+
+// int8 (BIGINT/BIGSERIAL, type OID 20) → number, app-wide.
+// pg returns int8 as a STRING by default to avoid precision loss past 2^53; we override
+// that so our number-typed ids (User.id, org_id, RefreshToken.user_id, AccessTokenPayload.org_id)
+// are true at runtime, not just in the type system.
+//   ↳ vs. typing ids as string everywhere — rejected: the codebase already commits to number ids,
+//     including inside the signed JWT payload; one coercion line beats rewriting all of them.
+// Safe here because BIGSERIAL ids start at 1 in a small deployment, nowhere near the 2^53 ceiling.
+// Set on the pg module itself, so it applies to every pool (including the test pool).
+types.setTypeParser(types.builtins.INT8, (val) => parseInt(val, 10));
 
 // Load-bearing safety switch: under NODE_ENV=test this MUST resolve to the throwaway
 // TEST_DATABASE_URL, because tests/setup.ts runs `TRUNCATE ... CASCADE` against this
