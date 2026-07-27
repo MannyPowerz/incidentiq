@@ -1,6 +1,7 @@
+import type { JSX } from "react"
 import "./DashboardHeader.css"
 
-export default function DashboardHeader () {
+export default function DashboardHeader () : JSX.Element {
     return (
         <header className="dashboard-header">
             <div>
