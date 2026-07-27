@@ -22,6 +22,8 @@ declare global {
 }
 
 type UserRole = 'responder' | 'lead' | 'admin';
+type Status = 'detected' | 'investigating' | 'mitigated'
+type Severity = 'P1'| 'P2' | 'P3' | 'P4'
 
 export interface User {
   id: number; // SQL: BIGSERIAL   — see the gotcha below
@@ -39,4 +41,16 @@ export interface RefreshToken {
   expires_at: Date; // SQL: TIMESTAMPTZ
   revoked_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE  ← the one nullable column
   created_at: Date; // SQL: TIMESTAMPTZ
+}
+
+export interface Incidents {
+  id: number;
+  title: string,
+  status: Status,
+  org_id: number,
+  severity: Severity,
+  created_by: number,
+  created_at: Date,
+  affected_system: string,
+  resolved_at: Date
 }

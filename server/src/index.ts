@@ -8,8 +8,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
 import * as http from 'node:http';
-import { Server, Socket } from 'socket.io';
-import type { ClientToServerJoining } from './InterfaceTypes/socket.js';
+import {Server, Socket } from 'socket.io';
+import type { TypeServer, TypeSocket} from './InterfaceTypes/socket.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
 import { authRouter } from './auth/routes/index.js';
 
@@ -21,7 +21,7 @@ client.release();
 
 const app = express();
 const server = http.createServer(app); //wraps our existing app
-const io = new Server<ClientToServerJoining>(server); //intergrate socket.io and implemented as an instance
+const io = new Server<TypeServer>(server); //intergrate socket.io and implemented as an instance
 
 app.use(express.json());
 
@@ -40,7 +40,11 @@ app.get('/health', (_req, res) => {
 // double the prefix (/register/register) and 404.
 app.use('/auth', authRouter);
 
-io.on('connect', (socket: Socket) => {
+//This references an io connection and will be used in my middleware for every connection call
+app.set('io', io)
+
+
+io.on('connect', (socket: Socket<TypeSocket>) => {
   console.log('User joined: ', socket.id);
 
   socketHandlerFunction(io, socket);
