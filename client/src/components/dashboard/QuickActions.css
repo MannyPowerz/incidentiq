@@ -1,0 +1,103 @@
+/* quick actions panel */
+.quick-actions {
+  margin-top: 24px;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* Heading section */
+.quick-actions-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+/* text under heading */
+.quick-actions-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+/* Responsive layout for buttons */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* Shared styling */
+.quick-action-button {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background-color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Hover feedback */
+.quick-action-button:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+/* Icon at beginning of button */
+.quick-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* Groups: action title & description */
+.quick-action-button span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Action title */
+.quick-action-button strong {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+/* Action description */
+.quick-action-button small {
+  color: #6b7280;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Displays two columns on medium screens */
+@media (max-width: 900px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Stacks all actions on smaller screens */
+@media (max-width: 600px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

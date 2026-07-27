@@ -1,0 +1,19 @@
+/* Main layout containing the sidebar and dashboard content */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fb;
+}
+
+/* Main dashboard content area */
+.dashboard-page {
+  flex: 1;
+  min-width: 0;
+  padding: 32px;
+}
+
+/* Centers the dashboard content */
+.dashboard-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
