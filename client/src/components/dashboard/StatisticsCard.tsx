@@ -1,6 +1,12 @@
+import type { JSX } from "react"
 import "./StatisticsCard.css"
 
-export default function StatisticsCard ({title, value}) {
+type StatisticsCardProps = {
+    title: string;
+    value: string | number;
+}
+
+export default function StatisticsCard ({title, value} : StatisticsCardProps): JSX.Element {
     return (
         <article className="statistics-card">
             <h3 className="statistics-card-title">{title}</h3>
