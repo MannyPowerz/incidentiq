@@ -1,0 +1,41 @@
+.rooms-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.rooms-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rooms-header-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.rooms-header-description {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.rooms-header-button {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.1rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rooms-header-button:hover {
+  background-color: #1d4ed8;
+}
