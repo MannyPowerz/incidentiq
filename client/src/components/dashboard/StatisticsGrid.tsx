@@ -1,6 +1,7 @@
+import type { JSX } from "react";
 import StatisticsCard from "./StatisticsCard";
 
-export default function StatisticsGrid() {
+export default function StatisticsGrid(): JSX.Element {
     return (
         <section className="statistics-grid">
             <StatisticsCard title="Open Rooms" value="24" />

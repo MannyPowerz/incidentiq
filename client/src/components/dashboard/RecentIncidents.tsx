@@ -1,7 +1,16 @@
+import type { JSX } from "react"
 import "./RecentIncidents.css"
 
+type Incident = {
+    id: number;
+    title: string;
+    status: string;
+    owner: string;
+    updated: string;
+};
+
 // Temp data just for building purposes
-const incidents =[
+const incidents: Incident[] =[
     {
         id: 1,
         title: "Critical test",
@@ -25,7 +34,7 @@ const incidents =[
   },
 ]
 
-export default function RecentIncidents() {
+export default function RecentIncidents(): JSX.Element {
     return (
         <section className="recent-incidents">
             <div className="recent-incidents-header">

@@ -1,6 +1,7 @@
+import type { JSX } from "react"
 import "./QuickActions.css"
 
-export default function QuickActions () {
+export default function QuickActions() : JSX.Element {
     return (
         <section className="quick-actions">
             <div className="quick-actions-header">

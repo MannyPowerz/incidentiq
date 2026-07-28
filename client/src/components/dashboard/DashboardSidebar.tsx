@@ -1,6 +1,7 @@
+import type { JSX } from "react"
 import "./DashboardSidebar.css"
 
-export default function DashboardSidebar () {
+export default function DashboardSidebar () : JSX.Element {
     return (
         <aside className="dashboard-sidebar">
             <div className="sidebar-brand">
