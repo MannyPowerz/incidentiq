@@ -1,25 +1,39 @@
-import "./AuthForm.css"
 import { useState } from "react";
+import type { JSX } from "react";
+import type * as React from "react"
+import "./AuthForm.css"
 
-export default function AuthForm() {
+type AuthFormData = {
+    email: string;
+    password: string;
+    rememberMe: boolean;
+};
+
+type AuthFormErrors = {
+    email?: string;
+    password?: string;
+}
+
+
+export default function AuthForm() : JSX.Element {
     // Store values entered in the form
-    const [ formData, setFormData ] = useState({
+    const [ formData, setFormData ] = useState<AuthFormData>({
         email: "",
         password: "",
         rememberMe: false,
     });
 
     // Control if password is visible text or not
-    const [ showPassword, setShowPassword ] = useState(false);
+    const [ showPassword, setShowPassword ] = useState<boolean>(false);
 
     // Store validation messages for each field
-    const [ errors, setErrors ] = useState({})
+    const [ errors, setErrors ] = useState<AuthFormErrors>({})
 
     // Track if sign in request is being loading
-    const [ isLoading, setIsLoading ] = useState(false)
+    const [ isLoading, setIsLoading ] = useState<boolean>(false)
 
     // Update the field if the user is changing an input
-    const handleChange = (event) => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const { name, value, type, checked } = event.target;
 
         setFormData((previousData) => ({
@@ -35,8 +49,8 @@ export default function AuthForm() {
     }
 
     // Check the form values and return any errors
-    const validateForm = () => {
-        const newErrors = {}
+    const validateForm = () : AuthFormErrors => {
+        const newErrors: AuthFormErrors = {}
 
         // Require the correct format for the email
         if (!formData.email.trim()) {
@@ -53,7 +67,7 @@ export default function AuthForm() {
         return newErrors;
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event : React.FormEvent<HTMLFormElement>) : void => {
         event.preventDefault()
 
         const validationErrors = validateForm()

@@ -1,0 +1,140 @@
+/* incidents panel */
+.recent-incidents {
+  margin-top: 24px;
+  padding: 24px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+
+/* Header layout */
+.recent-incidents-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Section title */
+.recent-incidents-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+/* Supporting text */
+.recent-incidents-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+/* Button to navigate to complete list */
+.view-all-button {
+  padding: 10px 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Adds feedback when hovering */
+.view-all-button:hover {
+  background-color: #eff6ff;
+}
+
+/* Holds all incident rows */
+.incident-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Individual row */
+.incident-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(120px, auto);
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Removes the divider above the first incident */
+.incident-item:first-child {
+  border-top: none;
+}
+
+/* Incident title */
+.incident-main h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+/* Incident owner */
+.incident-main p {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Shared status badge styling */
+.incident-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Critical incident badge */
+.incident-status-critical {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Investigating incident badge */
+.incident-status-investigating {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Open incident badge */
+.incident-status-open {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Last updated timestamp */
+.incident-updated {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* Stacks incident information on smaller screens */
+@media (max-width: 700px) {
+  .recent-incidents-header {
+    flex-direction: column;
+  }
+
+  .incident-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .incident-status {
+    justify-self: start;
+  }
+
+  .incident-updated {
+    text-align: left;
+  }
+}

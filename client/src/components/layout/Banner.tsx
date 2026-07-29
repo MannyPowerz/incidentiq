@@ -1,6 +1,7 @@
+import type { JSX } from 'react';
 import './Banner.css';
 
-export default function Banner() {
+export default function Banner() : JSX.Element {
     return (
         <header className='banner'>
             <div className='banner-content'>

@@ -1,7 +1,8 @@
+import type { JSX } from "react";
 import AuthForm from "../components/auth/AuthForm";
 import "./SignInPage.css"
 
-export default function SignInPage() {
+export default function SignInPage() : JSX.Element {
     // Display reusable authentication form
     return (
         <main className="sign-in-page">
