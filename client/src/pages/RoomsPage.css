@@ -1,5 +1,19 @@
 .rooms-page {
-    min-height: 100vh;
-    padding: 2rem;
-    background-color: #f8fafc;
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2.5rem 3rem;
+  background-color: #f8fafc;
+}
+
+@media (max-width: 900px) {
+  .rooms-page {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .rooms-page {
+    padding: 1.5rem 1rem;
+  }
 }

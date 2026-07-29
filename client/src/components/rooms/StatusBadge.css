@@ -1,11 +1,14 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: fit-content;
-  padding: 0.3rem 0.65rem;
+  min-height: 1.65rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1;
 }
 
 .status-badge-open {
