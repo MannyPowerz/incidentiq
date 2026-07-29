@@ -22,8 +22,10 @@ declare global {
 }
 
 type UserRole = 'responder' | 'lead' | 'admin';
-type Status = 'detected' | 'investigating' | 'mitigated'
-type Severity = 'P1'| 'P2' | 'P3' | 'P4'
+// the full status lifecycle. Must match the incidents status CHECK in 0002_incidents_timeline.sql —
+// leave out 'resolved'/'postmortem' and a real resolved row can't be represented by this type.
+type Status = 'detected' | 'investigating' | 'mitigated' | 'resolved' | 'postmortem';
+type Severity = 'P1' | 'P2' | 'P3' | 'P4';
 
 export interface User {
   id: number; // SQL: BIGSERIAL   — see the gotcha below
@@ -44,13 +46,13 @@ export interface RefreshToken {
 }
 
 export interface Incidents {
-  id: number;
-  title: string,
-  status: Status,
-  org_id: number,
-  severity: Severity,
-  created_by: number,
-  created_at: Date,
-  affected_system: string,
-  resolved_at: Date
+  id: number; // SQL: BIGSERIAL
+  title: string; // SQL: TEXT
+  status: Status; // SQL: TEXT + CHECK — defaults to 'detected' on insert
+  org_id: number; // SQL: BIGINT — the tenant key every incident query filters on
+  severity: Severity; // SQL: TEXT + CHECK ('P1'..'P4')
+  created_by: number | null; // SQL: BIGINT, NULLABLE — ON DELETE SET NULL keeps the incident when its author is deleted
+  created_at: Date; // SQL: TIMESTAMPTZ
+  affected_system: string | null; // SQL: TEXT, NULLABLE
+  resolved_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE — null until the incident is resolved
 }
