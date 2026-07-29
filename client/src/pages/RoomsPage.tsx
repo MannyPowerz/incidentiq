@@ -5,6 +5,7 @@ import RoomsFilters from "../components/rooms/RoomsFilters";
 import RoomsCard from "../components/rooms/RoomsCard";
 import { rooms } from "../data/rooms";
 import RoomsTable from "../components/rooms/RoomsTable";
+import RoomsFooter from "../components/rooms/RoomsFooter";
 
 export default function RoomsPage () : JSX.Element {
     return (
@@ -13,6 +14,7 @@ export default function RoomsPage () : JSX.Element {
             <RoomsCard>
                 <RoomsFilters />
                 <RoomsTable rooms={rooms} />
+                <RoomsFooter />
             </RoomsCard>
         </main>
     )
