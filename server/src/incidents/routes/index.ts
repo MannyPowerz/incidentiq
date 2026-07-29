@@ -8,8 +8,13 @@
 
 import { Router } from 'express';
 import { z } from 'zod';
+
 import { requireAuth, validateBody } from '../../auth/middleware.js';
+
 import { handleCreateIncident } from './create.js';
+import { handleGetIncident } from './get.js'
+import { handleResolveIncident } from './resolve.js'
+import { handleListIncidents } from './list.js'
 
 // the fields a client is allowed to supply when opening an incident. org_id, created_by, and
 // status are deliberately NOT here — identity comes from the token, and status defaults in the DB.
@@ -19,8 +24,29 @@ const createIncidentSchema = z.object({
   affected_system: z.string().optional(), // may be absent; the handler turns absent into null
 });
 
+const patchIncidentSchema = z.object({
+    status: z.enum([
+        'detected',
+        'investigating',
+        'mitigated',
+        'resolved',
+        'postmortem'
+    ]),
+});
+
+
+
+
+
 export const incidentRouter = Router();
+
 
 // requireAuth runs FIRST — unlike register/login, you must already be logged in to open an
 // incident, and requireAuth is what populates req.user so the handler can read org_id/sub off it.
 incidentRouter.post('/', requireAuth, validateBody(createIncidentSchema), handleCreateIncident);
+
+incidentRouter.get('/:id', requireAuth, handleGetIncident);
+
+incidentRouter.patch('/:id', requireAuth, validateBody(patchIncidentSchema), handleResolveIncident);
+
+incidentRouter.get('/', requireAuth, handleListIncidents);

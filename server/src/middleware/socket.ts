@@ -1,32 +1,22 @@
-import jwt from 'jsonwebtoken'
-import type {Socket} from 'socket.io'
-import type { NextFunction, Request } from 'express'
-import type { AccessTokenPayload } from '../auth/types.js'
+import type { TypeSocket } from '../InterfaceTypes/socket.js';
+import { verifyAccessToken } from '../auth/tokens.js';
 
-const variables = process.env.JWT_SECRET
+// Socket auth middleware — the handshake bouncer. Runs ONCE per connection, before any
+// 'connect' handler fires, so socket.data is already trustworthy by the time createRoom runs.
+// Reads the access token off the handshake, verifies it, and stamps the identity onto the socket.
+export function socketAuth(socket: TypeSocket, next: (err?: Error) => void) {
 
-//This socket middleware checks for authentication/authorization from a users access token and will be executed once per connection
-//Implmented jwt.verify() to recive payload and initialize it with socket.data.userId and socket.data.orgId
-export function SocketMiddlware(req:Request) {
-    const io = req.app.get('io')
-    io.use((socket: Socket, next: NextFunction) => {
-        const token = socket.handshake.auth?.token;
-        if(!token) {
-            return next(new Error("Token scrutinizing in socketMiddleware does not exist"))
-        }
-        if(!variables) {
-            return next(new Error("Access Token doesn't exist"))
-        }
-        try {
-            const decoded = jwt.verify(token, variables) as AccessTokenPayload;
-            socket.data.userId = decoded.sub
-            socket.data.orgId = decoded.org_id
-            next()
-        }
-        catch(err) {
-            console.log('Socket.io Middleware Error: ', err)
-            next(new Error("Socket Middleware did not pass"))
-        }
+    const token = socket.handshake.auth?.token; // the client sends it: io(url, { auth: { token }})
 
-    })
+    if (!token) return next(new Error('No access token provided'));
+
+    try {
+        const payload = verifyAccessToken(token); // reuse our own verifier — throws on bad/expired
+        socket.data.userId = Number(payload.sub); // sub is a string in the payload; SocketData.userId is a number
+        socket.data.orgId = payload.org_id;
+        socket.data.role = payload.role;
+        next(); // no argument = admit the connection
+    } catch {
+        next(new Error('Invalid or expired access token')); // an Error argument = reject the handshake
+    }
 }
