@@ -1,22 +1,16 @@
 /**
- * queries.ts — every database read and write the timeline routes need, in one place.
- *
- * Same split as incidents/queries.ts: the handlers decide what happens, these functions are
- * the only things that touch the DB. No org filter in here on purpose — the route calls
- * findIncidentById(incidentId, orgId) first to confirm the incident is yours, then these
- * trust the incidentId they're handed.
+ * queries.ts — all the DB reads/writes for the timeline routes. Handlers decide what happens;
+ * these only touch the DB. No org filter here on purpose: the route calls findIncidentById(id, orgId)
+ * first to confirm the incident is yours, so these can trust the incidentId they're handed.
  */
 
 import { TimelineEntry, TimelineEntryType } from './types.js';
 import { pool } from '../db/pool.js';
 
-// append one entry and hand back the finished row (RETURNING *, one round trip).
-// body is JSON.stringify'd because the column is JSONB: pg auto-stringifies a plain object, but
-// doing it explicitly is correct for any shape (a JS array would otherwise be stored as a
-// Postgres array literal, not JSON).
+// append one entry, return it via RETURNING *. body is JSON.stringify'd for the JSONB column.
 export async function insertTimelineEntry(
   incidentId: number,
-  authorId: number | null, // the human author's id, or null for 'system' / 'ai_draft' entries
+  authorId: number | null, // null for system / ai_draft entries (no human author)
   type: TimelineEntryType,
   body: TimelineEntry['body']
 ): Promise<TimelineEntry> {
@@ -27,25 +21,23 @@ export async function insertTimelineEntry(
   return rows[0];
 }
 
-// all entries for an incident. ORDER BY id, never created_at or socket arrival time — the
-// BIGSERIAL sequence is the ordering truth (the network reorders; the DB sequence doesn't).
-// DESC = newest first. Note findTimelineEntriesSince returns ascending; the client sorts by id.
+// oldest-first, chat-log order (what the UI wants). ORDER BY id, not arrival time — the id
+// sequence is the ordering truth; the network can deliver out of order, the sequence can't.
 export async function findTimelineEntriesByIncident(incidentId: number): Promise<TimelineEntry[]> {
   const { rows } = await pool.query(
-    'SELECT * FROM timeline_entries WHERE incident_id = $1 ORDER BY id DESC',
+    'SELECT * FROM timeline_entries WHERE incident_id = $1 ORDER BY id ASC',
     [incidentId]
   );
   return rows;
 }
 
-// reconnect gap-fill: a client that last saw sinceId asks for everything newer.
-// id > $2 (strictly greater) excludes the entry it already has; sinceId = 0 returns all (ids start at 1).
+// reconnect gap-fill: entries newer than sinceId, oldest-first. > (not >=) skips the one they have.
 export async function findTimelineEntriesSince(
   incidentId: number,
   sinceId: number
 ): Promise<TimelineEntry[]> {
   const { rows } = await pool.query(
-    'SELECT * FROM timeline_entries WHERE incident_id = $1 AND id > $2 ORDER BY id',
+    'SELECT * FROM timeline_entries WHERE incident_id = $1 AND id > $2 ORDER BY id ASC',
     [incidentId, sinceId]
   );
   return rows;
