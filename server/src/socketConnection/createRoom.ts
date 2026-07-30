@@ -1,4 +1,5 @@
 import {pool} from '../db/pool.js'
+import { formatRoomName } from './formatJoin.js'
 import type { Incidents} from '../auth/types.js'
 import type { TypeServer, TypeSocket} from '../InterfaceTypes/socketTypes.js'
 
@@ -31,12 +32,11 @@ export function createRooms(io: TypeServer, socket:TypeSocket) {
                 return
             }
 
-            const roomName = String(data.rows[0].id)
-            console.log(roomName)
+            const roomName = formatRoomName(incidentId)
             await socket.join(roomName)
 
             //broadcasting message to everyone in room of user joining
-            io.to(roomName).emit('User-joined', {message: `A user joined room ${roomName}`})
+            io.to(formatRoomName(incidentId)).emit('User-joined', {message: `A user joined room ${roomName}`})
             socket.emit('success', {success: `User joined room ${roomName}`})
         }catch(err) {
             console.log("Unable to join incident room. Error: ", err)
