@@ -38,7 +38,8 @@ export async function insertUser(
   orgId: number
 ): Promise<User> {
   const { rows } = await pool.query(
-    'INSERT INTO users (email, password_hash, org_id, role) VALUES ($1, $2, $3, $4) RETURNING *',
+    //adding an atomic statment whill make this query conflict-aware and more effecient during concurrency trips (check + act)
+    'INSERT INTO users (email, password_hash, org_id, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING RETURNING *',
     [email, passwordHash, orgId, 'responder']
   );
   return rows[0];

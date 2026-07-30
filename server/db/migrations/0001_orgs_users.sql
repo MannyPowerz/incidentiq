@@ -29,6 +29,8 @@ CREATE TABLE users (
   -- ON DELETE RESTRICT: an org can't be deleted while it still owns users — guards the tenant boundary against orphaning live data.
   CONSTRAINT users_org_id_fkey FOREIGN KEY (org_id) REFERENCES orgs(id) ON DELETE RESTRICT,
   CONSTRAINT users_role_check CHECK (role IN ('responder', 'lead', 'admin'))
+  --Making email UNIQUE  will prevent double insert impossible regardles of what the code does or how many request race
+  CONSTRAINT users_email_unique UNIQUE(email)
 );
 -- refresh_tokens — requested by a teammate to back JWT refresh support (JWT_REFRESH_SECRET already sits unused in .env.example).
 --

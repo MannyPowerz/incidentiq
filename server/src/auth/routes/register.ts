@@ -14,6 +14,8 @@ import { REFRESH_TOKEN_TTL_MS } from '../../constants/auth.js';
 export async function handleRegister(req: Request, res: Response) {
   const { email, password } = req.body; // already screened by validateBody(credentialsSchema)
 
+  //This is practically a pre-check beacuse by the time this tries to insert, the data could go stale
+  //due to other awaited work happening in between
   const existing = await findUserByEmail(email);
   if (existing) {
     // the email's already in use — the request itself was fine, it just collides with someone
@@ -30,6 +32,14 @@ export async function handleRegister(req: Request, res: Response) {
   const orgId = await findOrgIdByName('Demo Team');
 
   const user = await insertUser(email, passwordHash, orgId);
+  //this conditional is our 'source of truth' check since 'inserUser' 
+  //adopts our atomic query, handling correctness no matter how many concurrent request there are since 
+  //
+  if(!user) {
+    res
+      .status(409)
+      .json({error: 'email_taken', message: 'An account with this email already exist'})
+  }
 
   // hand out both tokens — same steps as login, worth pulling into one shared helper later
   const accessToken = signAccessToken({
