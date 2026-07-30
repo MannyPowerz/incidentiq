@@ -16,8 +16,8 @@ import { handleLogout } from './logout.js';
 
 // the fields register and login expect; validateBody uses this to turn away bad input first
 const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+    email: z.string().email(),
+    password: z.string().min(8),
 });
 
 export const authRouter = Router();

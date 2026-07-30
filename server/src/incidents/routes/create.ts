@@ -1,9 +1,6 @@
 import type { Request, Response } from 'express';
 import { insertIncident } from '../queries.js';
 
-
-
-
 export async function handleCreateIncident(req: Request, res: Response) {
     const { title, severity, affected_system } = req.body; // already screened by validateBody(createIncidentSchema)
 
@@ -14,8 +11,13 @@ export async function handleCreateIncident(req: Request, res: Response) {
 
     // affected_system ?? null: the schema allows it to be absent (string | undefined),
     // but the column is nullable (string | null) — so turn "missing" into an explicit null
-    const incident = await insertIncident(title, severity, orgId, authorId, affected_system ?? null);
+    const incident = await insertIncident(
+        title,
+        severity,
+        orgId,
+        authorId,
+        affected_system ?? null
+    );
 
     res.status(201).json({ incident });
 }
-

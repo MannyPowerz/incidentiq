@@ -35,6 +35,6 @@ types.setTypeParser(types.builtins.INT8, (val) => parseInt(val, 10));
 // exact pool after every test. Leave it pointed at DATABASE_URL during tests and the
 // suite wipes your dev data.
 const connectionString =
-  process.env.NODE_ENV === 'test' ? process.env.TEST_DATABASE_URL : process.env.DATABASE_URL;
+    process.env.NODE_ENV === 'test' ? process.env.TEST_DATABASE_URL : process.env.DATABASE_URL;
 
 export const pool = new Pool({ connectionString });
