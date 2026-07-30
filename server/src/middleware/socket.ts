@@ -1,4 +1,4 @@
-import type { TypeSocket } from '../InterfaceTypes/socket.js';
+import type { TypeSocket } from '../InterfaceTypes/socketTypes.js';
 import { verifyAccessToken } from '../auth/tokens.js';
 
 // Socket auth middleware — the handshake bouncer. Runs ONCE per connection, before any

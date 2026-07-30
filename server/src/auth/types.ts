@@ -45,6 +45,7 @@ export interface RefreshToken {
   created_at: Date; // SQL: TIMESTAMPTZ
 }
 
+//Incidents table 
 export interface Incidents {
   id: number; // SQL: BIGSERIAL
   title: string; // SQL: TEXT
@@ -56,3 +57,25 @@ export interface Incidents {
   affected_system: string | null; // SQL: TEXT, NULLABLE
   resolved_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE — null until the incident is resolved
 }
+
+//Timeline entries table + CHECKS
+export interface TimelineEntries {
+  id: number //SQL: BIGSERIAL
+  incident_id: number //SQL: BIGSERIAL
+  author_id: number //SQL: BIGSERIAL
+  type: EntriesTypes//SQL: TEXT + CHECK ('obseravtion', 'action', 'finding', 'system', 'ai_draft')
+  body: Record<string, any> | null//SQL: {key: string/TEXT}
+  locked: boolean //SQL: boolean
+  created_at: Date //SQL: TIMESTAMPTZ
+}
+
+export type EntriesTypes = 'observation' | 'action' | 'finding' | 'system' | 'ai_draft'
+
+//scrutinizing every type of entry with their corrsponding unique body which will be emitted
+export type TimeLineBody =
+|
+{type: 'observation', body: {summary: string, why_it_matters: string, likely_fix: string}} |
+{type: 'action', body: {summary: string, why_it_matters: string, likely_fix: string}} |
+{type: 'finding', body: {summary: string, why_it_matters: string, likely_fix: string}} |
+{type: 'system', body: {summary: string, why_it_matters: string, likely_fix: string}} |
+{type: 'ai_draft', body: {summary: string, why_it_matters: string, likely_fix: string}}
