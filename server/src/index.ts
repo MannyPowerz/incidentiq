@@ -9,9 +9,11 @@ import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
 import * as http from 'node:http';
 import {Server, Socket } from 'socket.io';
-import type { TypeServer, TypeSocket} from './InterfaceTypes/socketTypes.js';
+import type { TypeServer, TypeSocket} from './InterfaceTypes/socket.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
+import { socketAuth } from './middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';
+import { incidentRouter } from './incidents/routes/index.js' ;
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
 // booted on a dead pool would still pass its own /health check and only start
@@ -21,11 +23,13 @@ client.release();
 
 const app = express();
 const server = http.createServer(app); //wraps our existing app
-const io = new Server<TypeServer>(server); //intergrate socket.io and implemented as an instance
+const io: TypeServer = new Server(server); //intergrate socket.io — TypeServer fills all four generics (incl. SocketData) so socket.data is typed
 
 app.use(express.json());
 
 app.use(cookieParser());
+
+
 
 const port = process.env.PORT ?? 3000;
 
@@ -39,12 +43,10 @@ app.get('/health', (_req, res) => {
 // internally, so this prefixes all four (e.g. /auth/register). Mounting per-path would
 // double the prefix (/register/register) and 404.
 app.use('/auth', authRouter);
+app.use('/incidents', incidentRouter);
 
-//This references an io connection and will be used in my middleware for every connection call
-app.set('io', io)
-
-
-io.on('connect', (socket: Socket<TypeSocket>) => {
+io.use(socketAuth)
+io.on('connect', (socket: TypeSocket) => {
   console.log('User joined: ', socket.id);
 
   socketHandlerFunction(io, socket);
