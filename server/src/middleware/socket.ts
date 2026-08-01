@@ -7,7 +7,6 @@ import type { ClientToServer, TypeSocket } from '../socketTypes-Schemas/socketTy
 // 'connect' handler fires, so socket.data is already trustworthy by the time createRoom runs.
 // Reads the access token off the handshake, verifies it, and stamps the identity onto the socket.
 export function socketAuth(socket: TypeSocket, next: (err?: Error) => void) {
-
     const token = socket.handshake.auth?.token; // the client sends it: io(url, { auth: { token }})
 
     if (!token) return next(new Error('No access token provided'));

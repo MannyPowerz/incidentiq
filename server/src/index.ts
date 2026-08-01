@@ -13,7 +13,7 @@ import type { TypeServer, TypeSocket} from './socketTypes-Schemas/socketTypes.js
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
 import { socketAuth } from './middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';
-import { incidentRouter } from './incidents/routes/index.js' ;
+import { incidentRouter } from './incidents/routes/index.js';
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
 // booted on a dead pool would still pass its own /health check and only start
@@ -29,14 +29,12 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-
-
 const port = process.env.PORT ?? 3000;
 
 // Liveness only: returns 200 without touching the DB. Readiness was already gated
 // once by the pool.connect() above, so this deliberately doesn't ping Postgres per hit.
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+    res.json({ status: 'ok' });
 });
 
 // mount the auth router ONCE at /auth — the router already owns /register, /login, etc.
@@ -45,13 +43,13 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/incidents', incidentRouter);
 
-io.use(socketAuth)
+io.use(socketAuth);
 io.on('connect', (socket: TypeSocket) => {
-  console.log('User joined: ', socket.id);
+    console.log('User joined: ', socket.id);
 
-  socketHandlerFunction(io, socket);
+    socketHandlerFunction(io, socket);
 });
 
 server.listen(port, () => {
-  console.log(`listening on port ${port}`);
+    console.log(`listening on port ${port}`);
 });

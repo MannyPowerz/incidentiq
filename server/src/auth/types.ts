@@ -6,19 +6,19 @@
 // lookup — see docs/Architecture_Decision_Records/0005-access-token-payload-shape.md
 
 export interface AccessTokenPayload {
-  sub: string; // user.id, as a string
-  org_id: number; // immutable per user — never stale (0001_orgs_users.sql)
-  role: 'responder' | 'lead' | 'admin'; // can change — stale up to ACCESS_TOKEN_TTL after promotion/demotion
+    sub: string; // user.id, as a string
+    org_id: number; // immutable per user — never stale (0001_orgs_users.sql)
+    role: 'responder' | 'lead' | 'admin'; // can change — stale up to ACCESS_TOKEN_TTL after promotion/demotion
 }
 
 // Merges `user` onto Express's own Request type — without this, `req.user = payload`
 // in middleware.ts doesn't typecheck anywhere in the app.
 declare global {
-  namespace Express {
-    interface Request {
-      user?: AccessTokenPayload; // optional: only set once requireAuth has run
+    namespace Express {
+        interface Request {
+            user?: AccessTokenPayload; // optional: only set once requireAuth has run
+        }
     }
-  }
 }
 
 type UserRole = 'responder' | 'lead' | 'admin';
@@ -28,34 +28,34 @@ type Status = 'detected' | 'investigating' | 'mitigated' | 'resolved' | 'postmor
 type Severity = 'P1' | 'P2' | 'P3' | 'P4';
 
 export interface User {
-  id: number; // SQL: BIGSERIAL   — see the gotcha below
-  email: string; // SQL: CITEXT
-  password_hash: string; // SQL: TEXT
-  role: UserRole; // SQL: TEXT + CHECK ('responder','lead','admin');
-  org_id: number; // SQL: BIGINT      — same gotcha as id
-  created_at: Date; // SQL: TIMESTAMPTZ
+    id: number; // SQL: BIGSERIAL   — see the gotcha below
+    email: string; // SQL: CITEXT
+    password_hash: string; // SQL: TEXT
+    role: UserRole; // SQL: TEXT + CHECK ('responder','lead','admin');
+    org_id: number; // SQL: BIGINT      — same gotcha as id
+    created_at: Date; // SQL: TIMESTAMPTZ
 }
 
 export interface RefreshToken {
-  id: number; // SQL: BIGSERIAL
-  user_id: number; // SQL: BIGINT
-  token_hash: string; // SQL: TEXT
-  expires_at: Date; // SQL: TIMESTAMPTZ
-  revoked_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE  ← the one nullable column
-  created_at: Date; // SQL: TIMESTAMPTZ
+    id: number; // SQL: BIGSERIAL
+    user_id: number; // SQL: BIGINT
+    token_hash: string; // SQL: TEXT
+    expires_at: Date; // SQL: TIMESTAMPTZ
+    revoked_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE  ← the one nullable column
+    created_at: Date; // SQL: TIMESTAMPTZ
 }
 
 //Incidents table 
 export interface Incidents {
-  id: number; // SQL: BIGSERIAL
-  title: string; // SQL: TEXT
-  status: Status; // SQL: TEXT + CHECK — defaults to 'detected' on insert
-  org_id: number; // SQL: BIGINT — the tenant key every incident query filters on
-  severity: Severity; // SQL: TEXT + CHECK ('P1'..'P4')
-  created_by: number | null; // SQL: BIGINT, NULLABLE — ON DELETE SET NULL keeps the incident when its author is deleted
-  created_at: Date; // SQL: TIMESTAMPTZ
-  affected_system: string | null; // SQL: TEXT, NULLABLE
-  resolved_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE — null until the incident is resolved
+    id: number; // SQL: BIGSERIAL
+    title: string; // SQL: TEXT
+    status: Status; // SQL: TEXT + CHECK — defaults to 'detected' on insert
+    org_id: number; // SQL: BIGINT — the tenant key every incident query filters on
+    severity: Severity; // SQL: TEXT + CHECK ('P1'..'P4')
+    created_by: number | null; // SQL: BIGINT, NULLABLE — ON DELETE SET NULL keeps the incident when its author is deleted
+    created_at: Date; // SQL: TIMESTAMPTZ
+    affected_system: string | null; // SQL: TEXT, NULLABLE
+    resolved_at: Date | null; // SQL: TIMESTAMPTZ, NULLABLE — null until the incident is resolved
 }
 
 //Timeline entries table + CHECKS
