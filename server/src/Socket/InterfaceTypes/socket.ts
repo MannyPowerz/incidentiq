@@ -1,5 +1,5 @@
 import type { Socket, Server } from 'socket.io';
-import type { TimelineEntry } from '../timeline/types.js';
+import type { TimelineEntry } from '../../timeline/types.js';
 
 //socket.io response
 export interface ClientToServerJoining {

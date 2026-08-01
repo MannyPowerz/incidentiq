@@ -1,6 +1,5 @@
 import type { Socket, Server, DefaultEventsMap } from 'socket.io'
-import type { TimeLineBody, TimelineEntries } from '../auth/types.js'
-
+import type { TimelineEntry } from '../../timeline/types.js'
 //socket.io response
 export interface ClientToServer {
     //types for joining rooms
@@ -21,7 +20,7 @@ export interface ServerToClient {
     'User-joined': (value: {message: string}) => void
 
     //types for emitting messages/failures
-    'new-message': (value: TimelineEntries) => void
+    'new-message': (value: TimelineEntry) => void
     'message-error': (value: {error: string}) => void
 
     //types for Zod validation
@@ -29,7 +28,7 @@ export interface ServerToClient {
 }
 
 //Payload every messsage sends including type and body
-export type SendingMessagePayload = {incidentId: number} & TimeLineBody
+export type SendingMessagePayload = TimelineEntry
 
 type UserRole = 'responder' | 'lead' | 'admin';
 

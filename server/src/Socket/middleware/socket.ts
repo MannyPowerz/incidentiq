@@ -1,4 +1,5 @@
-import { verifyAccessToken } from '../auth/tokens.js';
+import {z} from 'zod'
+import { verifyAccessToken } from '../../auth/tokens.js';
 import { socketSchemas } from '../socketTypes-Schemas/socketSchemas.js';
 import type { Event } from 'socket.io';
 import type { ClientToServer, TypeSocket } from '../socketTypes-Schemas/socketTypes.js';
@@ -6,7 +7,9 @@ import type { ClientToServer, TypeSocket } from '../socketTypes-Schemas/socketTy
 // Socket auth middleware — the handshake bouncer. Runs ONCE per connection, before any
 // 'connect' handler fires, so socket.data is already trustworthy by the time createRoom runs.
 // Reads the access token off the handshake, verifies it, and stamps the identity onto the socket.
-export function socketAuth(socket: TypeSocket, next: (err?: Error) => void) {
+export function socketAuth(socket: TypeSocket, next: (err?: Error) => void){
+
+    //"?" gaurd is appropriate since client has fuull jurisdiction of sending
     const token = socket.handshake.auth?.token; // the client sends it: io(url, { auth: { token }})
 
     if (!token) return next(new Error('No access token provided'));
@@ -17,7 +20,8 @@ export function socketAuth(socket: TypeSocket, next: (err?: Error) => void) {
         socket.data.orgId = payload.org_id;
         socket.data.role = payload.role;
         next(); // no argument = admit the connection
-    } catch {
+    } catch(err) {
+        console.log(err)
         next(new Error('Invalid or expired access token')); // an Error argument = reject the handshake
     }
 }
@@ -31,12 +35,12 @@ export function validateSocketData(socket: TypeSocket) {
 
         //this guard treats schema as the lie it is, as indexing with an arbitrary string is undefined
         if(!schema) {
-            return next(new Error('unauthrized event'))
+            return next(new Error('unauthorized event'))
         }
         const result = schema.safeParse(payload)
         
         if(!result.success) {
-            console.log(result.error.issues)//contians the field path and reasoning
+            console.log(z.prettifyError(result.error))//contians the field path and reasoning in a human readable way
             return next(new Error('payload does not match schema rules'))
         }
         next()

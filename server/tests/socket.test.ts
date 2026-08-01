@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Server, type Socket as serverSocket } from 'socket.io';
 import { Socket as clientSocket, io as ioc } from 'socket.io-client';
-import { socketHandlerFunction } from '../src/routes/socketHandlerFunctions.js';
+import { socketHandlerFunction } from '../src/Socket/routes/socketHandlerFunctions.js';
 
 describe('connection Room', () => {
     let io: Server, serverSocket: serverSocket, clientSocket1: clientSocket;

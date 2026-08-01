@@ -1,6 +1,6 @@
 import type { TypeServer, TypeSocket } from '../socketTypes-Schemas/socketTypes.js'
-import { createRooms } from '../socketConnection/createRoom.js'
-import { emitAndPersist } from '../socketConnection/emittingMessages.js'
+import { createRooms } from '../socketHandlers/createRoom.js'
+import { emitAndPersist } from '../socketHandlers/emittingMessages.js'
 import { validateSocketData } from '../middleware/socket.js'
 import { socketErrorSink } from '../middleware/socket.js'
 
