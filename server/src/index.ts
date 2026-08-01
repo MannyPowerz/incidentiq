@@ -7,23 +7,19 @@ import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
-import * as http from 'node:http';
-import { Server } from 'socket.io';
-import type { TypeServer, TypeSocket } from './InterfaceTypes/socket.js';
+import type { TypeSocket } from './InterfaceTypes/socket.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
 import { socketAuth } from './middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';
 import { incidentRouter } from './incidents/routes/index.js';
+import { timelineRouter } from './timeline/routes/index.js';
+import { app, server, io } from './socketServer.js';
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
 // booted on a dead pool would still pass its own /health check and only start
 // failing on the first real query — better to crash at startup where it's obvious.
 const client = await pool.connect();
 client.release();
-
-const app = express();
-const server = http.createServer(app); //wraps our existing app
-const io: TypeServer = new Server(server); //intergrate socket.io — TypeServer fills all four generics (incl. SocketData) so socket.data is typed
 
 app.use(express.json());
 
@@ -42,6 +38,7 @@ app.get('/health', (_req, res) => {
 // double the prefix (/register/register) and 404.
 app.use('/auth', authRouter);
 app.use('/incidents', incidentRouter);
+app.use('/incidents/:id/timeline', timelineRouter);
 
 io.use(socketAuth);
 io.on('connect', (socket: TypeSocket) => {
