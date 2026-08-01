@@ -1,6 +1,6 @@
 import { pool } from "../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
-import type { TypeServer, TypeSocket } from "../InterfaceTypes/socketTypes.js";
+import type { TypeServer, TypeSocket} from "../socketTypes-Schemas/socketTypes.js";
 import type { TimelineEntries } from "../auth/types.js";
 
 //Once joining a specific incident, users can send messages including a payload of incident_id, author_id, type, and body

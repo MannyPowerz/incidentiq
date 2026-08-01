@@ -1,19 +1,13 @@
 import {pool} from '../db/pool.js'
 import { formatRoomName } from './formatJoin.js'
 import type { Incidents} from '../auth/types.js'
-import type { TypeServer, TypeSocket} from '../InterfaceTypes/socketTypes.js'
+import type { TypeServer, TypeSocket} from '../socketTypes-Schemas/socketTypes.js'
 
 //function that joins socket(user) into their unique incident room 
 export function createRooms(io: TypeServer, socket:TypeSocket) {
     console.log('User joined room')
     socket.on('join-room', async(incidentId:number) => {
         try {
-            if(typeof incidentId !== 'number') {
-                console.log('Invalid type for incidentId')
-                socket.emit('invalid-type', {error: 'Invalid type for incidentId'})
-                return
-            }
-            //I will Validate incidentId before querying Postgres with zod soon...
             const data = await pool.query(`SELECT id, org_id FROM incidents WHERE id = $1`, [incidentId]);
 
             //Validates if the incident actually exist

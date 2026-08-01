@@ -1,9 +1,14 @@
-import type { Socket, Server } from 'socket.io'
+import type { TypeServer, TypeSocket } from '../socketTypes-Schemas/socketTypes.js'
 import { createRooms } from '../socketConnection/createRoom.js'
 import { emitAndPersist } from '../socketConnection/emittingMessages.js'
-import { socketAuth } from '../middleware/socket.js'
+import { validateSocketData } from '../middleware/socket.js'
+import { socketErrorSink } from '../middleware/socket.js'
 
-export function socketHandlerFunction(io:Server, socket:Socket) {
+//installs the open gate for one connection, which is called later in index.ts per connect
+export function socketHandlerFunction(io:TypeServer, socket:TypeSocket) {
+    socket.use(validateSocketData(socket))
+    socketErrorSink(socket)
+
     createRooms(io, socket)
     emitAndPersist(io, socket)
 }

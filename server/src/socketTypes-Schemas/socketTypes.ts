@@ -23,10 +23,13 @@ export interface ServerToClient {
     //types for emitting messages/failures
     'new-message': (value: TimelineEntries) => void
     'message-error': (value: {error: string}) => void
+
+    //types for Zod validation
+    'Invalid-Schema': (value: {error: string, event?: ClientToServer}) => void
 }
 
 //Payload every messsage sends including type and body
-type SendingMessagePayload = {incidentId: number, authorId: number} & TimeLineBody
+export type SendingMessagePayload = {incidentId: number} & TimeLineBody
 
 type UserRole = 'responder' | 'lead' | 'admin';
 

@@ -1,5 +1,7 @@
-import type { TypeSocket } from '../InterfaceTypes/socketTypes.js';
 import { verifyAccessToken } from '../auth/tokens.js';
+import { socketSchemas } from '../socketTypes-Schemas/socketSchemas.js';
+import type { Event } from 'socket.io';
+import type { ClientToServer, TypeSocket } from '../socketTypes-Schemas/socketTypes.js';
 
 // Socket auth middleware — the handshake bouncer. Runs ONCE per connection, before any
 // 'connect' handler fires, so socket.data is already trustworthy by the time createRoom runs.
@@ -19,4 +21,36 @@ export function socketAuth(socket: TypeSocket, next: (err?: Error) => void) {
     } catch {
         next(new Error('Invalid or expired access token')); // an Error argument = reject the handshake
     }
+}
+
+//validates the payload that is being returned for each ClientToServer response
+export function validateSocketData(socket: TypeSocket) {
+    return(packet: Event, next: (err?: Error) => void) => {
+        const [eventName, ...args] = packet;
+        const payload = args[0]//the arg to be validated
+        const schema = socketSchemas[eventName as keyof ClientToServer] 
+
+        //this guard treats schema as the lie it is, as indexing with an arbitrary string is undefined
+        if(!schema) {
+            return next(new Error('unauthrized event'))
+        }
+        const result = schema.safeParse(payload)
+        
+        if(!result.success) {
+            console.log(result.error.issues)//contians the field path and reasoning
+            return next(new Error('payload does not match schema rules'))
+        }
+        next()
+    }
+}
+/**A Middleware rejections route */
+//this function makes errors visible to the client. Without it, a bad payload is a silent failure on the client's side
+//without any adherenace of the event that triggered it
+export function socketErrorSink(socket: TypeSocket) {
+    socket.on('error', (err) => {
+        console.log('Signs of hostile client detected', err)
+        socket.emit('Invalid-Schema', {error: 'Zod rejection: invalid schema rules for specific event'})
+        //disposes the sockets connection and underlying connection
+        socket.disconnect(true)
+    })
 }

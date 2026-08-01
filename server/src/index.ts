@@ -9,7 +9,7 @@ import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
 import * as http from 'node:http';
 import {Server, Socket } from 'socket.io';
-import type { TypeServer, TypeSocket} from './InterfaceTypes/socketTypes.js';
+import type { TypeServer, TypeSocket} from './socketTypes-Schemas/socketTypes.js';
 import { socketHandlerFunction } from './routes/socketHandlerFunctions.js';
 import { socketAuth } from './middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';
