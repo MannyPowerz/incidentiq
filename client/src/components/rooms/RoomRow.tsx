@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import type { Room } from "../../types/room";
 import SeverityBadge from "./SeverityBadge";
 import StatusBadge from "./StatusBadge";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 type RoomRowProps = {
     room: Room
@@ -15,7 +16,7 @@ export default function RoomRow ({ room }: RoomRowProps ) : JSX.Element {
             <SeverityBadge severity={room.severity} />
             <StatusBadge status={room.status} />
             <span>{room.assignee}</span>
-            <span className="rooms-table-updated">{room.updatedAt}</span>
+            <span className="rooms-table-updated">{formatRelativeTime(room.updatedAt)}</span>
         </div>
     )
 }

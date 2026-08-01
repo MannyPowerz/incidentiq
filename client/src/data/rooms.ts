@@ -7,7 +7,7 @@ export const rooms : Room [] = [
         severity: "Critical",
         status: "Open",
         assignee: "Anthony",
-        updatedAt: "2 minutes ago",
+        updatedAt: new Date("2026-07-29T18:16:00"),
     },
     {
         id: "ROOM-0002",
@@ -15,7 +15,7 @@ export const rooms : Room [] = [
         severity: "High",
         status: "Investigating",
         assignee: "Manny",
-        updatedAt: "18 minutes ago",
+        updatedAt: new Date("2026-07-29T18:00:00"),
     },
     {
         id: "ROOM-0003",
@@ -23,7 +23,7 @@ export const rooms : Room [] = [
         severity: "Medium",
         status: "Resolved",
         assignee: "Gabby",
-        updatedAt: "42 minutes ago",
+        updatedAt: new Date("2026-07-29T17:36:00"),
     },
     {
         id: "ROOM-0004",
@@ -31,6 +31,6 @@ export const rooms : Room [] = [
         severity: "Low",
         status: "Open",
         assignee: "Sarah",
-        updatedAt: "3 hours ago",
+        updatedAt: new Date("2026-07-29T15:18:00"),
     },
 ]

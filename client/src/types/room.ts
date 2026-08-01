@@ -7,5 +7,5 @@ export type Room = {
     severity: RoomSeverity;
     status: RoomsStatus;
     assignee: string;
-    updatedAt: string;
+    updatedAt: Date;
 }

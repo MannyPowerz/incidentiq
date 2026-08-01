@@ -1,11 +1,16 @@
 import type { JSX } from "react";
 import "./RoomsFooter.css"
 
-export default function RoomsFooter () : JSX.Element {
+type RoomsFooterProps = {
+    visibleRooms: number
+    totalRooms: number
+}
+
+export default function RoomsFooter ({ visibleRooms, totalRooms, }: RoomsFooterProps) : JSX.Element {
     return (
         <footer className="rooms-footer">
             <p className="rooms-footer-summary">
-                Showing 1 to 6 of 24 rooms
+                Showing 1 to {visibleRooms} of {totalRooms} rooms
             </p>
 
             <nav className="rooms-footer-controls" aria-label="Rooms pagination">
