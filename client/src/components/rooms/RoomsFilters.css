@@ -8,54 +8,127 @@
   background-color: #ffffff;
 }
 
-.rooms-search-input,
-.rooms-filter-select {
+/* ---------- Search ---------- */
+
+.rooms-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
   width: 100%;
   min-height: 2.75rem;
-  box-sizing: border-box;
+
+  padding: 0 1rem;
+
   border: 1px solid #cbd5e1;
   border-radius: 0.55rem;
+
   background-color: #ffffff;
-  color: #334155;
-  font: inherit;
-  font-size: 0.9rem;
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
+.rooms-search:hover {
+  border-color: #94a3b8;
+}
+
+.rooms-search:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.rooms-search-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+}
+
 .rooms-search-input {
+  flex: 1;
   min-width: 0;
-  padding: 0.75rem 1rem;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #334155;
+  font: inherit;
+  font-size: 0.9rem;
 }
 
 .rooms-search-input::placeholder {
   color: #94a3b8;
 }
 
-.rooms-filter-select {
-  padding: 0.75rem 2.25rem 0.75rem 0.9rem;
-  cursor: pointer;
+/* ---------- Selects ---------- */
+
+.rooms-select-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-.rooms-search-input:hover,
+.rooms-select-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+
+  width: 0.45rem;
+  height: 0.45rem;
+
+  border-right: 2px solid #64748b;
+  border-bottom: 2px solid #64748b;
+
+  transform: translateY(-70%) rotate(45deg);
+
+  pointer-events: none;
+}
+
+.rooms-filter-select {
+  width: 100%;
+  min-height: 2.75rem;
+
+  padding: 0.75rem 2.5rem 0.75rem 0.9rem;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+
+  background-color: #ffffff;
+
+  color: #334155;
+  font: inherit;
+  font-size: 0.9rem;
+
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
 .rooms-filter-select:hover {
   border-color: #94a3b8;
 }
 
-.rooms-search-input:focus,
 .rooms-filter-select:focus {
   border-color: #2563eb;
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+/* ---------- Responsive ---------- */
+
 @media (max-width: 900px) {
   .rooms-filters {
     grid-template-columns: 1fr 1fr;
   }
 
-  .rooms-search-input {
+  .rooms-search {
     grid-column: 1 / -1;
   }
 }
@@ -66,7 +139,7 @@
     padding: 1rem;
   }
 
-  .rooms-search-input {
+  .rooms-search {
     grid-column: auto;
   }
 }
