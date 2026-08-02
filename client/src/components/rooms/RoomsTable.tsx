@@ -17,6 +17,7 @@ export default function RoomsTable({ rooms, } : RoomsTableProps) : JSX.Element {
                 <span>Status</span>
                 <span>Assignee</span>
                 <span>Updated</span>
+                <span aria-label="Actions"></span>
             </div>
 
             <div className="rooms-table-body">

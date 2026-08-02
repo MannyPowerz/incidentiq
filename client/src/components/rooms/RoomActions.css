@@ -1,0 +1,30 @@
+.room-actions-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  background-color: transparent;
+  color: #64748b;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.room-actions-button:hover {
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.room-actions-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.18);
+  outline-offset: 2px;
+}
