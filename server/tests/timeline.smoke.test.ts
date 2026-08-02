@@ -9,8 +9,8 @@ import { app, server, io } from '../src/socketServer.js';
 import { authRouter } from '../src/auth/routes/index.js';
 import { incidentRouter } from '../src/incidents/routes/index.js';
 import { timelineRouter } from '../src/timeline/routes/index.js';
-import { socketAuth } from '../src/middleware/socket.js';
-import { socketHandlerFunction } from '../src/routes/socketHandlerFunctions.js';
+import { socketAuth } from '../src/Socket/middleware/socket.js';
+import { socketHandlerFunction } from '../src/Socket/routes/socketHandlerFunctions.js';
 
 // Wire the shared app/io exactly like index.ts (minus the DB fail-fast and listen-on-PORT), then
 // listen on a random port so a real socket client can join rooms and observe the live broadcast.

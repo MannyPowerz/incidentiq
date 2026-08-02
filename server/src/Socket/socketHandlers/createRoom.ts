@@ -1,6 +1,6 @@
-import {pool} from '../db/pool.js'
+import { pool } from '../../db/pool.js';
 import { formatRoomName } from './formatJoin.js'
-import type { Incidents} from '../auth/types.js'
+import type { Incidents } from '../../auth/types.js';
 import type { TypeServer, TypeSocket} from '../socketTypes-Schemas/socketTypes.js'
 
 //function that joins socket(user) into their unique incident room

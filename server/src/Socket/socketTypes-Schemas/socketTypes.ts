@@ -1,5 +1,5 @@
 import type { Socket, Server, DefaultEventsMap } from 'socket.io'
-import type { TimelineEntry } from '../../timeline/types.js'
+import type { TimelineEntry, TimelineEntryType } from '../../timeline/types.js'
 //socket.io response
 export interface ClientToServer {
     //types for joining rooms
@@ -7,7 +7,7 @@ export interface ClientToServer {
     
     //types for emitting messages
     //every sent message delivers a payload that will make distinghising users easier
-    'sending-message': (payload: SendingMessagePayload) => void //client -> server
+    'sending-message': (payload: MessagePayload) => void //client -> server
 }
 
 export interface ServerToClient {
@@ -20,15 +20,37 @@ export interface ServerToClient {
     'User-joined': (value: {message: string}) => void
 
     //types for emitting messages/failures
-    'new-message': (value: TimelineEntry) => void
+    'new-message': (value: MessagePayload) => void
     'message-error': (value: {error: string}) => void
 
     //types for Zod validation
     'Invalid-Schema': (value: {error: string, event?: ClientToServer}) => void
+
+    // entry:new — broadcast to an incident room after a timeline write lands in the DB.
+    // Adding it here is what makes io.to(room).emit('entry:new', entry) type-checked: TypeServer
+    // is Server<..., ServerToClientJoining, ...>, so tsc checks both the event name and the
+    // payload shape against this map. Wrong event name or wrong entry shape = compile error,
+    // not a silent runtime typo.
+    'entry:new': (entry: TimelineEntry) => void;
 }
 
 //Payload every messsage sends including type and body
 export type SendingMessagePayload = TimelineEntry
+
+export interface MessagePayload {
+    id: number,
+    incident_id: number,
+    author_id: number
+    type: TimelineEntryType,
+    body:
+        | {
+              summary: string;
+              why_it_matters: string;
+              likely_fix: string;
+          }
+        | Record<string, unknown>,
+    locked: boolean
+}
 
 type UserRole = 'responder' | 'lead' | 'admin';
 

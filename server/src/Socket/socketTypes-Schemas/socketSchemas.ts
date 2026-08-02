@@ -5,13 +5,15 @@ import type { ClientToServer } from './socketTypes.js'
 const joinRoomSchema = z.number();
 
 const SendingMessageSchema = z.object({
-    incidentId: z.number(),
+    id: z.number(),
+    incident_id: z.number(),
     type: z.enum(['observation', 'action', 'finding', 'system', 'ai_draft']),
     body: z.object({
         summary: z.string(),
         why_it_matters: z.string(),
         likely_fix: z.string()
-    })
+    }),
+    locked: z.boolean()
 })
 
 //names one validater per inbound event, making a type error if forgetting one

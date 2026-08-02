@@ -5,6 +5,7 @@ import type { AddressInfo } from 'node:net';
 import { Server, type Socket as serverSocket } from 'socket.io';
 import { Socket as clientSocket, io as ioc } from 'socket.io-client';
 import { socketHandlerFunction } from '../src/Socket/routes/socketHandlerFunctions.js';
+import { formatRoomName } from '../src/Socket/socketHandlers/formatJoin.js';
 
 describe('connection Room', () => {
     let io: Server, serverSocket: serverSocket, clientSocket1: clientSocket;
@@ -77,7 +78,7 @@ describe('connection Room', () => {
         return new Promise(async (resolve: (value: void) => void, reject) => {
             clientSocket1.once('success', () => {
                 try {
-                    const roomSize = io.of('/').adapter.rooms.get(String(incidentId))?.size || 0;
+                    const roomSize = io.of('/').adapter.rooms.get(formatRoomName(incidentId))?.size || 0;
                     expect(roomSize).toBe(1); // Only clientSocket1 should be in the room
                     resolve();
                 } catch (err) {
