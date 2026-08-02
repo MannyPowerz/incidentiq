@@ -21,8 +21,9 @@ export type AiDraftRequest = z.infer<typeof aiDraftRequestSchema>;
 // OUTPUT — the structured draft. This object becomes the body of an ai_draft timeline entry once
 // a human confirms it. The server validates the AI's output against this before trusting it.
 export const aiDraftSchema = z.object({
-    summary: z.string(),
-    why_it_matters: z.string(),
-    likely_fix: z.string(),
+    summary: z.string().min(1),
+    why_it_matters: z.string().min(1),
+    likely_fix: z.string().min(1),
 });
+
 export type AiDraft = z.infer<typeof aiDraftSchema>;
