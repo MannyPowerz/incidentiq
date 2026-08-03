@@ -3,6 +3,7 @@ import { rooms } from "../data/rooms"
 import type { JSX } from "react"
 import type { SortOption } from "../components/rooms/RoomsFilters"
 import type { RoomSeverity, RoomsStatus } from "../types/room"
+import DashboardSidebar from "../components/dashboard/DashboardSidebar"
 import RoomsCard from "../components/rooms/RoomsCard"
 import RoomsFilters from "../components/rooms/RoomsFilters"
 import RoomsFooter from "../components/rooms/RoomsFooter"
@@ -24,7 +25,7 @@ export default function RoomsPage () : JSX.Element {
 
     const [ currentPage, setCurrentPage ] = useState<number>(1)
 
-    const roomsPerPage = 2
+    const roomsPerPage = 6
 
     const filteredRooms = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase()
@@ -75,35 +76,39 @@ export default function RoomsPage () : JSX.Element {
     const endIndex = Math.min(currentPage * roomsPerPage, filteredRooms.length,)
 
     return (
-        <main className="rooms-page">
-            <RoomsHeader />
-            <RoomsCard>
-                <RoomsFilters
-                    searchTerm={searchTerm}
-                    statusFilter={statusFilter}
-                    severityFilter={severityFilter}
-                    sortOption={sortOption}
-                    onSearchChange={setSearchTerm}
-                    onStatusChange={setStatusFilter}
-                    onSeverityChange={setSeverityFilter}
-                    onSortChange={setSortOption}
-                />
-                
-                {filteredRooms.length > 0 ? (
-                    <RoomsTable rooms={paginatedRooms} />
-                ) : (
-                    <RoomsEmptyState />
-                )}
 
-                <RoomsFooter 
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    startIndex={startIndex}
-                    endIndex={endIndex}
-                    totalRooms={filteredRooms.length}
-                    onPageChange={setCurrentPage}
-                />
-            </RoomsCard>
-        </main>
+        <div className="rooms-layout">
+            <DashboardSidebar activePage="Rooms"/>
+            <main className="rooms-page">
+                <RoomsHeader />
+                <RoomsCard>
+                    <RoomsFilters
+                        searchTerm={searchTerm}
+                        statusFilter={statusFilter}
+                        severityFilter={severityFilter}
+                        sortOption={sortOption}
+                        onSearchChange={setSearchTerm}
+                        onStatusChange={setStatusFilter}
+                        onSeverityChange={setSeverityFilter}
+                        onSortChange={setSortOption}
+                    />
+                    
+                    {filteredRooms.length > 0 ? (
+                        <RoomsTable rooms={paginatedRooms} />
+                    ) : (
+                        <RoomsEmptyState />
+                    )}
+
+                    <RoomsFooter 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        startIndex={startIndex}
+                        endIndex={endIndex}
+                        totalRooms={filteredRooms.length}
+                        onPageChange={setCurrentPage}
+                    />
+                </RoomsCard>
+            </main>
+        </div>
     )
 }

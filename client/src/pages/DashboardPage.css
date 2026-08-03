@@ -1,19 +1,38 @@
-/* Main layout containing the sidebar and dashboard content */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f7fb;
+  background-color: #f8fafc;
 }
 
-/* Main dashboard content area */
 .dashboard-page {
   flex: 1;
   min-width: 0;
-  padding: 32px;
+  padding: 2rem;
 }
 
-/* Centers the dashboard content */
-.dashboard-container {
-  max-width: 1440px;
-  margin: 0 auto;
+.dashboard-main-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-page {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 800px) {
+  .dashboard-page {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-layout {
+    display: block;
+  }
+
+  .dashboard-page {
+    padding: 1rem;
+  }
 }

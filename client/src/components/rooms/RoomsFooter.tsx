@@ -10,8 +10,6 @@ type RoomsFooterProps = {
     onPageChange: (page: number) => void
 }
 
-
-
 export default function RoomsFooter ({ 
     currentPage,
     totalPages,
