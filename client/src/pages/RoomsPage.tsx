@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect } from "react"
-import { rooms } from "../data/rooms"
+import { rooms as initialRooms} from "../data/rooms"
 import type { JSX } from "react"
 import type { SortOption } from "../components/rooms/RoomsFilters"
-import type { RoomSeverity, RoomsStatus } from "../types/room"
+import type { NewRoom, RoomSeverity, RoomsStatus, Room } from "../types/room"
 import DashboardSidebar from "../components/dashboard/DashboardSidebar"
 import RoomsCard from "../components/rooms/RoomsCard"
 import RoomsFilters from "../components/rooms/RoomsFilters"
@@ -14,6 +14,8 @@ import "./RoomsPage.css"
 
 
 export default function RoomsPage () : JSX.Element {
+
+    const [ roomList, setRoomList ] = useState<Room[]>(initialRooms)
 
     const [ searchTerm, setSearchTerm ] = useState<string>("")
 
@@ -27,10 +29,37 @@ export default function RoomsPage () : JSX.Element {
 
     const roomsPerPage = 6
 
+    function handleCreateRooms(newRoomData: NewRoom): void {
+        const nextRoomNumber = roomList.reduce((highestNumber, room) => {
+            const roomNumber = Number(room.id.replace("ROOM-", ""))
+
+            return Number.isNaN(roomNumber) 
+                ? highestNumber
+                : Math.max(highestNumber, roomNumber)
+        }, 0) + 1
+
+        const createdRoom: Room = {
+            id: `ROOM-${String(nextRoomNumber).padStart(4, "0")}`,
+            title: newRoomData.title,
+            description: newRoomData.description,
+            severity: newRoomData.severity,
+            status: "Open",
+            assignee: newRoomData.assignee,
+            updatedAt: new Date()
+        }
+
+        setRoomList((currentRooms) => [
+            createdRoom,
+            ...currentRooms
+        ])
+
+        setCurrentPage(1)
+    }
+
     const filteredRooms = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase()
 
-        return rooms
+        return roomList
             .filter((room) => {
                 const matchesSearch = normalizedSearch === "" ||
                                       room.id.toLowerCase().includes(normalizedSearch) ||
@@ -48,13 +77,11 @@ export default function RoomsPage () : JSX.Element {
                 const firstDate = firstRoom.updatedAt.getTime()
                 const secondDate = secondRoom.updatedAt.getTime()
 
-                if ( sortOption === "Newest First") {
-                    return secondDate - firstDate
-                }
-
-                return firstDate - secondDate
+                return sortOption === "Newest First"
+                 ? secondDate - firstDate
+                 : firstDate - secondDate
             })
-    }, [ searchTerm, statusFilter, severityFilter, sortOption ])
+    }, [ searchTerm, statusFilter, severityFilter, sortOption, roomList ])
 
     const totalPages = Math.ceil(
         filteredRooms.length / roomsPerPage
@@ -80,7 +107,7 @@ export default function RoomsPage () : JSX.Element {
         <div className="rooms-layout">
             <DashboardSidebar activePage="Rooms"/>
             <main className="rooms-page">
-                <RoomsHeader />
+                <RoomsHeader onCreateRoom={handleCreateRooms} />
                 <RoomsCard>
                     <RoomsFilters
                         searchTerm={searchTerm}

@@ -4,6 +4,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0001",
         title: "Problem 1",
+        description: "Fixing...",
         severity: "Critical",
         status: "Open",
         assignee: "Anthony",
@@ -12,6 +13,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0002",
         title: "Problem 2",
+        description: "Fixing...",
         severity: "High",
         status: "Investigating",
         assignee: "Manny",
@@ -20,6 +22,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0003",
         title: "Problem 3",
+        description: "Fixing...",
         severity: "Medium",
         status: "Resolved",
         assignee: "Gabby",
@@ -28,6 +31,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0004",
         title: "Problem 4",
+        description: "Fixing...",
         severity: "Low",
         status: "Open",
         assignee: "Sarah",
@@ -36,6 +40,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0005",
         title: "Problem 5",
+        description: "Fixing...",
         severity: "Medium",
         status: "Investigating",
         assignee: "Camille",
@@ -44,6 +49,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0006",
         title: "Problem 6",
+        description: "Fixing...",
         severity: "Critical",
         status: "Open",
         assignee: "David",
@@ -52,6 +58,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0007",
         title: "Problem 7",
+        description: "Fixing...",
         severity: "High",
         status: "Resolved",
         assignee: "Hannah",
@@ -60,6 +67,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0008",
         title: "Problem 8",
+        description: "Fixing...",
         severity: "Low",
         status: "Investigating",
         assignee: "Justin",
@@ -68,6 +76,7 @@ export const rooms : Room [] = [
     {
         id: "ROOM-0009",
         title: "Problem 9",
+        description: "Fixing...",
         severity: "Low",
         status: "Open",
         assignee: "Terry",
