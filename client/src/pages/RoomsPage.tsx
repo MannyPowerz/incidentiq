@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { rooms } from "../data/rooms"
 import type { JSX } from "react"
 import type { SortOption } from "../components/rooms/RoomsFilters"
@@ -8,6 +8,7 @@ import RoomsFilters from "../components/rooms/RoomsFilters"
 import RoomsFooter from "../components/rooms/RoomsFooter"
 import RoomsHeader from "../components/rooms/RoomsHeader"
 import RoomsTable from "../components/rooms/RoomsTable"
+import RoomsEmptyState from "../components/rooms/RoomsEmptyState"
 import "./RoomsPage.css"
 
 
@@ -20,6 +21,10 @@ export default function RoomsPage () : JSX.Element {
     const [ severityFilter, setSeverityFilter ] = useState<"All" | RoomSeverity>("All")
 
     const [ sortOption, setSortOption ] = useState<SortOption>("Newest First")
+
+    const [ currentPage, setCurrentPage ] = useState<number>(1)
+
+    const roomsPerPage = 2
 
     const filteredRooms = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase()
@@ -50,6 +55,25 @@ export default function RoomsPage () : JSX.Element {
             })
     }, [ searchTerm, statusFilter, severityFilter, sortOption ])
 
+    const totalPages = Math.ceil(
+        filteredRooms.length / roomsPerPage
+    )
+
+    const paginatedRooms = useMemo( () => {
+        const firstRoomIndex = (currentPage - 1) * roomsPerPage
+        const lastRoomIndex = firstRoomIndex + roomsPerPage
+
+        return filteredRooms.slice(firstRoomIndex, lastRoomIndex)
+    }, [ filteredRooms, currentPage])
+
+    useEffect( () => {
+        setCurrentPage(1)
+    }, [ searchTerm, statusFilter, severityFilter, sortOption ])
+
+    const startIndex = filteredRooms.length === 0 ? 0 : (currentPage - 1) * roomsPerPage + 1
+
+    const endIndex = Math.min(currentPage * roomsPerPage, filteredRooms.length,)
+
     return (
         <main className="rooms-page">
             <RoomsHeader />
@@ -64,10 +88,20 @@ export default function RoomsPage () : JSX.Element {
                     onSeverityChange={setSeverityFilter}
                     onSortChange={setSortOption}
                 />
-                <RoomsTable rooms={filteredRooms} />
+                
+                {filteredRooms.length > 0 ? (
+                    <RoomsTable rooms={paginatedRooms} />
+                ) : (
+                    <RoomsEmptyState />
+                )}
+
                 <RoomsFooter 
-                    visibleRooms={filteredRooms.length}
-                    totalRooms={rooms.length}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    totalRooms={filteredRooms.length}
+                    onPageChange={setCurrentPage}
                 />
             </RoomsCard>
         </main>
