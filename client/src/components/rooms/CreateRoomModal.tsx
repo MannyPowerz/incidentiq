@@ -1,6 +1,6 @@
 import type { JSX } from "react";
-import { useState } from "react";
-import type { NewRoom, RoomSeverity } from "../../types/room";
+import type { NewRoom, RoomSeverity, Room } from "../../types/room";
+import { useEffect, useState } from "react";
 import "./CreateRoomModal.css"
 
 
@@ -8,12 +8,16 @@ type CreateRoomModalProps = {
     isOpen: boolean
     onClose: () => void
     onCreateRoom: (room: NewRoom) => void
+    roomToEdit?: Room | null
+    onUpdateRoom?: (room: Room) => void
 }
 
 export default function CreateRoomModal ({ 
     isOpen, 
     onClose,
-    onCreateRoom
+    onCreateRoom,
+    roomToEdit = null,
+    onUpdateRoom
 } : CreateRoomModalProps) : JSX.Element | null {
 
     const [ title, setTitle ] = useState<string>("")
@@ -23,6 +27,17 @@ export default function CreateRoomModal ({
     const [ severity, setSeverity ] = useState<RoomSeverity>("Medium")
 
     const [ assignee, setAssignee ] = useState<string>("")
+
+    useEffect(() => {
+        if (roomToEdit) {
+            setTitle(roomToEdit.title)
+            setDescription(roomToEdit.description)
+            setSeverity(roomToEdit.severity)
+            setAssignee(roomToEdit.assignee)
+        } else {
+            resetForm()
+        }
+    }, [ roomToEdit, isOpen ])
 
     function resetForm() : void {
         setTitle("")
@@ -36,21 +51,36 @@ export default function CreateRoomModal ({
         onClose()
     }
 
-    function handleCreateRoom() : void {
+    function handleSubmit() : void {
         const trimmedTitle = title.trim()
         const trimmedDescription = description.trim()
         const trimmedAssignee = assignee.trim()
 
-        if ( trimmedTitle === "" || trimmedDescription === "" || trimmedAssignee === "" ) {
+        if (
+            trimmedTitle === "" ||
+            trimmedDescription === "" ||
+            trimmedAssignee === ""
+        ) {
             return
         }
 
-        onCreateRoom({
-            title: trimmedTitle,
-            description: trimmedDescription,
-            severity,
-            assignee: trimmedAssignee
-        })
+        if (roomToEdit && onUpdateRoom) {
+            onUpdateRoom({
+                ...roomToEdit,
+                title: trimmedTitle,
+                description: trimmedDescription,
+                severity,
+                assignee: trimmedAssignee,
+                updatedAt: new Date(),
+            })
+        } else {
+            onCreateRoom({
+                title: trimmedTitle,
+                description: trimmedDescription,
+                severity,
+                assignee: trimmedAssignee,
+            })
+        }
 
         resetForm()
         onClose()
@@ -70,7 +100,7 @@ export default function CreateRoomModal ({
             >
                 <header className="create-room-modal-header">
                     
-                    <h2 id="create-room-title">Create Room</h2>
+                    <h2 id="create-room-title">{roomToEdit ? "Edit Room" : "Create Room"}</h2>
 
                     <button
                         type="button"
@@ -140,13 +170,13 @@ export default function CreateRoomModal ({
                     <button
                         type="button"
                         className="create-room-submit-button"
-                        onClick={handleCreateRoom}
+                        onClick={handleSubmit}
                         disabled={title.trim() === "" ||
                                   description.trim() === "" ||
                                   assignee.trim() === ""
                                  }
                     >
-                        Create Room
+                        {roomToEdit ? "Save Changes" : "Create Room"}
                     </button>
                 </footer>
 

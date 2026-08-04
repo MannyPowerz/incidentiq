@@ -27,6 +27,8 @@ export default function RoomsPage () : JSX.Element {
 
     const [ currentPage, setCurrentPage ] = useState<number>(1)
 
+    const [ roomToEdit, setRoomToEdit ] = useState<Room | null>(null)
+
     const roomsPerPage = 6
 
     function handleCreateRooms(newRoomData: NewRoom): void {
@@ -67,7 +69,20 @@ export default function RoomsPage () : JSX.Element {
     }
 
     function handleEditRoom(room: Room): void {
-        console.log("Edit room:", room)
+        setRoomToEdit(room)
+    }
+
+    function handleUpdateRoom(updatedRoom: Room) : void {
+        setRoomList((currentRooms) => 
+            currentRooms.map((room) => 
+                room.id === updatedRoom.id ? updatedRoom : room,
+            ),
+        );
+        setRoomToEdit(null)
+    }
+
+    function handleClearEditRoom() : void {
+        setRoomToEdit(null)
     }
 
     const filteredRooms = useMemo(() => {
@@ -121,7 +136,12 @@ export default function RoomsPage () : JSX.Element {
         <div className="rooms-layout">
             <DashboardSidebar activePage="Rooms"/>
             <main className="rooms-page">
-                <RoomsHeader onCreateRoom={handleCreateRooms} />
+                <RoomsHeader 
+                    onCreateRoom={handleCreateRooms} 
+                    roomToEdit={roomToEdit}
+                    onUpdateRoom={handleUpdateRoom}
+                    onClearEditRoom={handleClearEditRoom}
+                />
                 <RoomsCard>
                     <RoomsFilters
                         searchTerm={searchTerm}

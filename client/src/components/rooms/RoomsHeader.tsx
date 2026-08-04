@@ -1,16 +1,30 @@
 import type { JSX } from "react";
-import { useState } from "react";
-import type { NewRoom } from "../../types/room";
+import { useState, useEffect } from "react";
+import type { NewRoom , Room } from "../../types/room";
 import CreateRoomModal from "./CreateRoomModal";
 import "./RoomsHeader.css"
 
 type RoomsHeaderProps = {
     onCreateRoom: (room: NewRoom) => void
+    roomToEdit: Room | null
+    onUpdateRoom: (room: Room) => void
+    onClearEditRoom: () => void
 }
 
-export default function RoomsHeader ({ onCreateRoom} : RoomsHeaderProps) : JSX.Element {
+export default function RoomsHeader ({ 
+    onCreateRoom,
+    roomToEdit,
+    onUpdateRoom,
+    onClearEditRoom,
+} : RoomsHeaderProps) : JSX.Element {
 
     const [ isModalOpen, setIsModalOpen ] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (roomToEdit) {
+            setIsModalOpen(true)
+        }
+    }, [ roomToEdit ])
 
     function handleOpenModal() : void {
         setIsModalOpen(true)
@@ -18,6 +32,7 @@ export default function RoomsHeader ({ onCreateRoom} : RoomsHeaderProps) : JSX.E
 
     function handleCloseModal() : void {
         setIsModalOpen(false)
+        onClearEditRoom()
     }
 
     return (
@@ -43,6 +58,8 @@ export default function RoomsHeader ({ onCreateRoom} : RoomsHeaderProps) : JSX.E
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onCreateRoom={onCreateRoom}
+                roomToEdit={roomToEdit}
+                onUpdateRoom={onUpdateRoom}
             />
         </>
     )
