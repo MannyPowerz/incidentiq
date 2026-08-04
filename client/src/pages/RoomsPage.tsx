@@ -56,6 +56,20 @@ export default function RoomsPage () : JSX.Element {
         setCurrentPage(1)
     }
 
+    function handleResolveRoom(roomId: string): void {
+        setRoomList((currentRooms) => currentRooms.map((room) => 
+            room.id === roomId 
+            ? {
+                ...room,
+                status: "Resolved",
+                updatedAt: new Date(),
+        } : room,),);
+    }
+
+    function handleEditRoom(room: Room): void {
+        console.log("Edit room:", room)
+    }
+
     const filteredRooms = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase()
 
@@ -121,7 +135,11 @@ export default function RoomsPage () : JSX.Element {
                     />
                     
                     {filteredRooms.length > 0 ? (
-                        <RoomsTable rooms={paginatedRooms} />
+                        <RoomsTable 
+                            rooms={paginatedRooms} 
+                            onEditRoom={handleEditRoom}
+                            onResolveRoom={handleResolveRoom}
+                        />
                     ) : (
                         <RoomsEmptyState />
                     )}

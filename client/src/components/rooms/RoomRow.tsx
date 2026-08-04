@@ -7,9 +7,11 @@ import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 type RoomRowProps = {
     room: Room
+    onEditRoom: (room: Room) => void
+    onResolveRoom: (roomId: string) => void
 }
 
-export default function RoomRow ({ room }: RoomRowProps ) : JSX.Element {
+export default function RoomRow ({ room, onEditRoom, onResolveRoom }: RoomRowProps ) : JSX.Element {
     return (
         <div className="rooms-table-row">
             <span className="rooms-table-id">{room.id}</span>
@@ -18,7 +20,11 @@ export default function RoomRow ({ room }: RoomRowProps ) : JSX.Element {
             <StatusBadge status={room.status} />
             <span>{room.assignee}</span>
             <span className="rooms-table-updated">{formatRelativeTime(room.updatedAt)}</span>
-            <RoomActions />
+            <RoomActions 
+                room={room}
+                onEditRoom={onEditRoom}
+                onResolveRoom={onResolveRoom}
+            />
         </div>
     )
 }
