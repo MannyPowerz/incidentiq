@@ -10,6 +10,7 @@ import RoomsFooter from "../components/rooms/RoomsFooter"
 import RoomsHeader from "../components/rooms/RoomsHeader"
 import RoomsTable from "../components/rooms/RoomsTable"
 import RoomsEmptyState from "../components/rooms/RoomsEmptyState"
+import ViewRoomModal from "../components/rooms/ViewRoomModal"
 import "./RoomsPage.css"
 
 
@@ -28,6 +29,8 @@ export default function RoomsPage () : JSX.Element {
     const [ currentPage, setCurrentPage ] = useState<number>(1)
 
     const [ roomToEdit, setRoomToEdit ] = useState<Room | null>(null)
+
+    const [ roomToView, setRoomToView ] = useState<Room | null>(null)
 
     const roomsPerPage = 6
 
@@ -83,6 +86,14 @@ export default function RoomsPage () : JSX.Element {
 
     function handleClearEditRoom() : void {
         setRoomToEdit(null)
+    }
+
+    function handleViewRoom(room: Room) : void {
+        setRoomToView(room)
+    }
+
+    function handleCloseViewRoom() : void {
+        setRoomToView(null)
     }
 
     const filteredRooms = useMemo(() => {
@@ -159,6 +170,7 @@ export default function RoomsPage () : JSX.Element {
                             rooms={paginatedRooms} 
                             onEditRoom={handleEditRoom}
                             onResolveRoom={handleResolveRoom}
+                            onViewRoom={handleViewRoom}
                         />
                     ) : (
                         <RoomsEmptyState />
@@ -174,6 +186,10 @@ export default function RoomsPage () : JSX.Element {
                     />
                 </RoomsCard>
             </main>
+            <ViewRoomModal
+                room={roomToView}
+                onClose={handleCloseViewRoom}
+            />
         </div>
     )
 }

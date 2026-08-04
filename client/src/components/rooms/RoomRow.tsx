@@ -9,9 +9,15 @@ type RoomRowProps = {
     room: Room
     onEditRoom: (room: Room) => void
     onResolveRoom: (roomId: string) => void
+    onViewRoom: (room: Room) => void
 }
 
-export default function RoomRow ({ room, onEditRoom, onResolveRoom }: RoomRowProps ) : JSX.Element {
+export default function RoomRow ({ 
+    room, 
+    onEditRoom, 
+    onResolveRoom,
+    onViewRoom
+}: RoomRowProps ) : JSX.Element {
     return (
         <div className="rooms-table-row">
             <span className="rooms-table-id">{room.id}</span>
@@ -24,6 +30,7 @@ export default function RoomRow ({ room, onEditRoom, onResolveRoom }: RoomRowPro
                 room={room}
                 onEditRoom={onEditRoom}
                 onResolveRoom={onResolveRoom}
+                onViewRoom={onViewRoom}
             />
         </div>
     )

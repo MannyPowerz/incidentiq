@@ -7,9 +7,15 @@ type RoomsTableProps = {
     rooms: Room[]
     onEditRoom: (room: Room) => void
     onResolveRoom: (roomId: string) => void
+    onViewRoom: (room: Room) => void
 }
 
-export default function RoomsTable({ rooms, onEditRoom, onResolveRoom } : RoomsTableProps) : JSX.Element {
+export default function RoomsTable({ 
+    rooms,
+     onEditRoom, 
+     onResolveRoom,
+     onViewRoom
+} : RoomsTableProps) : JSX.Element {
     return (
         <div className="rooms-table">
             <div className="rooms-table-header">
@@ -29,6 +35,7 @@ export default function RoomsTable({ rooms, onEditRoom, onResolveRoom } : RoomsT
                         room={room} 
                         onEditRoom={onEditRoom}
                         onResolveRoom={onResolveRoom}
+                        onViewRoom={onViewRoom}
                     />
                 ))}
             </div>

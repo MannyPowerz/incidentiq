@@ -7,9 +7,15 @@ type RoomActionsProps = {
     room: Room
     onEditRoom: (room: Room) => void
     onResolveRoom: (roomId: string) => void
+    onViewRoom: (room:Room) => void
 }
 
-export default function RoomActions({ room, onEditRoom, onResolveRoom } : RoomActionsProps) : JSX.Element {
+export default function RoomActions({ 
+    room, 
+    onEditRoom, 
+    onResolveRoom,
+    onViewRoom,
+} : RoomActionsProps) : JSX.Element {
 
     const [ isOpen, setIsOpen ] = useState<boolean>(false)
 
@@ -24,6 +30,11 @@ export default function RoomActions({ room, onEditRoom, onResolveRoom } : RoomAc
 
     function handleResolve() : void {
         onResolveRoom(room.id)
+        setIsOpen(false)
+    }
+
+    function handleView() : void {
+        onViewRoom(room)
         setIsOpen(false)
     }
 
@@ -44,6 +55,7 @@ export default function RoomActions({ room, onEditRoom, onResolveRoom } : RoomAc
                     <button 
                         type="button" 
                         className="room-actions-menu-item" 
+                        onClick={handleView}
                     >
                         View Room
                     </button>

@@ -97,3 +97,13 @@
   outline: none;
   background-color: #e2e8f0;
 }
+
+.room-actions-menu-item:disabled {
+  color: #94a3b8;
+  background-color: #f8fafc;
+  cursor: not-allowed;
+}
+
+.room-actions-menu-item:disabled:hover {
+  background-color: #f8fafc;
+}
