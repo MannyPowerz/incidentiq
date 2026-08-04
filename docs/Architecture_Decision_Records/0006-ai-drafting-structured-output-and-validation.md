@@ -1,5 +1,11 @@
 # 0006 - AI incident drafting: LangChain structured output + explicit schema validation
 
+> **Note:** the specific model/provider choice below (Claude Sonnet 5) is
+> superseded by 0009 (switched to Google Gemini's free tier). The
+> architecture recorded here — structured output + explicit validation gate,
+> composed rather than either alone — is unchanged and still applies; only
+> which provider fills that architecture changed.
+
 ## Context
 `draftFromContext` (server/src/ai/draftFromContext.ts) is the "brain" of the
 AI service: it takes incident context (a pasted log or scanner output) and
