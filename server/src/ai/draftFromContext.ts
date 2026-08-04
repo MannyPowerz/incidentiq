@@ -1,20 +1,11 @@
 /**
- * draftFromContext.ts — the "produce the draft" half of the AI service: incident context in,
- * a validated AiDraft out, or a typed throw.
+ * draftFromContext.ts — incident context in, a validated AiDraft out, or a typed throw.
  *
- * Approach: structured output (withStructuredOutput bound to aiDraftSchema) composed with an
- * explicit schema check at the exit, per ADR 0006.
- *   ↳ vs. structured output alone — rejected: it guarantees the draft's SHAPE at the provider
- *     level, but not its content; an empty-string summary is still a well-shaped object, and
- *     only aiDraftSchema's .min(1) catches it. The exit check is the boundary WE own.
- *   ↳ vs. prompt-and-parse (ask for JSON, JSON.parse it) — rejected as default: the model can
- *     wrap JSON in prose or fences, pushing repair logic onto us. Kept as the fallback if a
- *     future provider lacks structured output, which is why buildPrompt stays separable.
- * Fail-fast on error, no retry — deferred deliberately, with its revisit trigger, in ADR 0007.
+ * Structured output shapes the draft; the exit check enforces content (non-empty), which the
+ * provider never promised. Both deliberately — ADR 0006. Fail-fast, no retry — ADR 0007.
+ * Provider is Gemini via env config — ADR 0009.
  *
- * Role: this is the contract the delivery half (route + write-to-timeline, feat/ai-delivery)
- * builds against. Signature and return type are frozen; failures travel as the two error types
- * exported from ./types.js. Provider is Gemini per ADR 0009, reached via env config only.
+ * The delivery half builds against this signature and the error types in ./types.js.
  */
 
 import type { AiDraftRequest, AiDraft } from './types.js';
@@ -25,9 +16,7 @@ import 'dotenv/config'
 
 export async function draftFromContext(input: AiDraftRequest): Promise<AiDraft> {
 
-    // checked here rather than asserted with `!`: an undefined model name fails deep inside the
-    // -> Google SDK with an opaque error, and this says which env var is missing. Same reason
-    // -> globalSetup.ts checks TEST_DATABASE_URL by hand instead of letting pg fail on it.
+    // checked, not asserted with `!` — an unset model name fails deep in the Google SDK with an opaque error
     const modelName = process.env.AI_MODEL_NAME;
 
     if (!modelName) {
@@ -45,8 +34,7 @@ export async function draftFromContext(input: AiDraftRequest): Promise<AiDraft> 
 
     let raw: unknown;
 
-    // only the provider call is inside the try — a schema failure below must not be
-    // -> swallowed here and mislabelled as a provider failure.
+    // only the provider call is in the try — a schema failure below must not be reported as a provider failure
     try {
         raw = await structuredModel.invoke(messages);
     } 
@@ -58,8 +46,7 @@ export async function draftFromContext(input: AiDraftRequest): Promise<AiDraft> 
         );
     }
 
-    // safeParse, not parse: a raw ZodError escaping here would leak zod into the delivery
-    // -> half's error handling instead of the two contract types it imports from types.ts.
+    // safeParse, not parse — a raw ZodError escaping would leak zod into the delivery half's error handling
     const result = aiDraftSchema.safeParse(raw);
 
     if (!result.success) {

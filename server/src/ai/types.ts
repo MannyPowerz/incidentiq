@@ -29,10 +29,9 @@ export const aiDraftSchema = z.object({
 export type AiDraft = z.infer<typeof aiDraftSchema>;
 
 // FAILURE — draftFromContext returns a valid AiDraft or throws one of these two.
-// Both live here (not in draftFromContext) so the delivery half imports them from the same
-// contract file as the shapes above, and never has to know which provider is behind them.
+// Here, not in draftFromContext, so the delivery half imports shapes and failures from one file.
 
-// The provider call itself failed: network, auth, rate limit, refusal.
+// The provider call failed: network, auth, rate limit, refusal.
 export class AiDraftProviderError extends Error {
     constructor(message: string, options?: { cause?: unknown }) {
         super(message, options);
@@ -40,7 +39,7 @@ export class AiDraftProviderError extends Error {
     }
 }
 
-// The provider answered, but the draft did not satisfy aiDraftSchema.
+// The provider answered; the draft failed aiDraftSchema.
 export class AiDraftValidationError extends Error {
     constructor(message: string, options?: { cause?: unknown }) {
         super(message, options);

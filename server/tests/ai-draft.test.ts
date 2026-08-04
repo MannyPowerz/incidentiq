@@ -1,10 +1,8 @@
 /**
- * ai-draft.test.ts — covers the brain half (draftFromContext) without calling Gemini.
+ * ai-draft.test.ts — draftFromContext, with the provider mocked at the module boundary.
  *
- * The provider is mocked at the module boundary so every test controls exactly what the model
- * "returns". That is the point: the three behaviours worth pinning down here are what happens
- * on a good draft, a well-shaped but empty one, and a provider that throws — and a real network
- * call can't reliably produce the last two on demand.
+ * Mocked because the failures worth testing (an empty-but-well-shaped draft, a provider that
+ * throws) can't be produced on demand against a live model.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -47,8 +45,8 @@ describe('draftFromContext', () => {
         await expect(draftFromContext(request)).resolves.toEqual(draft);
     });
 
-    // the case structured output CANNOT catch: right keys, right types, empty content.
-    // Only aiDraftSchema's .min(1) rejects this, which is why the exit check exists (ADR 0006).
+    // the case structured output can't catch — right keys, right types, empty content.
+    // Only .min(1) rejects it, so this failing means the exit gate stopped doing anything.
     it('throws AiDraftValidationError when a field is well-shaped but empty', async () => {
         invokeMock.mockResolvedValue({
             summary: '',
@@ -71,8 +69,7 @@ describe('draftFromContext', () => {
         await expect(draftFromContext(request)).rejects.toThrow(AiDraftProviderError);
     });
 
-    // the two error types must stay distinguishable — that split is the whole reason the
-    // delivery route can map a bad draft and an unreachable provider to different responses
+    // the split is the whole reason the delivery route can map these to different statuses
     it('does not report a provider failure as a validation failure', async () => {
         invokeMock.mockRejectedValue(new Error('ECONNREFUSED'));
 
