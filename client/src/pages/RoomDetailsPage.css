@@ -1,4 +1,11 @@
+.room-details-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
 .room-details-page {
-  min-height: 100vh;
-  background-color: #f8fafc;
+    flex: 1;
+    min-width: 0;
+    background-color: #ffffff;
 }
