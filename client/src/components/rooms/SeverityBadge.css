@@ -1,0 +1,32 @@
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 1.65rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.severity-badge-critical {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.severity-badge-high {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
+.severity-badge-medium {
+  background-color: #fef3c7;
+  color: #a16207;
+}
+
+.severity-badge-low {
+  background-color: #dcfce7;
+  color: #15803d;
+}

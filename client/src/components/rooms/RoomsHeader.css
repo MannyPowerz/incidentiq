@@ -1,0 +1,76 @@
+.rooms-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.rooms-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rooms-header-title {
+  margin: 0;
+  color: #111827;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.rooms-header-description {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.rooms-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.2rem;
+  border: none;
+  border-radius: 0.55rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rooms-header-button:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24);
+  transform: translateY(-1px);
+}
+
+.rooms-header-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.25);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .rooms-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rooms-header-title {
+    font-size: 1.9rem;
+  }
+
+  .rooms-header-button {
+    width: 100%;
+  }
+}
