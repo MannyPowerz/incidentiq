@@ -6,6 +6,7 @@ import { Request, Response } from 'express'
 import {insertTimelineEntry} from '../queries.js'
 import { findIncidentById } from '../../incidents/queries.js';
 import { io } from '../../socketServer.js';
+import {formatRoomName} from '../../Socket/socketHandlers/formatJoin.js'
 
 
 export async function handleCreateTimelineEntry(req: Request, res: Response) {
@@ -35,7 +36,7 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
 
     // broadcast AFTER the write succeeds — DB-write-before-broadcast. Room name matches
     // -> createRoom.ts's socket.join(String(incidentId)), so this reaches everyone already joined.
-    io.to(String(incidentId)).emit('entry:new', entry);
+    io.to(formatRoomName(incidentId)).emit('entry:new', entry);
 
     res.status(201).json({ entry });
 }

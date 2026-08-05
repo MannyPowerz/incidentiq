@@ -7,7 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { pool } from './db/pool.js';
-import type { TypeSocket } from './Socket/InterfaceTypes/socket.js';
+import type { TypeSocket } from './Socket/socketTypes-Schemas/socketTypes.js';
 import { socketHandlerFunction } from './Socket/routes/socketHandlerFunctions.js';
 import { socketAuth } from './Socket/middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';

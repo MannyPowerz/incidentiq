@@ -7,7 +7,7 @@ export interface ClientToServer {
     
     //types for emitting messages
     //every sent message delivers a payload that will make distinghising users easier
-    'sending-message': (payload: MessagePayload) => void //client -> server
+    'sending-message': (payload: MessageCLientOrServer) => void //client -> server
 }
 
 export interface ServerToClient {
@@ -20,7 +20,7 @@ export interface ServerToClient {
     'User-joined': (value: {message: string}) => void
 
     //types for emitting messages/failures
-    'new-message': (value: MessagePayload) => void
+    'new-message': (value: MessageCLientOrServer) => void
     'message-error': (value: {error: string}) => void
 
     //types for Zod validation
@@ -37,10 +37,10 @@ export interface ServerToClient {
 //Payload every messsage sends including type and body
 export type SendingMessagePayload = TimelineEntry
 
-export interface MessagePayload {
-    id: number,
+export interface MessageCLientOrServer {
+    id?: number
     incident_id: number,
-    author_id: number
+    author_id?: number
     type: TimelineEntryType,
     body:
         | {
@@ -49,7 +49,7 @@ export interface MessagePayload {
               likely_fix: string;
           }
         | Record<string, unknown>,
-    locked: boolean
+    locked?: boolean
 }
 
 type UserRole = 'responder' | 'lead' | 'admin';
