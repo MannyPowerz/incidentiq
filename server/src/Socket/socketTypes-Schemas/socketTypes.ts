@@ -16,12 +16,15 @@ export interface ServerToClient {
     'no-incidentId': (value: {error: string}) => void,
     'Invalid-org': (value: {error: string}) => void,
     'success': (value: {success: string}) => void,
-    'unable-to-join': (value:{error: string}) => void,
     'User-joined': (value: {message: string}) => void
 
     //types for emitting messages/failures
     'new-message': (value: MessageCLientOrServer) => void
-    'message-error': (value: {error: string}) => void
+
+    //universal error for any type of Socket handler
+    'socket-error': (value: {error: string}) => void
+
+    'no-socket-in-room': (value: {error: string}) => void
 
     //types for Zod validation
     'Invalid-Schema': (value: {error: string, event?: ClientToServer}) => void

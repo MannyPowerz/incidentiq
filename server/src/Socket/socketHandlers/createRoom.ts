@@ -35,7 +35,7 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
             socket.emit('success', {success: `User joined room ${roomName}`})
         }catch(err) {
             console.log("Unable to join incident room. Error: ", err)
-            socket.emit('unable-to-join', {error: 'Unable to join incident Room'}) 
+            socket.emit('socket-error', {error: 'Unable to join incident Room'}) 
         }
     });
 }
