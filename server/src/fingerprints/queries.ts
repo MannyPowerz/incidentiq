@@ -8,13 +8,21 @@
 import type { MachineFingerprint, FingerprintWithPublisher } from './types.js';
 import { pool } from '../db/pool.js';
 
-// publish or republish one machine's snapshot for one project.
-// ON CONFLICT makes it a single atomic statement: a select-then-write would leave a window where
-// -> two concurrent publishes both see "no row" and one dies on the unique constraint.
-// Every column takes the EXCLUDED (incoming) side — full replace, so an omitted field lands as
-// -> null rather than keeping a stale value that would make a Tier 2 diff wrong (ADR 0010).
-// updated_at is set here rather than passed in: a column DEFAULT only fires on INSERT, so without
-// -> this line the update branch would keep the original timestamp forever (ADR 0003).
+// publish or republish one machine's snapshot. One statement, so concurrent publishes can't race.
+//
+//   ON CONFLICT ON CONSTRAINT
+//     Must name a real unique constraint; migration 0004 declared this one for exactly this statement.
+//
+//   DO UPDATE SET
+//     EXCLUDED is the row the INSERT tried to add — taking that side everywhere is full replace (ADR 0010).
+//     The key columns are absent because they matched, so they are already equal.
+//
+//   updated_at = now()
+//     Set by hand because a column DEFAULT fires on INSERT only, never on UPDATE (ADR 0003).
+//     now() over a JS Date keeps both branches on Postgres' clock.
+//
+//   RETURNING *
+//     Generated id and fresh timestamp in the same round trip; no follow-up SELECT.
 export async function upsertFingerprint(
     userId: number,
     projectId: string,
@@ -23,7 +31,7 @@ export async function upsertFingerprint(
     lockfileHash: string | null,
     appliedMigrations: string[] | null
 ): Promise<MachineFingerprint> {
-    // { rows } destructures pg's Result — it also carries rowCount, command, and fields; only the array is wanted.
+    // { rows } destructures pg's Result — it also carries rowCount, command, and fields.
     const { rows } = await pool.query(
         `INSERT INTO machine_fingerprints (user_id, project_id, node_version, os_arch, lockfile_hash, applied_migrations)
          VALUES ($1, $2, $3, $4, $5, $6)
@@ -40,18 +48,29 @@ export async function upsertFingerprint(
             nodeVersion,
             osArch,
             lockfileHash,
-            // null passes through unstringified, unlike timeline/queries.ts which always stringifies.
-            // JSON.stringify(null) is the string 'null', which Postgres stores as a JSON null —
-            // -> reads back the same, but `IS NULL` is false for it. A raw null stores a real SQL NULL.
+            // null stays null: JSON.stringify(null) is a JSON null, which `IS NULL` won't match.
             appliedMigrations === null ? null : JSON.stringify(appliedMigrations),
         ]
     );
     return rows[0];
 }
 
-// every fingerprint published for one project by anyone in the caller's org — the two sides a
-// -> machine-to-machine comparison needs. Empty array, not null: "nobody published" is a real answer.
-// f.* and not *: a bare * across this join returns users' columns too, password_hash included.
+// both sides of a machine-to-machine comparison. Empty array is a real answer, not a 404.
+//
+//   SELECT f.*, u.email AS published_by
+//     f.* not *, or the join would return users.password_hash too.
+//     The alias names the field for its role, so a later switch to a display name won't change the contract.
+//
+//   JOIN users u ON u.id = f.user_id
+//     The FK is the bridge to users, which is where org_id lives since this table has none.
+//     Plain JOIN, not LEFT: user_id is NOT NULL and FK-checked, so every fingerprint has a user.
+//
+//   WHERE f.project_id = $1 AND u.org_id = $2
+//     Two tables, two facts — project belongs to the fingerprint, org to whoever published it.
+//     u.org_id is the tenant boundary, reached one table over.
+//
+//   ORDER BY f.user_id
+//     Presentation stability only, unlike the timeline's ORDER BY id which enforces sequencing.
 export async function findFingerprintsByProject(
     projectId: string,
     orgId: number
