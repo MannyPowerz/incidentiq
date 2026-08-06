@@ -8,6 +8,7 @@ export type Room = {
     severity: RoomSeverity;
     status: RoomsStatus;
     assignee: string;
+    createdAt: Date;
     updatedAt: Date;
 }
 

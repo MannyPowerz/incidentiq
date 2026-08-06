@@ -1,7 +1,8 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import RoomHeader from "../components/roomDetails/RoomHeader";
+import RoomOverview from "../components/roomDetails/tabs/RoomOverview";
 import RoomTabs, { type RoomTab } from "../components/roomDetails/RoomTabs";
 import { rooms } from "../data/rooms";
 import type { JSX } from "react";
@@ -15,17 +16,35 @@ export default function RoomDetailsPage () : JSX.Element {
 
     const room = rooms.find((currentRoom) => currentRoom.id === roomId)
 
+    const navigate = useNavigate()
+
     if (!room) {
         return (
-            <main className="room-details-page">
-                <p>Room not found</p>
-            </main>
+            <div className="room-details-layout">
+                <DashboardSidebar activePage="Rooms" />
+
+                <main className="room-details-page">
+                    <section className="room-not-found">
+                        <h1 className="room-not-found-title">Room not found</h1>
+                        <p className="room-not-found-message">
+                            The room you are looking for does not exist or may have been removed
+                        </p>
+                        <button
+                            className="room-not-found-button"
+                            type="button"
+                            onClick={() => navigate("/rooms")}
+                        >
+                            Back to Rooms
+                        </button>
+                    </section>
+                </main>
+            </div>
         )
     }
 
     return (
         <div className="room-details-layout">
-            <DashboardSidebar />
+            <DashboardSidebar activePage="Rooms"/>
             
             <main className="room-details-page">
                 <RoomHeader room={room} />
@@ -33,6 +52,10 @@ export default function RoomDetailsPage () : JSX.Element {
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
+
+                {activeTab === "Overview" && (
+                    <RoomOverview room={room} />
+                )}
             </main>
         </div>
     )

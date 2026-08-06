@@ -8,6 +8,7 @@ export const rooms : Room [] = [
         severity: "Critical",
         status: "Open",
         assignee: "Anthony",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-29T18:16:00"),
     },
     {
@@ -17,6 +18,7 @@ export const rooms : Room [] = [
         severity: "High",
         status: "Investigating",
         assignee: "Manny",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-29T18:00:00"),
     },
     {
@@ -26,6 +28,7 @@ export const rooms : Room [] = [
         severity: "Medium",
         status: "Resolved",
         assignee: "Gabby",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-29T17:36:00"),
     },
     {
@@ -35,6 +38,7 @@ export const rooms : Room [] = [
         severity: "Low",
         status: "Open",
         assignee: "Sarah",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-29T15:18:00"),
     },
     {
@@ -44,6 +48,7 @@ export const rooms : Room [] = [
         severity: "Medium",
         status: "Investigating",
         assignee: "Camille",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-08-02T15:18:00"),
     },
     {
@@ -53,6 +58,7 @@ export const rooms : Room [] = [
         severity: "Critical",
         status: "Open",
         assignee: "David",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-08-03T11:18:00"),
     },
     {
@@ -62,6 +68,7 @@ export const rooms : Room [] = [
         severity: "High",
         status: "Resolved",
         assignee: "Hannah",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-30T15:18:00"),
     },
     {
@@ -71,6 +78,7 @@ export const rooms : Room [] = [
         severity: "Low",
         status: "Investigating",
         assignee: "Justin",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-07-31T15:18:00"),
     },
     {
@@ -80,6 +88,7 @@ export const rooms : Room [] = [
         severity: "Low",
         status: "Open",
         assignee: "Terry",
+        createdAt: new Date("2026-07-10T11:18:00"),
         updatedAt: new Date("2026-08-02T15:18:00"),
     },
 ]
