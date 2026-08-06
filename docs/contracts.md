@@ -103,12 +103,18 @@ Always an array, ordered by `user_id`. An empty array is a valid answer and
 means nobody in the org has published for that project — not a 404, because
 the project itself is not a resource this API owns.
 
+Each row carries `published_by`, the email of the user who published it. The
+org filter already joins `users`, so this costs nothing extra to return, and a
+comparison between two machines is not readable without it — `user_id: 7`
+tells a person nothing about whose environment differs.
+
 ```json
 {
   "fingerprints": [
     {
       "id": 1,
       "user_id": 3,
+      "published_by": "manny@example.com",
       "project_id": "incidentiq",
       "node_version": "22.11.0",
       "os_arch": "darwin-arm64",
@@ -119,6 +125,7 @@ the project itself is not a resource this API owns.
     {
       "id": 2,
       "user_id": 7,
+      "published_by": "anthony@example.com",
       "project_id": "incidentiq",
       "node_version": "20.18.1",
       "os_arch": "linux-x64",
@@ -129,6 +136,9 @@ the project itself is not a resource this API owns.
   ]
 }
 ```
+
+`PUT` returns the bare row with no `published_by` — the caller published it,
+so it already knows.
 
 **Org scoping.** `machine_fingerprints` has no `org_id` column, so unlike
 every other query module the tenant boundary is not a `WHERE org_id = $1` on

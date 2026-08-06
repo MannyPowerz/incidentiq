@@ -17,3 +17,9 @@ export interface MachineFingerprint {
 
     updated_at: Date; // SQL: TIMESTAMPTZ — refreshed by app code on every publish; the schema has no trigger for it on purpose (ADR 0003)
 }
+
+// What GET /fingerprints?project= returns. The org filter already joins users, so the publisher's
+// identity costs nothing extra to fetch — and a two-machine comparison is unreadable without it.
+export interface FingerprintWithPublisher extends MachineFingerprint {
+    published_by: string; // SQL: users.email AS published_by — never null; both the column and the FK are NOT NULL
+}

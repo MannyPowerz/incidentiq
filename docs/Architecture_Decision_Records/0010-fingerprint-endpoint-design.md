@@ -51,6 +51,14 @@ array for "nobody published" rather than a 404. Reading only your own row
 would make the two-machine comparison in build-plan.md impossible. The tenant
 boundary is enforced by joining `users` and filtering that user's `org_id`.
 
+**`GET` rows carry `published_by`** (the publisher's email, aliased from
+`users.email`), so the response type is `FingerprintWithPublisher`, not
+`MachineFingerprint`. The comparison this endpoint exists to enable is read by
+a person, and `user_id: 7` does not tell anyone whose environment differs. The
+join is already open for the org filter, so the column is free; resolving ids
+client-side afterwards would cost a round trip per row. `PUT` returns the bare
+row — its caller published it and already knows.
+
 **`applied_migrations` stores migration filenames as a JSONB string array**,
 matching `schema_migrations`' `filename` primary key. Drift detection is a set
 difference over those names.
@@ -87,6 +95,11 @@ code's job; this is the code that owes it.
   `applied_at` is per-machine wall-clock, so two machines with identical
   migrations would differ on every element and the comparison would have to
   strip it back out. Storing noise the only consumer must discard.
+- **Returning bare fingerprint rows from `GET`** — rejected once the endpoint's
+  purpose was traced through: it exists so two machines can be compared, and a
+  comparison without publisher identity is only half usable. Widening a
+  response later is backward-compatible, so this could have been deferred; it
+  was not, because the join that makes it free is already there.
 - **A parent `apiRouter` mounted at `/`** — considered and deferred, not
   rejected. It would group the HTTP surface apart from the socket surface and
   give one insertion point for API-wide middleware or a version prefix,
@@ -104,6 +117,11 @@ code's job; this is the code that owes it.
   than in a `WHERE` on the table being read. It reads like a missing filter to
   anyone who knows the other query modules, so the query carries a comment
   saying why.
+- Because the read joins `users`, the `GET` query must select `f.*` and not
+  `*`. A bare `*` across a join returns both tables' columns, which would put
+  `users.password_hash` in an API response. Every other query module in this
+  server uses `SELECT *` safely, so this is the one place where copying the
+  house pattern is a security bug rather than a style choice.
 - `applied_migrations` as `string[]` means that if per-migration metadata is
   ever needed, it is a data backfill of existing JSONB rows and not just a
   type widening. Accepted knowingly: the stricter type is more useful to the
