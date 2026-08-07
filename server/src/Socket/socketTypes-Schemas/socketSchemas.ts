@@ -14,6 +14,10 @@ const SendingMessageSchema = z.object({
     })
 })
 
+//While validateSocketData already safe parses every inbound payload against this exact schema and rejects mismatches making it a runtime truth for 'sending-message'
+//Deriving the type validates the compile-time agreeing with the runtime by construction
+export type ValidatingMessage = z.infer<typeof SendingMessageSchema>
+
 //names one validater per inbound event, making a type error if forgetting one
 export const socketSchemas: Record<keyof ClientToServer, z.ZodType> = {
     'join-room': joinRoomSchema,
