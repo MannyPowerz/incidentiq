@@ -1,5 +1,6 @@
 import type { Socket, Server, DefaultEventsMap } from 'socket.io'
-import type { TimelineEntry, TimelineEntryType, TimelineEntryBody } from '../../timeline/types.js'
+import type { TimelineEntry} from '../../timeline/types.js'
+import type { ValidatingMessage } from './socketSchemas.js'
 //socket.io response
 export interface ClientToServer {
     //types for joining rooms
@@ -7,7 +8,7 @@ export interface ClientToServer {
     
     //types for emitting messages
     //every sent message delivers a payload that will make distinghising users easier
-    'sending-message': (payload: {incident_id: number, type: TimelineEntryType, body: TimelineEntryBody}) => void //client -> server
+    'sending-message': (payload: ValidatingMessage) => void //client -> server
 }
 
 export interface ServerToClient {

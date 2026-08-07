@@ -2,7 +2,7 @@ import { pool } from "../../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
 import type { TypeServer, TypeSocket} from "../socketTypes-Schemas/socketTypes.js";
 import { TimelineEntry } from "../../timeline/types.js";
-
+import { insertTimelineEntry } from "../../timeline/queries.js";
 
 //Once joining a specific incident, users can send messages including a payload of incident_id, author_id, type, and body
 //Based off the Clients payloaded response to the server, we will save that into timeline_entries and know who is responding
@@ -36,10 +36,11 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
                 return
             }
 
-            const {rows: [entry]} = await pool.query<TimelineEntry>(`INSERT INTO timeline_entries(incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING *`,
-                //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
-                [incident_id, socket.data.userId, type, body])
-            
+            //Decided to use query function insertTimelineEntry since they are the exact same INSERT with the same RETURNING*
+            //Using a raw pg query will create two INSERTS into one table one of which will serailizes explicitly and the other 
+            //leaning on pg's implicit object-handling
+            //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
+            const entry:TimelineEntry = await insertTimelineEntry(incident_id, socket.data.orgId, type, body)
 
             io.to(formatRoomName(incident_id)).emit('new-message', entry)
         }catch(err) {
