@@ -24,3 +24,9 @@ export interface TimelineEntry {
 
     created_at: Date; // SQL: TIMESTAMPTZ
 }
+
+export type TimelineEntryBody = {
+    summary: string;
+    why_it_matters: string;
+    likely_fix: string;
+} | Record<string, unknown>

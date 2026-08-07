@@ -1,6 +1,6 @@
 import { pool } from "../../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
-import type { TypeServer, TypeSocket, MessageCLientOrServer} from "../socketTypes-Schemas/socketTypes.js";
+import type { TypeServer, TypeSocket} from "../socketTypes-Schemas/socketTypes.js";
 import { TimelineEntry } from "../../timeline/types.js";
 
 

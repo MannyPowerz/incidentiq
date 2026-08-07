@@ -1,5 +1,5 @@
 import type { Socket, Server, DefaultEventsMap } from 'socket.io'
-import type { TimelineEntry, TimelineEntryType } from '../../timeline/types.js'
+import type { TimelineEntry, TimelineEntryType, TimelineEntryBody } from '../../timeline/types.js'
 //socket.io response
 export interface ClientToServer {
     //types for joining rooms
@@ -7,7 +7,7 @@ export interface ClientToServer {
     
     //types for emitting messages
     //every sent message delivers a payload that will make distinghising users easier
-    'sending-message': (payload: MessageCLientOrServer) => void //client -> server
+    'sending-message': (payload: {incident_id: number, type: TimelineEntryType, body: TimelineEntryBody}) => void //client -> server
 }
 
 export interface ServerToClient {
@@ -34,20 +34,6 @@ export interface ServerToClient {
 //Payload every messsage sends including type and body
 export type SendingMessagePayload = TimelineEntry
 
-export interface MessageCLientOrServer {
-    id?: number
-    incident_id: number,
-    author_id?: number
-    type: TimelineEntryType,
-    body:
-        | {
-              summary: string;
-              why_it_matters: string;
-              likely_fix: string;
-          }
-        | Record<string, unknown>,
-    locked?: boolean
-}
 
 type UserRole = 'responder' | 'lead' | 'admin';
 
