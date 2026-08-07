@@ -16,7 +16,11 @@ export async function handleListFingerprints(req: Request, res: Response) {
     // Checking the type also tells TypeScript it is text from here down, so nothing needs forcing.
     // Forcing it would be worse than rejecting it: a list of ['a','b'] turns into the text 'a,b',
     // -> and we would quietly go looking for a project by that name instead of saying no.
-    if (typeof projectId !== 'string') {
+
+    // Empty is rejected too, because publishing already refuses an empty project id (min(1) on the
+    // -> schema). No stored row can ever have one, so an empty search is a broken request rather
+    // -> than a real question, and saying so beats handing back an empty list they have to explain.
+    if (typeof projectId !== 'string' || projectId === '') {
         res.status(400).json({
             error: 'project_required',
             message: 'A project query parameter is required'

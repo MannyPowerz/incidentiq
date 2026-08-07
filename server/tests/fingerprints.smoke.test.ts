@@ -124,6 +124,17 @@ describe('fingerprints smoke test', () => {
         expect(got.body.error).toBe('project_required');
     });
 
+    // an empty project is rejected rather than answered, because publishing refuses an empty
+    // -> project_id, so no stored row could ever match one.
+    it('rejects an empty project param', async () => {
+        const app = makeApp();
+        const auth = { Authorization: `Bearer ${await registerAndToken(app, creds)}` };
+
+        const got = await request(app).get('/fingerprints?project=').set(auth);
+        expect(got.status).toBe(400);
+        expect(got.body.error).toBe('project_required');
+    });
+
     // ?project=a&project=b arrives as an array, which is the case the typeof guard exists for.
     it('rejects a repeated project param', async () => {
         const app = makeApp();
