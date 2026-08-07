@@ -14,8 +14,9 @@ import { handleListFingerprints } from './list.js'
 
 // .nullable().default(null), not .optional(): under full-replace (ADR 0010) a field the agent left
 // -> out and a field it explicitly nulled both mean "store null", so the distinction buys nothing.
-// Converting here means the handler never sees undefined, and the validated body already matches
-// -> MachineFingerprint's `string | null` instead of needing four `?? null` fixups downstream.
+// Filling them in here means the handler is handed an empty value rather than a missing one, which
+// -> is what the database column expects, instead of four extra checks further along.
+// That only works because validateBody passes on what the schema produced — see the note there.
 export const publishFingerprintSchema = z.object({
     project_id: z.string().min(1),
     node_version: z.string().nullable().default(null),
