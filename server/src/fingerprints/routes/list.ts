@@ -1,6 +1,6 @@
-// list.ts — GET /fingerprints?project=. Returns every publisher in the caller's org for one project,
-// -> which is the two-sided read a machine-to-machine comparison needs. No 404: an empty array means
-// -> nobody has published, and a project is not a resource this API owns (ADR 0010).
+// list.ts — GET /fingerprints?project=. Hands back everyone on your team who has published for
+// -> one project, which is what lets two machines be compared side by side.
+// Never a 404: an empty list just means nobody has published yet (ADR 0010).
 
 import type { Request, Response } from 'express'
 import { findFingerprintsByProject } from '../queries.js'
@@ -10,10 +10,12 @@ export async function handleListFingerprints(req: Request, res: Response) {
     const projectId = req.query.project; // untrusted: Express does not promise this is a string
 
 
-    // typeof, not truthiness: Express's qs parser turns ?project=a&project=b into an array and
-    // -> ?project[x]=1 into an object, and findFingerprintsByProject wants a string.
-    // It also narrows — TypeScript treats projectId as string below, so no cast is needed.
-    // Coercing with String() would be worse than rejecting: String(['a','b']) is 'a,b', a real query.
+    // A client can send ?project= twice, or with brackets, and Express hands back a list or an object
+    // -> instead of plain text — so check the type rather than just checking something is there.
+
+    // Checking the type also tells TypeScript it is text from here down, so nothing needs forcing.
+    // Forcing it would be worse than rejecting it: a list of ['a','b'] turns into the text 'a,b',
+    // -> and we would quietly go looking for a project by that name instead of saying no.
     if (typeof projectId !== 'string') {
         res.status(400).json({
             error: 'project_required',
@@ -22,8 +24,8 @@ export async function handleListFingerprints(req: Request, res: Response) {
         return;
     }
 
-    // org_id, where publish.ts used sub: a write is user-scoped, a read is org-scoped.
-    // Off the token because a client-supplied org would let anyone read another tenant's rows.
+    // Publishing uses the person's id; reading uses their team's, since you compare against teammates.
+    // It comes off the login token because if the client could name a team, anyone could read another's.
     const orgId = req.user!.org_id;
 
     const fingerprints = await findFingerprintsByProject(
