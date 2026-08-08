@@ -1,0 +1,142 @@
+
+.view-room-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: rgba(15, 23, 42, 0.55);
+}
+
+.view-room-modal {
+  width: 100%;
+  max-width: 540px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background-color: #ffffff;
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.18),
+    0 8px 16px rgba(15, 23, 42, 0.1);
+}
+
+.view-room-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.view-room-modal-id {
+  margin: 0 0 0.3rem;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.view-room-modal-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.25rem;
+}
+
+.view-room-modal-close {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.4rem;
+  background-color: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.view-room-modal-close:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.view-room-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.view-room-modal-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.view-room-modal-section h3 {
+  margin: 0 0 0.5rem;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.view-room-modal-section p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.view-room-modal-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.view-room-modal-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem;
+  border-radius: 0.6rem;
+  background-color: #f8fafc;
+}
+
+.view-room-modal-details span {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.view-room-modal-details strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.view-room-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.view-room-modal-button {
+  min-height: 2.5rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.view-room-modal-button:hover {
+  background-color: #f1f5f9;
+}
+
+@media (max-width: 600px) {
+  .view-room-modal-details {
+    grid-template-columns: 1fr;
+  }
+}

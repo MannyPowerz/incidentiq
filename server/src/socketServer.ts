@@ -8,7 +8,7 @@
 import express from 'express';
 import * as http from 'node:http';
 import { Server } from 'socket.io';
-import type { TypeServer } from './InterfaceTypes/socket.js';
+import type { TypeServer } from './Socket/socketTypes-Schemas/socketTypes.js';
 
 export const app = express();
 export const server = http.createServer(app); // wraps the Express app so Socket.io can share the same port

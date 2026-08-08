@@ -45,6 +45,7 @@ export interface RefreshToken {
     created_at: Date; // SQL: TIMESTAMPTZ
 }
 
+//Incidents table 
 export interface Incidents {
     id: number; // SQL: BIGSERIAL
     title: string; // SQL: TEXT

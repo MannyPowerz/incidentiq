@@ -1,38 +1,33 @@
-.dashboard-layout {
+.rooms-layout {
   display: flex;
   min-height: 100vh;
   background-color: #f8fafc;
 }
 
-.dashboard-page {
+.rooms-page {
   flex: 1;
   min-width: 0;
   padding: 2rem;
 }
 
-.dashboard-main-content {
-  width: 100%;
-  max-width: 100%;
-}
-
 @media (max-width: 1100px) {
-  .dashboard-page {
+  .rooms-page {
     padding: 1.5rem;
   }
 }
 
 @media (max-width: 800px) {
-  .dashboard-page {
+  .rooms-page {
     padding: 1.25rem;
   }
 }
 
 @media (max-width: 600px) {
-  .dashboard-layout {
+  .rooms-layout {
     display: block;
   }
 
-  .dashboard-page {
+  .rooms-page {
     padding: 1rem;
   }
 }
