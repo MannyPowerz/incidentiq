@@ -131,7 +131,7 @@ describe('timeline smoke test', () => {
         }
     });
 
-    it('broadcasts entry:new to a client joined to the incident room', async () => {
+    it('broadcasts "new-message" to a client joined to the incident room', async () => {
         const { token, auth, incidentId } = await setup();
 
         await new Promise<void>((resolve, reject) => {
@@ -140,7 +140,7 @@ describe('timeline smoke test', () => {
             client.on('connect_error', (err) => reject(new Error(`connect failed: ${err.message}`)));
 
             // the broadcast we're waiting for
-            client.on('entry:new', (entry) => {
+            client.on('new-message', (entry) => {
                 try {
                     expect(entry.incident_id).toBe(incidentId);
                     expect(entry.type).toBe('observation');

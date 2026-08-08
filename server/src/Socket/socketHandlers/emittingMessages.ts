@@ -40,7 +40,7 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
             //Using a raw pg query will create two INSERTS into one table one of which will serailizes explicitly and the other 
             //leaning on pg's implicit object-handling
             //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
-            const entry:TimelineEntry = await insertTimelineEntry(incident_id, socket.data.orgId, type, body)
+            const entry:TimelineEntry = await insertTimelineEntry(incident_id, socket.data.userId, type, body)
 
             io.to(formatRoomName(incident_id)).emit('new-message', entry)
         }catch(err) {

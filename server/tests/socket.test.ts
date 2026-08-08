@@ -1,6 +1,6 @@
 import { pool } from '../src/db/pool';
 import {signAccessToken} from '../src/auth/tokens.js'
-import { beforeAll, afterEach, afterAll, describe, expect, it, beforeEach } from 'vitest';
+import { beforeAll, afterEach, afterAll, describe, expect, it} from 'vitest';
 import { createServer, type Server as HttpServer} from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Server, type Socket as serverSocket } from 'socket.io';
@@ -55,7 +55,7 @@ describe('connection Room', () => {
     function waitFor<T>(client: ClientSocket, event: string): Promise<T> {
         return new Promise((resolve, reject) => {
             client.once(event, (payload: T) => resolve(payload)) //using .once() so event can detach after firing once. Using .on() will fire multiple times and leak across test
-            client.once('error', (err) => reject(err))
+            client.once('socket-error', (err) => reject(err))
         })
     }
 
@@ -108,7 +108,7 @@ describe('connection Room', () => {
 
         client.emit('join-room', incidentId);
         await waitFor(client, 'success');
-
+        
         const broadcast = waitFor<TimelineEntry>(client, 'new-message');
 
         //what the client sends to the server
@@ -125,6 +125,10 @@ describe('connection Room', () => {
         expect(entry.incident_id).toBe(incidentId);
         expect(entry.type).toBe('ai_draft');
         expect(entry.body.summary).toBe('hello')
+
+        //this assertion proves that both paths produce the same shape, and proves that the collapsing of the two event names still passes that
+        //this checks that calling getTime() on entry.created_at doesn't validate a NaN value.
+        expect(new Date(entry.created_at).getTime()).not.toBeNaN()
 
         const { rows } = await pool.query(
             `SELECT author_id, incident_id, type, body FROM timeline_entries WHERE incident_id = $1`,
