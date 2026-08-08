@@ -13,6 +13,7 @@ import { socketAuth } from './Socket/middleware/socket.js';
 import { authRouter } from './auth/routes/index.js';
 import { incidentRouter } from './incidents/routes/index.js';
 import { timelineRouter } from './timeline/routes/index.js';
+import { fingerprintsRouter } from './fingerprints/routes/index.js';
 import { app, server, io } from './socketServer.js';
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
@@ -39,6 +40,7 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/incidents', incidentRouter);
 app.use('/incidents/:id/timeline', timelineRouter);
+app.use('/fingerprints', fingerprintsRouter);
 
 io.use(socketAuth);
 io.on('connect', (socket: TypeSocket) => {

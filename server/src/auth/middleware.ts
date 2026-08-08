@@ -58,6 +58,12 @@ export function validateBody(schema: z.ZodType) {
                 message: result.error,
             });
         } else {
+            // Give the handler what the schema produced, not what the client sent. Two things ride on this.
+            // Anything the schema did not ask for is thrown away, so a client cannot slip an extra
+            // -> field through to a handler that someday starts reading it.
+            // And any value the schema fills in for a missing field actually arrives — without this
+            // -> line the schema only says yes or no to a body and never tidies it up.
+            req.body = result.data;
             next();
         }
     };
