@@ -4,6 +4,7 @@ import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import RoomHeader from "../components/roomDetails/RoomHeader";
 import RoomOverview from "../components/roomDetails/tabs/RoomOverview";
 import RoomTabs, { type RoomTab } from "../components/roomDetails/RoomTabs";
+import RoomTimeline from "../components/roomDetails/tabs/RoomTimeline";
 import { rooms } from "../data/rooms";
 import type { JSX } from "react";
 import "./RoomDetailsPage.css"
@@ -55,6 +56,10 @@ export default function RoomDetailsPage () : JSX.Element {
 
                 {activeTab === "Overview" && (
                     <RoomOverview room={room} />
+                )}
+
+                {activeTab === "Timeline" && (
+                    <RoomTimeline room={room} />
                 )}
             </main>
         </div>
