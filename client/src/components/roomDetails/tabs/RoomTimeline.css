@@ -5,7 +5,7 @@
     width: 100%;
     min-height: 0;
 
-    padding: 1.5rem 2rem 2rem;
+    padding: 1.25rem 1.5rem 1.5rem;
     box-sizing: border-box;
 
     background-color: #f8fafc;
@@ -19,32 +19,29 @@
     width: 100%;
     min-height: 0;
 
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 1.5rem;
     box-sizing: border-box;
 
     overflow: hidden;
 
     border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    border-radius: 0.65rem;
 
     background-color: #ffffff;
 
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 /* ---------- Header ---------- */
 
 .room-timeline-header {
-    display: flex;
     flex-shrink: 0;
-    align-items: flex-start;
-    justify-content: space-between;
 
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .room-timeline-title {
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.25rem;
 
     color: #0f172a;
     font-size: 1rem;
@@ -55,7 +52,7 @@
     margin: 0;
 
     color: #64748b;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 /* ---------- Timeline List ---------- */
@@ -68,7 +65,7 @@
     width: 100%;
     min-height: 0;
 
-    padding-right: 0.5rem;
+    padding-right: 0.75rem;
 
     overflow-x: hidden;
     overflow-y: auto;
@@ -82,7 +79,7 @@
 }
 
 .room-timeline-list::-webkit-scrollbar-track {
-    background: transparent;
+    background-color: transparent;
 }
 
 .room-timeline-list::-webkit-scrollbar-thumb {
@@ -98,15 +95,39 @@
 
     display: grid;
     flex-shrink: 0;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 1rem;
 
-    padding-bottom: 1.75rem;
+    grid-template-columns: 70px 28px minmax(0, 1fr);
+    gap: 0.85rem;
+
+    min-height: 82px;
 }
 
-.room-timeline-event:last-child {
-    padding-bottom: 1rem;
+/* ---------- Date and Time ---------- */
+
+.room-timeline-event-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+
+    padding-top: 0;
+
+    white-space: nowrap;
 }
+
+.room-timeline-event-date {
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.room-timeline-event-clock {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ---------- Timeline Marker ---------- */
 
 .room-timeline-marker {
     position: relative;
@@ -118,12 +139,12 @@
 .room-timeline-marker::after {
     position: absolute;
 
-    top: 15px;
-    bottom: -1.75rem;
+    top: 16px;
+    bottom: -4px;
 
     width: 2px;
 
-    background-color: #e2e8f0;
+    background-color: #dbe3ee;
 
     content: "";
 }
@@ -138,195 +159,209 @@
 
     display: block;
 
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
 
-    margin-top: 4px;
+    margin-top: 3px;
 
-    border: 3px solid #ffffff;
+    border: 2px solid #ffffff;
     border-radius: 50%;
 
-    background-color: #4f46e5;
+    background-color: #64748b;
+
+    box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+/* ---------- Timeline Event Types ---------- */
+
+.room-timeline-dot-created {
+    background-color: #6366f1;
 
     box-shadow: 0 0 0 2px #c7d2fe;
+}
+
+.room-timeline-dot-joined {
+    background-color: #3b82f6;
+
+    box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.room-timeline-dot-detection {
+    background-color: #0ea5e9;
+
+    box-shadow: 0 0 0 2px #bae6fd;
+}
+
+.room-timeline-dot-update {
+    background-color: #10b981;
+
+    box-shadow: 0 0 0 2px #a7f3d0;
+}
+
+.room-timeline-dot-evidence {
+    background-color: #059669;
+
+    box-shadow: 0 0 0 2px #a7f3d0;
 }
 
 /* ---------- Event Content ---------- */
 
 .room-timeline-event-content {
     min-width: 0;
+
+    padding-bottom: 1.25rem;
 }
 
-.room-timeline-event-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.room-timeline-event-heading h3 {
-    margin: 0;
+.room-timeline-event-content h3 {
+    margin: 0 0 0.3rem;
 
     color: #0f172a;
     font-size: 0.9rem;
     font-weight: 700;
 }
 
-.room-timeline-event-heading time {
-    flex-shrink: 0;
-
-    color: #94a3b8;
-    font-size: 0.75rem;
-
-    white-space: nowrap;
-}
-
 .room-timeline-event-description {
-    max-width: 720px;
+    max-width: 760px;
 
-    margin: 0.4rem 0 0.45rem;
+    margin: 0;
 
-    color: #475569;
-    font-size: 0.85rem;
+    color: #64748b;
+    font-size: 0.8rem;
     line-height: 1.5;
 }
 
 .room-timeline-author {
+    display: block;
+
+    margin-top: 0.3rem;
+
     color: #94a3b8;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
 }
 
-/* ---------- Empty State ---------- */
+/* ---------- Empty Timeline ---------- */
 
 .room-timeline-empty {
     margin: auto;
 
     color: #94a3b8;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
 }
 
 /* ---------- Add Update Form ---------- */
 
 .room-timeline-update-form {
-    display: flex;
+    display: grid;
     flex-shrink: 0;
-    flex-direction: column;
+
+    grid-template-columns:
+        160px
+        200px
+        minmax(200px, 1fr)
+        auto;
+
+    gap: 0.75rem;
+    align-items: end;
 
     margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    padding-top: 0.85rem;
 
     border-top: 1px solid #e2e8f0;
+}
+
+.room-timeline-form-field {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.room-timeline-form-field-update {
+    min-width: 0;
 }
 
 .room-timeline-update-label {
     margin-bottom: 0.35rem;
 
-    color: #0f172a;
-    font-size: 0.8rem;
+    color: #475569;
+    font-size: 0.72rem;
     font-weight: 600;
 }
 
-/* ---------- Update Title ---------- */
+/* ---------- Form Controls ---------- */
 
-.room-timeline-update-title-input {
-    width: 100%;
-
-    margin-bottom: 0.65rem;
-    padding: 0.55rem 0.8rem;
-    box-sizing: border-box;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-
-    background-color: #ffffff;
-    color: #0f172a;
-
-    font: inherit;
-    font-size: 0.8rem;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.room-timeline-update-title-input::placeholder {
-    color: #94a3b8;
-}
-
-.room-timeline-update-title-input:hover {
-    border-color: #94a3b8;
-}
-
-.room-timeline-update-title-input:focus {
-    outline: none;
-
-    border-color: #6366f1;
-
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-}
-
-/* ---------- Update Description ---------- */
-
+.room-timeline-update-select,
+.room-timeline-update-title-input,
 .room-timeline-update-input {
     width: 100%;
-    min-height: 55px;
-    max-height: 80px;
+    height: 38px;
 
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.7rem;
     box-sizing: border-box;
 
-    resize: vertical;
-
     border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
+    border-radius: 0.4rem;
 
     background-color: #ffffff;
     color: #0f172a;
 
     font: inherit;
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.75rem;
 
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease;
 }
 
+.room-timeline-update-select {
+    cursor: pointer;
+}
+
+.room-timeline-update-title-input::placeholder,
 .room-timeline-update-input::placeholder {
     color: #94a3b8;
 }
 
+.room-timeline-update-input {
+    min-height: 38px;
+    max-height: 70px;
+
+    resize: vertical;
+}
+
+.room-timeline-update-select:hover,
+.room-timeline-update-title-input:hover,
 .room-timeline-update-input:hover {
     border-color: #94a3b8;
 }
 
+.room-timeline-update-select:focus,
+.room-timeline-update-title-input:focus,
 .room-timeline-update-input:focus {
     outline: none;
 
     border-color: #6366f1;
 
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
 }
 
 /* ---------- Post Update Button ---------- */
 
 .room-timeline-update-button {
-    align-self: flex-end;
-
     min-width: 100px;
+    height: 38px;
 
-    margin-top: 0.5rem;
     padding: 0.55rem 0.85rem;
 
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.4rem;
 
     background-color: #4f46e5;
     color: #ffffff;
 
     font: inherit;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
 
     cursor: pointer;
@@ -354,6 +389,20 @@
 
 /* ---------- Responsive ---------- */
 
+@media (max-width: 1000px) {
+    .room-timeline-update-form {
+        grid-template-columns: 150px 1fr;
+    }
+
+    .room-timeline-form-field-update {
+        grid-column: 1 / -1;
+    }
+
+    .room-timeline-update-button {
+        justify-self: end;
+    }
+}
+
 @media (max-width: 700px) {
     .room-timeline {
         padding: 1rem;
@@ -363,13 +412,18 @@
         padding: 1.25rem;
     }
 
-    .room-timeline-event-heading {
-        flex-direction: column;
-        gap: 0.35rem;
+    .room-timeline-event {
+        grid-template-columns: 58px 24px minmax(0, 1fr);
+
+        min-height: 82px;
     }
 
-    .room-timeline-event-heading time {
-        white-space: normal;
+    .room-timeline-update-form {
+        grid-template-columns: 1fr;
+    }
+
+    .room-timeline-form-field-update {
+        grid-column: auto;
     }
 
     .room-timeline-update-button {
