@@ -46,6 +46,7 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
                 if(err) {
                     console.log('Reconnection error and failed to get history', err)
                     socket.emit('socket-error', {error: 'Reconnection error and failed to get history'})
+                    return
                 }
                 console.log('Client recieved histroy', ackResponse)
             })

@@ -13,8 +13,6 @@ export interface ClientToServer {
 
 export interface ServerToClient {
     //types for joining room
-    'no-incidentId': (value: {error: string}) => void,
-    'Invalid-org': (value: {error: string}) => void,
     'success': (value: {success: string}) => void,
     'send-history': (value: TimelineEntry[], response: (error: Error, ackResponse: string) => void) => void
     'User-joined': (value: {message: string}) => void

@@ -14,7 +14,7 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
             //ensuring validility at JOINING TIME rather than just joining
             if(!incident_id) {
                 console.log('Cannot send message: Incident id does not exist')
-                socket.emit('no-incidentId', {error: 'Cannot send message: Incident id does not exist'})
+                socket.emit('socket-error', {error: 'Cannot send message: Incident id does not exist'})
                 return
             }
 
@@ -25,7 +25,7 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
             //users to travel through events in a distinct linear direction either of calling one before the other.
             if(incidents.org_id !== socket.data.orgId) {
                 console.log('OrgId is invalid to send message')
-                socket.emit('Invalid-org', {error: 'OrgId is invalid to send message'})
+                socket.emit('socket-error', {error: 'OrgId is invalid to send message'})
                 return
             }
 
