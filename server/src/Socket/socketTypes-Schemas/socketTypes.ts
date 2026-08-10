@@ -1,10 +1,10 @@
 import type { Socket, Server, DefaultEventsMap } from 'socket.io'
 import type { TimelineEntry} from '../../timeline/types.js'
-import type { ValidatingMessage } from './socketSchemas.js'
+import type { ValidatingMessage, ValidatingJoining } from './socketSchemas.js'
 //socket.io response
 export interface ClientToServer {
     //types for joining rooms
-    'join-room': (incidentId: number) => void
+    'join-room': (payload: ValidatingJoining) => void
     
     //types for emitting messages
     //every sent message delivers a payload that will make distinghising users easier
@@ -13,10 +13,10 @@ export interface ClientToServer {
 
 export interface ServerToClient {
     //types for joining room
-    'invalid-type': (value: {error: string}) => void,
     'no-incidentId': (value: {error: string}) => void,
     'Invalid-org': (value: {error: string}) => void,
     'success': (value: {success: string}) => void,
+    'send-history': (value: TimelineEntry[], response: (error: Error, ackResponse: string) => void) => void
     'User-joined': (value: {message: string}) => void
 
     //types for emitting messages/failures
