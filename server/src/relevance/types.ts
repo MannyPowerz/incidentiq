@@ -1,113 +1,76 @@
 /**
- * types.ts — the relevance engine's contract, in code. Three people build against this file.
+ * types.ts — the relevance engine's contract. Three people build against this file.
  *
- * The engine answers one question: of everyone on this team, who most likely cares about the thing
- * that just happened, and how much. It runs as step 8 of the flow in docs/architecture.md, after the
- * entry is already saved, and its output only ever orders a list.
+ * The engine answers: of everyone on this team, who most likely cares about what just happened.
+ * Runs as step 8 in docs/architecture.md, after the entry is saved. Its output only orders a list.
  *
- * Three pieces, one owner each. They only stay parallel if this file stays still:
- *   1. collector (Gabriella) — shells out to git, returns CommitTouch[]
- *   2. scoring   (Manny)     — turns those touches into a TeammateScore per person
- *   3. reason    (Anthony)   — turns one TeammateScore into a sentence a human reads
+ *   1. collector (Gabriella) — git log -> CommitTouch[]        <- critical path, both others read it
+ *   2. scoring   (Manny)     — touches -> TeammateScore each
+ *   3. reason    (Anthony)   — one TeammateScore -> a sentence
  *
- * The collector is the critical path: 2 and 3 both read shapes it produces, so it is the one
- * piece worth landing early even in rough form.
+ * Nobody is blocked: 2 and 3 take their input as arguments, so a fixture is enough to build against.
  *
- * Rules of the road, agreed 2026-08-11 and recorded in ADR 0011:
- *   - Additive only. Fields get added, never renamed or removed, without telling the other two.
- *   - Some data here is for DISPLAY and never touches the maths. Each one says so on its line.
- *     Scoring on it is how this gets subtly wrong, so the boundary is written down, not remembered.
+ * Two rules, from ADR 0011:
+ *   - Additive only. Add fields, never rename or remove, without telling the other two.
+ *   - Fields marked DISPLAY ONLY never touch the maths. Scoring on them is how this goes subtly wrong.
  */
 
-// ---------------------------------------------------------------------------
-// 1. COLLECTOR — Gabriella
-// ---------------------------------------------------------------------------
+// --- 1. COLLECTOR (Gabriella) ----------------------------------------------
 
 /**
- * One person touching one file in one commit. A commit that changed five files produces five of
- * these, so the collector flattens rather than nesting.
- *
- * Skip merge commits entirely. They credit whoever pressed merge with every file in the merge,
- * which inflates that person's ownership and produces a useless subject line on top of it.
+ * One person, one file, one commit. A commit touching five files makes five of these.
+ * Skip merge commits: they credit the merger with every file and inflate ownership.
  */
 export interface CommitTouch {
-    /**
-     * The commit author's email, straight from git.
-     *
-     * OPEN QUESTION, nobody owns this yet: git author emails do not necessarily match users.email
-     * in our database. Somebody's laptop is configured with a personal address and their touches
-     * will attach to nobody. Needs deciding before this ships — see the note at the bottom.
-     */
+    /** Straight from git. See open question 1 at the bottom — these may not match users.email. */
     author_email: string;
 
-    /** Repo-relative, exactly as git prints it. */
+    /** Repo-relative, as git prints it. */
     file_path: string;
 
     /** Author date, not commit date. Rebasing rewrites commit dates and would fake recency. */
     committed_at: Date;
 
     /**
-     * DISPLAY ONLY — never a scoring input.
-     *
-     * The commit's subject line. It exists so a reason can say "renamed a variable" instead of just
-     * "touched this file", because those two lead to different decisions about whether to go ask
-     * that person. Scoring on the text would mean guessing intent from prose, which reads as clever
-     * and behaves badly.
+     * DISPLAY ONLY. The commit subject, so a reason can say "renamed a variable" rather than
+     * "touched this file" — different answers to whether it's worth interrupting someone.
      */
     subject: string;
 }
 
-// ---------------------------------------------------------------------------
-// 2. SCORING — Manny
-// ---------------------------------------------------------------------------
+// --- 2. SCORING (Manny) -----------------------------------------------------
 
-/**
- * What the engine knows about the entry it is scoring against.
- *
- * file_paths is how an entry gets connected to git history at all. For now those come from mapping
- * the incident's affected_system to a directory, since that column already exists. Later the agent
- * will report the real paths in its detection payload, which is strictly better and does not change
- * this shape — the paths just arrive from somewhere more accurate.
- */
+/** What we know about the entry being scored. */
 export interface RelevanceContext {
     entry_id: number;
     incident_id: number;
+
+    /** From mapping the incident's affected_system to a directory for now; agent-reported later. */
     file_paths: string[];
 }
 
 /**
- * One teammate's result. This is the whole contract between scoring and reason.
- *
- * It is deliberately not a single number. The reason generator can only say what this object
- * carries, so a bare score would leave it with nothing to write but the score itself.
- *
- * Ownership outweighs recency in the weighting. In an incident, who knows the code is more useful
- * than who happened to edit it last.
+ * One teammate's result, and the whole contract between scoring and reason.
+ * Not a single number: the reason can only say what this carries.
  */
 export interface TeammateScore {
     user_id: number;
 
-    /** The combined figure step 10 sorts on. Only meaningful relative to other people on the same entry. */
+    /** What step 10 sorts on. Only meaningful against other people on the same entry. */
     score: number;
 
-    /** The parts that made the score, kept separate so the reason can name whichever one dominated. */
+    /** Kept separate so the reason can name whichever one dominated. */
     signals: {
-        /** How recently they touched these files, decayed so older edits fade smoothly. */
         recency: number;
-
-        /** How often they touched them. */
         frequency: number;
 
-        /** How much of these files' history is theirs. Weighted highest of the three. */
+        /** Weighted highest: in an incident, who knows the code beats who edited it last. */
         ownership: number;
     };
 
     /**
-     * DISPLAY ONLY — never a scoring input.
-     *
-     * The most recent thing this person actually did to these files, so the reason can be specific.
-     * null when there is nothing worth saying: no touches at all, or a subject so useless
-     * (wip, fix, asdf) that printing it would be worse than staying quiet.
+     * DISPLAY ONLY. The last thing they actually did to these files.
+     * null when there's nothing worth saying — no touches, or a subject like "wip" or "asdf".
      */
     last_touch: {
         file_path: string;
@@ -116,32 +79,21 @@ export interface TeammateScore {
     } | null;
 }
 
-// ---------------------------------------------------------------------------
-// 3. REASON — Anthony
-// ---------------------------------------------------------------------------
+// --- 3. REASON (Anthony) ----------------------------------------------------
 
 /**
- * Takes one TeammateScore and returns the sentence shown under the entry.
+ * One TeammateScore -> the sentence shown under the entry.
  *
- * Worth knowing who this sentence is for. Step 10 of the flow orders every teammate's feed by their
- * own score, so the reader is the person being scored. The sentence answers "why is this at the top
- * of my list" or "who should I go ask", not "here is a statistic about somebody".
+ * The reader is the person being scored, since step 10 orders each teammate's own feed. So it
+ * answers "why am I seeing this" or "who do I ask". "You changed this yesterday" works.
+ * "Score 0.82" does not.
  *
- * Which means a good one names an action or a person. "You changed this file yesterday" works.
- * "Gabby wrote most of this and last touched it three weeks ago" works. "Score 0.82" does not.
- *
- * Cases that need an answer, not just the happy path:
- *   - every score is zero, because nobody has touched anything relevant
- *   - last_touch is null, so there is no specific change to describe
- *   - two people score nearly the same
+ * Needs an answer for: every score zero, last_touch null, and two people scoring nearly the same.
  */
 export type ReasonFor = (score: TeammateScore) => string;
 
-// ---------------------------------------------------------------------------
-// UNOWNED — decide before this ships
-// ---------------------------------------------------------------------------
+// --- UNOWNED — decide before shipping ---------------------------------------
 
-// 1. Git author email to users.email. Nothing guarantees they match, and a mismatch silently drops
-//    that person from every score rather than erroring. Whoever hits it first should raise it.
-// 2. What the UI shows when every score is zero. It is a real answer, not a bug, and the reason
-//    generator needs a sentence for it.
+// 1. Git author emails may not match users.email. A mismatch silently drops that person from every
+//    score rather than erroring. Whoever hits it first, raise it.
+// 2. What the UI shows when every score is zero. A real answer, not a bug — the reason needs a line for it.
