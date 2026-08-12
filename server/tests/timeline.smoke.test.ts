@@ -151,7 +151,7 @@ describe('timeline smoke test', () => {
             });
 
             // join the incident's room, then POST an entry — the handler should push it to this room
-            client.emit('join-room', incidentId);
+            client.emit('join-room', {incidentId, sinceId: undefined});
             client.on('success', () => {
                 request(app)
                     .post(`/incidents/${incidentId}/timeline`)
