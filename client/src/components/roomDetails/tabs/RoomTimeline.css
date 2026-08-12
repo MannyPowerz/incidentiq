@@ -174,34 +174,34 @@
 
 /* ---------- Timeline Event Types ---------- */
 
-.room-timeline-dot-created {
-    background-color: #6366f1;
+.room-timeline-dot-system {
+    background-color: #64748b;
 
-    box-shadow: 0 0 0 2px #c7d2fe;
+    box-shadow: 0 0 0 2px #cbd5e1;
 }
 
-.room-timeline-dot-joined {
+.room-timeline-dot-observation {
     background-color: #3b82f6;
 
     box-shadow: 0 0 0 2px #bfdbfe;
 }
 
-.room-timeline-dot-detection {
-    background-color: #0ea5e9;
-
-    box-shadow: 0 0 0 2px #bae6fd;
-}
-
-.room-timeline-dot-update {
+.room-timeline-dot-action {
     background-color: #10b981;
 
     box-shadow: 0 0 0 2px #a7f3d0;
 }
 
-.room-timeline-dot-evidence {
-    background-color: #059669;
+.room-timeline-dot-finding {
+    background-color: #f59e0b;
 
-    box-shadow: 0 0 0 2px #a7f3d0;
+    box-shadow: 0 0 0 2px #fde68a;
+}
+
+.room-timeline-dot-ai_draft {
+    background-color: #8b5cf6;
+
+    box-shadow: 0 0 0 2px #ddd6fe;
 }
 
 /* ---------- Event Content ---------- */
@@ -212,12 +212,61 @@
     padding-bottom: 1.25rem;
 }
 
+.room-timeline-event-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+
+    margin-bottom: 0.3rem;
+}
+
 .room-timeline-event-content h3 {
-    margin: 0 0 0.3rem;
+    margin: 0;
 
     color: #0f172a;
     font-size: 0.9rem;
     font-weight: 700;
+}
+
+.room-timeline-event-type {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.15rem 0.45rem;
+
+    border-radius: 999px;
+
+    font-size: 0.65rem;
+    font-weight: 700;
+
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+.room-timeline-event-type-system {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.room-timeline-event-type-observation {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.room-timeline-event-type-action {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.room-timeline-event-type-finding {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.room-timeline-event-type-ai_draft {
+    background-color: #f5f3ff;
+    color: #7c3aed;
 }
 
 .room-timeline-event-description {
@@ -249,7 +298,7 @@
     text-align: center;
 }
 
-/* ---------- Add Update Form ---------- */
+/* ---------- Add Entry Form ---------- */
 
 .room-timeline-update-form {
     display: grid;
@@ -346,7 +395,7 @@
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
 }
 
-/* ---------- Post Update Button ---------- */
+/* ---------- Post Entry Button ---------- */
 
 .room-timeline-update-button {
     min-width: 100px;

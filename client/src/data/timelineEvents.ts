@@ -1,14 +1,14 @@
 import type { TimelineEvent } from "../types/timelineEvent";
 
-export const timelineEvents: TimelineEvent[] = [
+export const timelineEvents: TimelineEvent [] = [
     {
         id: 1,
         roomId: "ROOM-0001",
         createdAt: new Date("2026-07-29T18:16:00"),
         title: "Incident created",
-        description: "Automatically created from local agent detection.",
+        description: "Incident room was created.",
         author: "System",
-        type: "created",
+        type: "system",
     },
     {
         id: 2,
@@ -17,33 +17,33 @@ export const timelineEvents: TimelineEvent[] = [
         title: "Anthony joined the room",
         description: "Joined as the assigned incident responder.",
         author: "System",
-        type: "joined",
+        type: "system",
     },
     {
         id: 3,
         roomId: "ROOM-0001",
         createdAt: new Date("2026-07-29T18:28:00"),
-        title: "Repeated failures detected",
-        description: "The local agent detected repeated service failures.",
-        author: "System",
-        type: "detection",
+        title: "Repeated failures observed",
+        description: "Repeated service failures were observed during the investigation.",
+        author: "Anthony",
+        type: "observation",
     },
     {
         id: 4,
         roomId: "ROOM-0001",
         createdAt: new Date("2026-07-29T18:34:00"),
         title: "Traffic rerouted",
-        description: "Traffic is being rerouted while the issue is investigated.",
+        description: "Traffic was rerouted while the issue was investigated.",
         author: "Anthony",
-        type: "update",
+        type: "action",
     },
     {
         id: 5,
         roomId: "ROOM-0001",
         createdAt: new Date("2026-07-29T18:41:00"),
-        title: "Service logs added",
-        description: "Relevant service logs were added as evidence.",
+        title: "Service logs reviewed",
+        description: "Service logs showed repeated failures during the affected period.",
         author: "Anthony",
-        type: "evidence",
+        type: "finding",
     },
 ];

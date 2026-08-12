@@ -4,10 +4,8 @@ import "./RoomTabs.css"
 export type RoomTab =
     | "Overview"
     | "Timeline"
-    | "Evidence"
     | "AI Analysis"
     | "Related Incidents"
-    | "Team Activity"
 
 type RoomTabsProps = {
     activeTab: RoomTab
@@ -17,10 +15,8 @@ type RoomTabsProps = {
 const roomTabs: RoomTab [] = [
     "Overview",
     "Timeline",
-    "Evidence",
     "AI Analysis",
     "Related Incidents",
-    "Team Activity",
 ]
 
 export default function RoomTabs ({ activeTab, onTabChange } : RoomTabsProps ) : JSX.Element {

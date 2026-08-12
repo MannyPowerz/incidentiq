@@ -1,0 +1,96 @@
+.room-ai-analysis {
+    width: 100%;
+    padding: 26px 32px 40px;
+    box-sizing: border-box;
+}
+
+/* AI Analysis heading */
+.room-ai-analysis-header {
+    margin-bottom: 20px;
+}
+
+.room-ai-analysis-header h2 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.room-ai-analysis-header p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #6b7280;
+}
+
+/* Analysis cards container */
+.room-ai-analysis-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Individual analysis card */
+.ai-analysis-card {
+    width: 100%;
+    padding: 22px 26px;
+
+    background-color: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+/* Card title */
+.ai-analysis-card h3 {
+    margin: 0 0 10px;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    color: #111827;
+}
+
+/* Card content */
+.ai-analysis-card p {
+    margin: 0;
+    max-width: 950px;
+
+    font-size: 15px;
+    line-height: 1.65;
+
+    color: #4b5563;
+}
+
+/* Tablet and mobile */
+@media (max-width: 768px) {
+    .room-ai-analysis {
+        padding: 22px 20px 32px;
+    }
+
+    .room-ai-analysis-header {
+        margin-bottom: 18px;
+    }
+
+    .room-ai-analysis-header h2 {
+        font-size: 24px;
+    }
+
+    .room-ai-analysis-content {
+        gap: 16px;
+    }
+
+    .ai-analysis-card {
+        padding: 20px;
+    }
+
+    .ai-analysis-card h3 {
+        font-size: 17px;
+    }
+
+    .ai-analysis-card p {
+        font-size: 14px;
+    }
+}

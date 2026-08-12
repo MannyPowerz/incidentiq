@@ -5,6 +5,8 @@ import RoomHeader from "../components/roomDetails/RoomHeader";
 import RoomOverview from "../components/roomDetails/tabs/RoomOverview";
 import RoomTabs, { type RoomTab } from "../components/roomDetails/RoomTabs";
 import RoomTimeline from "../components/roomDetails/tabs/RoomTimeline";
+import RoomAIAnalysis from "../components/roomDetails/tabs/RoomAIAnalysis";
+import { aiAnalyses } from "../data/aiAnalysis";
 import { rooms } from "../data/rooms";
 import type { JSX } from "react";
 import "./RoomDetailsPage.css"
@@ -43,6 +45,8 @@ export default function RoomDetailsPage () : JSX.Element {
         )
     }
 
+    const aiAnalysis = aiAnalyses.find((analysis) => analysis.roomId === room.id)
+
     return (
         <div className="room-details-layout">
             <DashboardSidebar activePage="Rooms"/>
@@ -60,6 +64,10 @@ export default function RoomDetailsPage () : JSX.Element {
 
                 {activeTab === "Timeline" && (
                     <RoomTimeline room={room} />
+                )}
+
+                {activeTab === "AI Analysis" && aiAnalysis && (
+                    <RoomAIAnalysis analysis={aiAnalysis} />
                 )}
             </main>
         </div>

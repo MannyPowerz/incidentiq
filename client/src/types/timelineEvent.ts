@@ -1,3 +1,15 @@
+export type TimelineEventType =
+    | "observation"
+    | "action"
+    | "finding"
+    | "system"
+    | "ai_draft"
+
+export type ManualTimelineEventType =
+    | "observation"
+    | "action"
+    | "finding"
+
 export type TimelineEvent = {
     id: number
     roomId: string
@@ -5,10 +17,5 @@ export type TimelineEvent = {
     title: string
     description: string
     author: string
-    type: "created" | "joined" | "detection" | "update" | "evidence"
+    type: TimelineEventType
 }
-
-export type ManualTimelineEventTypes = 
-    | "detection"
-    | "update"
-    | "evidence"

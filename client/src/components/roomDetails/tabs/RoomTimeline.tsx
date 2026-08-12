@@ -2,8 +2,8 @@ import { useState } from "react";
 import type { JSX, ChangeEvent, ComponentProps } from "react";
 import type { Room } from "../../../types/room";
 import { timelineEvents } from "../../../data/timelineEvents";
+import type { TimelineEvent, ManualTimelineEventType } from "../../../types/timelineEvent";
 import "./RoomTimeline.css"
-import type { TimelineEvent, ManualTimelineEventTypes } from "../../../types/timelineEvent";
 
 type RoomTimelineProps = {
     room: Room
@@ -17,19 +17,19 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
 
     const [ events, setEvents ] = useState<TimelineEvent[]>(initialEvents)
 
-    const [ updateType, setUpdateType ] = useState<ManualTimelineEventTypes>("update")
+    const [ entryType, setEntryType ] = useState<ManualTimelineEventType>("observation")
 
-    const [ updateTitle, setUpdateTitle ] = useState<string>("")
+    const [ entryTitle, setEntryTitle ] = useState<string>("")
 
-    const [ updateText, setUpdateText ] = useState<string>("")
+    const [ entryText, setEntryText ] = useState<string>("")
 
     const handleSubmit: ComponentProps<"form">["onSubmit"] = event => {
         event.preventDefault()
 
-        const trimmedTitle = updateTitle.trim()
-        const trimmedUpdate = updateText.trim()
+        const trimmedTitle = entryTitle.trim()
+        const trimmedEntry = entryText.trim()
 
-        if (!trimmedUpdate || !trimmedTitle) {
+        if (!trimmedEntry || !trimmedTitle) {
             return
         }
 
@@ -38,9 +38,9 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
             roomId: room.id,
             createdAt: new Date(),
             title: trimmedTitle,
-            description: trimmedUpdate,
+            description: trimmedEntry,
             author: "You",
-            type: updateType
+            type: entryType
         }
 
         setEvents((currentEvents) => [
@@ -48,13 +48,13 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
             newEvent,
         ])
 
-        setUpdateType("update")
-        setUpdateTitle("")
-        setUpdateText("")
+        setEntryType("observation")
+        setEntryTitle("")
+        setEntryText("")
     }
 
     function handleTypeChange( event: ChangeEvent<HTMLSelectElement> ) : void {
-        setUpdateType(event.target.value as ManualTimelineEventTypes)
+        setEntryType(event.target.value as ManualTimelineEventType)
     }
 
     return (
@@ -67,7 +67,7 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
                 <div className="room-timeline-header">
                     <div>
                         <h2 id="room-timeline-title" className="room-timeline-title">Timeline</h2>
-                        <p className="room-timeline-subtitle">Activity and updates for {room.id}</p>
+                        <p className="room-timeline-subtitle">Investigation activity for {room.id}</p>
                     </div>
                 </div>
 
@@ -110,11 +110,24 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
                                 </div>
 
                                 <div className="room-timeline-event-content">
-                                    <h3>{event.title}</h3>
+
+                                    <div className="room-timeline-event-heading">
+                                        <span
+                                            className={`room-timeline-event-type ` + `room-timeline-event-type-${event.type}`}
+                                        >
+                                            {event.type.replace(
+                                                "_", " "
+                                            )}
+                                        </span>
+
+                                        <h3>{event.title}</h3>
+                                    </div>
 
                                     <p className="room-timeline-event-description">{event.description}</p>
+                                    <span className="room-timeline-author">
+                                        Posted by {event.author}
+                                    </span>
 
-                                    <span className="room-timeline-author">Posted by {event.author}</span>
                                 </div>
                             </article>
                         ))
@@ -133,57 +146,57 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
 
                         <label 
                             className="room-timeline-update-label"
-                            htmlFor="timeline-update-type"
+                            htmlFor="timeline-entry-type"
                         >
-                            Type
+                            Entry type
                         </label>
 
                         <select
-                            id="timeline-update-type"
+                            id="timeline-entry-type"
                             className="room-timeline-update-select"
-                            value={updateType}
+                            value={entryType}
                             onChange={handleTypeChange}
                         >
-                            <option value="update">Investigation Update</option>
-                            <option value="detection">Detection</option>
-                            <option value="evidence">Evidence</option>
+                            <option value="observation">Observation</option>
+                            <option value="action">Action</option>
+                            <option value="finding">Finding</option>
                         </select>
                     </div>
 
                     <div className="room-timeline-form-field">
                         <label 
                             className="room-timeline-update-label"
-                            htmlFor="timeline-update-title"
+                            htmlFor="timeline-entry-title"
                         >
                             Title
                         </label>
 
                         <input
-                            id="timeline-update-title"
+                            id="timeline-entry-title"
                             className="room-timeline-update-title-input"
                             type="text"
                             placeholder="Example: Database logs reviewed"
-                            value={updateTitle}
-                            onChange={(event) => setUpdateTitle(event.target.value)}
+                            value={entryTitle}
+                            onChange={(event) => setEntryTitle(event.target.value)}
                             required
                         />
                     </div>
 
-                    <div className="room-timeline-form-field room-timeline-form-field-update">
+                    <div className={"room-timeline-form-field " + "room-timeline-form-field-update"}>
                         <label  
                             className="room-timeline-update-label"
-                            htmlFor="timeline-update"
+                            htmlFor="timeline-entry"
                         >
-                            Update
+                            Details
                         </label>
 
                         <textarea
-                            id="timeline-update"
+                            id="timeline-entry"
                             className="room-timeline-update-input"
-                            placeholder="Share an update with the team..."
+                            placeholder="Share what you observed, did, or discovered..."
                             rows={4}
-                            value={updateText}
-                            onChange={(event) => setUpdateText(event.target.value)}
+                            value={entryText}
+                            onChange={(event) => setEntryText(event.target.value)}
                             required
                         />
                     </div>
@@ -191,9 +204,9 @@ export default function RoomTimeline ({ room }: RoomTimelineProps) : JSX.Element
                     <button 
                         className="room-timeline-update-button" 
                         type="submit"
-                        disabled={!updateTitle.trim() || !updateText.trim()}
+                        disabled={!entryTitle.trim() || !entryText.trim()}
                     >
-                        Post Update
+                        Post Entry
                     </button>
 
                 </form>
