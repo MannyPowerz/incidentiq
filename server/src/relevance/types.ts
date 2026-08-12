@@ -6,9 +6,12 @@
  * entry is already saved, and its output only ever orders a list.
  *
  * Three pieces, one owner each. They only stay parallel if this file stays still:
- *   1. collector  — shells out to git, returns CommitTouch[]
- *   2. scoring    — turns those touches into a TeammateScore per person
- *   3. reason     — turns one TeammateScore into a sentence a human reads
+ *   1. collector (Gabriella) — shells out to git, returns CommitTouch[]
+ *   2. scoring   (Manny)     — turns those touches into a TeammateScore per person
+ *   3. reason    (Anthony)   — turns one TeammateScore into a sentence a human reads
+ *
+ * The collector is the critical path: 2 and 3 both read shapes it produces, so it is the one
+ * piece worth landing early even in rough form.
  *
  * Rules of the road, agreed 2026-08-11 and recorded in ADR 0011:
  *   - Additive only. Fields get added, never renamed or removed, without telling the other two.
@@ -17,7 +20,7 @@
  */
 
 // ---------------------------------------------------------------------------
-// 1. COLLECTOR — owned by whoever takes the git log piece
+// 1. COLLECTOR — Gabriella
 // ---------------------------------------------------------------------------
 
 /**
@@ -55,7 +58,7 @@ export interface CommitTouch {
 }
 
 // ---------------------------------------------------------------------------
-// 2. SCORING — owned by Manny
+// 2. SCORING — Manny
 // ---------------------------------------------------------------------------
 
 /**
@@ -114,7 +117,7 @@ export interface TeammateScore {
 }
 
 // ---------------------------------------------------------------------------
-// 3. REASON — owned by whoever takes the reason string piece
+// 3. REASON — Anthony
 // ---------------------------------------------------------------------------
 
 /**
