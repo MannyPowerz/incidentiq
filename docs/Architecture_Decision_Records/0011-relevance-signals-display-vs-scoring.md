@@ -59,6 +59,32 @@ just arrive from somewhere better.
 **The contract is additive-only.** Fields get added, never renamed or removed,
 without telling the other two owners.
 
+**Recency decays exponentially on a 14-day half-life**, rather than counting
+fully until a cutoff and then nothing. A cutoff means a commit at day 29 counts
+in full and day 31 counts zero, so someone's relevance collapses overnight for
+no reason anyone can point at. 14 days is a guess and is written down as one:
+someone who touched a file two weeks ago probably still has it in their head,
+two months ago they do not.
+
+**`decayWeight` takes the current time as a parameter** instead of reading the
+clock itself. That keeps it pure, so a test can assert that a 14-day-old commit
+weighs exactly 0.5 rather than approximately a half. Worth noting this is the
+opposite call from `updated_at = now()` in the fingerprint upsert, where
+reading the database's own clock was the entire point — there the value had to
+come from one trusted source, here it has to come from the caller.
+
+**A commit dated in the future scores zero, and is not clamped to 1.** A
+negative age makes the weight exceed 1, so a single bad timestamp would
+outweigh every legitimate commit combined. Clamping would cap the damage but
+keeps untrusted data in the ranking; refusing it means a broken clock cannot
+inflate anyone. The skew cannot be corrected where it is detected: git records
+what that laptop believed, and there is no reference clock to compare against.
+
+**Bad timestamps are detected, not prevented, for now.** The collector logs a
+future-dated commit when it sees one; nothing stops it being created. Detection
+sits in the collector rather than the scorer because it has the commit hash and
+author, while the scorer only ever sees a weight that came out zero.
+
 ## Alternatives rejected & why
 - **A single opaque score** — rejected: the smallest thing to build and the one
   that guarantees the reason generator has nothing to say. Directly contradicts
@@ -80,6 +106,25 @@ without telling the other two owners.
   needs no schema change and works on any entry, but for `ai_draft` entries the
   body is English prose written by the model, not the stack trace it read. The
   paths are in the AI's input, which is not stored.
+- **A shared git hook rejecting future-dated commits** — rejected for now: it
+  stops the problem at the earliest possible point, but hooks are not versioned
+  with the repo, so every machine needs a one-time `core.hooksPath` step. The
+  failure is circular — the person whose clock is broken is disproportionately
+  the person who skipped the setup. New infrastructure for a problem that has
+  not occurred.
+- **A CI check failing PRs with future-dated commits** — rejected for now, and
+  for a reason worth separating from this ADR: there is no CI in this repo at
+  all. `.github/` holds a pull request template and nothing else. Adding the
+  check means first deciding to run the suite on PRs, which needs a Postgres
+  service container. That is worth doing on its own merits, but it is a
+  project-wide decision and should not be motivated by clock skew.
+- **Correcting skew rather than rejecting it** — rejected as unreachable
+  locally. The techniques that work need a reference clock: a server-side
+  receive time, which `architecture.md` line 44 rules out at Minimum with "no
+  GitHub API", or parent-date monotonicity, since a commit cannot legitimately
+  predate its parent. The second is available offline and is the real upgrade
+  path, but it needs the collector to walk the commit graph rather than read a
+  flat log, so it reshapes somebody else's piece.
 
 ## Consequences
 - The collector must return commit subjects and skip merge commits. That is a
