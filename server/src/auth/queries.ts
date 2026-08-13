@@ -37,11 +37,11 @@ export async function insertUser(
     passwordHash: string,
     orgId: number
 ): Promise<User> {
-    const { rows } = await pool.query(
-        'INSERT INTO users (email, password_hash, org_id, role) VALUES ($1, $2, $3, $4) RETURNING *',
-        [email, passwordHash, orgId, 'responder']
-    );
-    return rows[0];
+  const { rows } = await pool.query(
+    'INSERT INTO users (email, password_hash, org_id, role) VALUES ($1, $2, $3, $4) RETURNING *',
+    [email, passwordHash, orgId, 'responder']
+  );
+  return rows[0];
 }
 
 // save a refresh token. We store only its fingerprint (the hash), never the token itself —

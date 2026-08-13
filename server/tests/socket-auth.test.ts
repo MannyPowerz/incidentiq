@@ -3,7 +3,7 @@ import { createServer, type Server as HttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Server } from 'socket.io';
 import { io as ioc, type Socket as ClientSocket } from 'socket.io-client';
-import { socketAuth } from '../src/middleware/socket.js';
+import { socketAuth } from '../src/Socket/middleware/socket.js';
 import { signAccessToken } from '../src/auth/tokens.js';
 
 // Exercises the REAL socketAuth middleware through a real handshake — unlike socket.test.ts,

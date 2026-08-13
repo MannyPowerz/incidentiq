@@ -1,0 +1,102 @@
+.rooms-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rooms-search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.rooms-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+
+  transform: translateY(-50%);
+
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.rooms-search-input {
+  width: 100%;
+  height: 2.75rem;
+
+  padding: 0 1rem 0 2.8rem;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+
+  background-color: #ffffff;
+
+  color: #0f172a;
+  font: inherit;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rooms-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.rooms-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.rooms-filter-select {
+  width: 160px;
+  height: 2.75rem;
+  flex-shrink: 0;
+
+  padding: 0 2.5rem 0 1rem;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+
+  background-color: #ffffff;
+
+  color: #0f172a;
+  font: inherit;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rooms-filter-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+@media (max-width: 1100px) {
+  .rooms-filters {
+    flex-wrap: wrap;
+  }
+
+  .rooms-search {
+    flex: 1 1 100%;
+  }
+
+  .rooms-filter-select {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 700px) {
+  .rooms-filter-select {
+    width: 100%;
+  }
+}

@@ -9,7 +9,7 @@ import QuickActions from "../components/dashboard/QuickActions"
 export default function DashboardPage() : JSX.Element {
     return (
         <div className="dashboard-layout">
-            <DashboardSidebar />
+            <DashboardSidebar activePage="Dashboard" />
             <main className="dashboard-page">
                 <div className="dashboard-container">
                     <DashboardHeader />
