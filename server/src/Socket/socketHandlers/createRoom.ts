@@ -23,8 +23,13 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
             }
 
             const roomName = formatRoomName(incidentId)
+            /**joining room before quering history beacuse if swapped at this interval; specific inserts and broadcasting will be absent in history and live
+             * delivery
+             */
 
-            /** Before a socket joins the room, we determine if the socket is joining a room for the first time based on if Client payload for sinceId is undefined
+            await socket.join(roomName)
+
+            /** After a socket joins the room, we determine if the socket is joining a room for the first time based on if Client payload for sinceId is undefined
              *  or if they disconnected in the middle of the room and needs to get all the the missed messages startig from their last seen 
              * timeline_entries id that the client-side rendered/contained locally .
             */
@@ -35,7 +40,6 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
                 history = await findTimelineEntriesByIncident(incidentId)
             }
 
-            await socket.join(roomName)
             /**Providing the send-history event an ack callback will notify server-side the if all goes well and the client recieved the history
              * payload otherwise they will get an error callback specifying the nature of the error simutaneously ensuring timeout prevents the callback
              * from pending indefinitely

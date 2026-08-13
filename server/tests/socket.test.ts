@@ -57,8 +57,8 @@ describe('connection Room', () => {
             //using .once() so event can detach after firing once. Using .on() will fire multiple times and leak across test
             //making sure to include the ack to make sure the receiving side is sending the response
             client.once(event, (payload:T, callback?) => {
-                //null for the error since this is the success packet
-                callback?.(payload)
+                //client recieved the payload
+                callback?.('recieved')
                 resolve(payload)
             })
             client.once('Invalid-Schema', (err:Error) => {

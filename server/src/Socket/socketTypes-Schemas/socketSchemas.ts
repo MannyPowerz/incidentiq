@@ -3,9 +3,10 @@ import type { ClientToServer } from './socketTypes.js'
 
 //This schema emmits a number identically the incidentId
 const joinRoomSchema = z.object({
-    incidentId: z.number(),
+    //to represent literal DB id
+    incidentId: z.number().int().positive(),
     //sinceId is either a number equavialent to a timeline_entries id or undefined. This is determined if socket joines normally or joines upon disconection
-    sinceId: z.number().optional()
+    sinceId: z.number().int().positive().optional()
 })
 
 const SendingMessageSchema = z.object({
