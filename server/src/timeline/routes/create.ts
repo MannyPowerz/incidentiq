@@ -7,6 +7,7 @@ import {insertTimelineEntry} from '../queries.js'
 import { findIncidentById } from '../../incidents/queries.js';
 import { io } from '../../socketServer.js';
 import {formatRoomName} from '../../Socket/socketHandlers/formatJoin.js'
+import { AiDraftProviderError, aiDraftSchema } from '../../ai/types.js';
 
 
 export async function handleCreateTimelineEntry(req: Request, res: Response) {
@@ -16,7 +17,20 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
     const orgId = req.user!.org_id; // identity from the verified token, never the body
     const authorId = Number(req.user!.sub); // sub is a string in the token; the column wants a number
 
-    const { type, body } = req.body; // already screened by validateBody(postTimelineEntrySchema)
+    let { type, body } = req.body; // already screened by validateBody(postTimelineEntrySchema)
+
+    // As assurance, currently, the postTimelineEntrySchema admits any type of object as a body. In terms of an AI draft,
+    //which is produced by the server, it would be effecient to check at an entrance point of view
+    if(type === 'ai_draft') {
+        const checked = aiDraftSchema.safeParse(body)
+
+        if(!checked.success) {
+            //leaked checked.error.issues in {cause} to provide a human readable error and metadata of the issue
+            new AiDraftProviderError(`Ai response did not match aiDraftSchema for incident ${incidentId}`, {cause: checked.error.issues})
+            return
+        }
+        body = checked.data
+    }
 
     // org gate: confirm the incident exists AND is yours before writing to it. Same 404 whether it's
     //  -> missing or another org's, so a caller can't probe which ids exist — and it's what lets the
