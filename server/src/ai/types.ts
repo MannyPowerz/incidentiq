@@ -46,3 +46,5 @@ export class AiDraftValidationError extends Error {
         this.name = 'AiDraftValidationError';
     }
 }
+
+export type ErrorResponse = {error: string, message: string}
