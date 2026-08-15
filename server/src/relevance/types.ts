@@ -50,6 +50,22 @@ export interface RelevanceContext {
 }
 
 /**
+ * One team member, and the bridge between the two halves of this file: CommitTouch knows people by
+ * email, TeammateScore knows them by user_id, and nothing else connects the two.
+ *
+ * A plain array rather than a Map or a lookup function, because everything else here is data the
+ * server could serialize and send elsewhere — architecture.md calls relevance a stateless helper,
+ * and a Map or a closure could not survive that becoming literally true.
+ *
+ * The email must be the one git reports after .mailmap is applied, not whatever is on the account.
+ * That is what makes a laptop configured with a personal address still resolve to the right person.
+ */
+export interface TeamMember {
+    user_id: number;
+    email: string;
+}
+
+/**
  * One teammate's result, and the whole contract between scoring and reason.
  * Not a single number: the reason can only say what this carries.
  */
