@@ -75,9 +75,21 @@ export interface TeammateScore {
     /** What step 10 sorts on. Only meaningful against other people on the same entry. */
     score: number;
 
-    /** Kept separate so the reason can name whichever one dominated. */
+    /**
+     * Kept separate so the reason can name whichever one dominated.
+     * Each is brought onto a 0..1 scale before the weights are applied, so they can be compared.
+     */
     signals: {
         recency: number;
+
+        /**
+         * How much they have been on these files lately: commits inside a recent window, over a cap.
+         * Above the cap everyone ties at 1, on purpose — 12 commits and 40 both just mean "a lot",
+         * and nothing downstream does anything different with the gap between them.
+         * Windowed and absolute, where ownership is all-time and a share. A share of the team's
+         * total here would be ownership under a second name, and then two of the three signals
+         * could never disagree, which is the whole reason there are three.
+         */
         frequency: number;
 
         /** Weighted highest: in an incident, who knows the code beats who edited it last. */
@@ -86,7 +98,10 @@ export interface TeammateScore {
 
     /**
      * DISPLAY ONLY. The last thing they actually did to these files.
-     * null when there's nothing worth saying — no touches, or a subject like "wip" or "asdf".
+     *
+     * null means one thing and nothing else: they have no touches here. A useless subject like
+     * "wip" or "asdf" still arrives populated, because deciding it is not worth showing is a call
+     * about the finished sentence, and Anthony is the only one who can see the finished sentence.
      */
     last_touch: {
         file_path: string;
