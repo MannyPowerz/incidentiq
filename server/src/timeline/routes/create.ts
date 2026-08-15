@@ -8,6 +8,7 @@ import { findIncidentById } from '../../incidents/queries.js';
 import { io } from '../../socketServer.js';
 import {formatRoomName} from '../../Socket/socketHandlers/formatJoin.js'
 import { AiDraftProviderError, aiDraftSchema } from '../../ai/types.js';
+import { resolveAuthorId } from '../resolveAuthorId.js';
 
 
 export async function handleCreateTimelineEntry(req: Request, res: Response) {
@@ -21,6 +22,7 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
 
     // As assurance, currently, the postTimelineEntrySchema admits any type of object as a body. In terms of an AI draft,
     //which is produced by the server, it would be effecient to check at an entrance point of view
+    const user = resolveAuthorId(type, authorId)
     if(type === 'ai_draft') {
         const checked = aiDraftSchema.safeParse(body)
 
@@ -46,7 +48,7 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
         return;
     }
 
-    const entry = await insertTimelineEntry(incidentId, authorId, type, body);
+    const entry = await insertTimelineEntry(incidentId, user, type, body);
 
     // broadcast AFTER the write succeeds — DB-write-before-broadcast. Room name matches
     // -> createRoom.ts's socket.join(String(incidentId)), so this reaches everyone already joined.

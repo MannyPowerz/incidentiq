@@ -1,5 +1,6 @@
 import { pool } from "../../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
+import { resolveAuthorId } from "../../timeline/resolveAuthorId.js";
 import type { TypeServer, TypeSocket, MessageCLientOrServer} from "../socketTypes-Schemas/socketTypes.js";
 
 
@@ -35,9 +36,11 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
                 return
             }
 
+            //check if this transports(socket) user is valid
+            const user = resolveAuthorId(type, socket.data.userId)
             const {rows: [entry]} = await pool.query<MessageCLientOrServer>(`INSERT INTO timeline_entries(incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING *`,
                 //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
-                [incident_id, socket.data.userId, type, body])
+                [incident_id, user, type, body])
             
 
             io.to(formatRoomName(incident_id)).emit('new-message', {
