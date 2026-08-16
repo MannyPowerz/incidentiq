@@ -42,6 +42,7 @@ function normalizeEmail(email: string): string {
  * The 0 seed is the answer for someone with no touches. Math.max() on nothing returns -Infinity.
  */
 export function recencyOf(userTouches: CommitTouch[], now: Date): number {
+    // reduce carries one running value across the list. bestSoFar is it, and 0 is where it starts.
     const best = userTouches.reduce(
         (bestSoFar, touch) => Math.max(bestSoFar, decayWeight(touch.committed_at, now)),
         0
@@ -72,6 +73,7 @@ export function frequencyOf(userTouches: CommitTouch[], now: Date): number {
         return ageMs >= 0 && ageMs <= windowMs;
     });
 
+    // 3 commits over a cap of 10 is 0.3. 40 is 4.0, and min drags it back down to 1.
     const frequency = Math.min(recent.length / FREQUENCY_CAP_COMMITS, 1);
 
     return frequency;
@@ -106,6 +108,7 @@ export function ownershipOf(userTouches: CommitTouch[], totalTouches: number): n
 function lastTouchOf(userTouches: CommitTouch[]): TeammateScore['last_touch'] {
     if (userTouches.length === 0) return null;
 
+    // No starting value this time, so reduce begins at the first touch and keeps whichever is later.
     const latest = userTouches.reduce((newest, touch) =>
         touch.committed_at > newest.committed_at ? touch : newest
     );
@@ -125,7 +128,10 @@ export function scoreTeammates(
 ): TeammateScore[] {
     // startsWith rather than an exact match, because file_paths currently holds directories mapped
     // -> from the incident's affected_system, and will hold exact files once the agent reports them.
+
     // Exact equality would match nothing today and every score would come out zero.
+    
+    // some() collapses the whole path list into one yes/no, which is the answer filter() keeps on.
     const relevant = touches.filter((touch) =>
         context.file_paths.some((path) => touch.file_path.startsWith(path))
     );
@@ -179,14 +185,14 @@ export function scoreTeammates(
 
         // Weighted average, not a plain sum. A plain sum maxes at 3 instead of 1 and counts all
         // -> three signals equally, which is exactly what ADR 0011 decided against.
+        // 0.3(0.9) + 0.2(0.2) + 0.5(0.8) = 0.71. The ceiling is 1 because the weights add to 1.
         const score =
             WEIGHT_RECENCY * recency +
             WEIGHT_FREQUENCY * frequency +
             WEIGHT_OWNERSHIP * ownership;
 
         return {
-            user_id: member.user_id,
-            score,
+            user_id: member.user_id, score,
             signals: { recency, frequency, ownership },
             last_touch: lastTouchOf(userTouches)
         };
