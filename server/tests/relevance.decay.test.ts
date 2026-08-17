@@ -7,7 +7,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { decayWeight, RELEVANCE_HALF_LIFE_DAYS } from '../src/relevance/decay.js';
+import { decayWeight } from '../src/relevance/decay.js';
+import { RELEVANCE_HALF_LIFE_DAYS } from '../src/relevance/constants.js';
 
 const NOW = new Date('2026-08-11T12:00:00Z');
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
