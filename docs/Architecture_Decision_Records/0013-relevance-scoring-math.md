@@ -184,11 +184,31 @@ makes the all-zero case worse rather than better.
   they are guesses and that real click data from `signatures_detected` is what
   replaces them. Isolating them is the mitigation; it does not make them less
   invented.
-- The 0..1 discipline is load-bearing and unenforced by any type. `number` does
-  not say "between zero and one", so a future fourth signal returning a raw
-  count would break the weighting with no compiler error and no obviously wrong
-  output. The three signal functions are exported individually so a test can
-  hold each to its range.
+- **The 0..1 discipline is load-bearing and only partly enforced.** `number` does
+  not say "between zero and one", so a future fourth signal returning a raw count
+  would break the weighting with no compiler error and no obviously wrong output.
+  Three layers stand in for the type that does not exist, and it is worth being
+  precise about what each one actually catches, because the gap between them is
+  where a future signal will slip through:
+  - **The weights summing to 1** is checked by the range test, which was found by
+    mutation rather than designed: raising one weight without lowering another
+    pushes the ceiling to 1.2 and the assertion fires.
+  - **Each signal's own range** is asserted alongside the total, not just the
+    total. A signal can exceed 1 and still hide inside a passing score, since a
+    frequency of 1.5 contributes only 0.3 and the sum stays under 1 whenever the
+    other two signals are low.
+  - **What neither covers** is the range holding for inputs the fixtures do not
+    produce. The fixtures deliberately hit the edges that matter today — past the
+    cap, far older than the half-life, future-dated — so the coverage is real, but
+    it is example-based and a new signal brings new edges with it.
+  Closing that last gap properly means property-based testing: generate arbitrary
+  touch lists and assert the invariant survives all of them. **Deliberately not
+  done for the MVP.** It is a new dependency and a new idea for the team, and the
+  return is low against three signals whose maths is four lines each and whose
+  bounds are visible by reading them. The point at which it earns itself is a
+  fourth or fifth signal, or one whose bound is an argument rather than an
+  inspection — that is the trigger to revisit, not a general aspiration to more
+  tests.
 - The weights table above is a test waiting to be written. Asserting that the
   quiet author outranks the fresh typo-fixer is the one test that fails if
   somebody retunes the weights past the point where 0011 still holds.

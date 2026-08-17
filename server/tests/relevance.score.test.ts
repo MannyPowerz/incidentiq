@@ -231,9 +231,17 @@ describe('scoreTeammates', () => {
         });
     });
 
-    // the weights sum to 1 and every signal is capped at 1, so nothing can leave the range.
-    // A future signal returning a raw count would break this and no type would catch it.
-    it('keeps every score inside zero and one', () => {
+    // The weights sum to 1 and every signal is capped at 1, so nothing can leave the range.
+    // Nothing in the type system says so: `number` does not mean "between zero and one".
+    //
+    // The signals are checked as well as the total, because a signal can go out of range and hide
+    // -> inside a passing score. A frequency of 1.5 only contributes 0.3, so if the other two are
+    // -> low the sum still lands under 1 and the broken signal never shows.
+    //
+    // What this does not do is prove the range holds for every input, only for these. The fixtures
+    // -> are chosen to hit the edges that matter: past the cap, far older than the half-life, and
+    // -> a future date. Generated inputs would close the rest; see ADR 0013 for why not yet.
+    it('keeps every score and every signal inside zero and one', () => {
         const touches = [
             ...many(60, MANNY.email, 0),
             ...many(30, GABBY.email, 900),
@@ -245,8 +253,10 @@ describe('scoreTeammates', () => {
         warn.mockRestore();
 
         for (const s of scores) {
-            expect(s.score).toBeGreaterThanOrEqual(0);
-            expect(s.score).toBeLessThanOrEqual(1);
+            for (const value of [s.score, ...Object.values(s.signals)]) {
+                expect(value).toBeGreaterThanOrEqual(0);
+                expect(value).toBeLessThanOrEqual(1);
+            }
         }
     });
 
