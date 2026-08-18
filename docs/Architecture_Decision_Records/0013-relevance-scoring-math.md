@@ -201,14 +201,9 @@ makes the all-zero case worse rather than better.
     produce. The fixtures deliberately hit the edges that matter today — past the
     cap, far older than the half-life, future-dated — so the coverage is real, but
     it is example-based and a new signal brings new edges with it.
-  Closing that last gap properly means property-based testing: generate arbitrary
-  touch lists and assert the invariant survives all of them. **Deliberately not
-  done for the MVP.** It is a new dependency and a new idea for the team, and the
-  return is low against three signals whose maths is four lines each and whose
-  bounds are visible by reading them. The point at which it earns itself is a
-  fourth or fifth signal, or one whose bound is an argument rather than an
-  inspection — that is the trigger to revisit, not a general aspiration to more
-  tests.
+  Closing that last gap properly means property-based testing. It is deliberately
+  not done, and the reasoning turned out to be project-wide rather than specific
+  to relevance, so it lives in 0015 along with the trigger for revisiting it.
 - The weights table above is a test waiting to be written. Asserting that the
   quiet author outranks the fresh typo-fixer is the one test that fails if
   somebody retunes the weights past the point where 0011 still holds.

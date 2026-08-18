@@ -231,16 +231,11 @@ describe('scoreTeammates', () => {
         });
     });
 
-    // The weights sum to 1 and every signal is capped at 1, so nothing can leave the range.
-    // Nothing in the type system says so: `number` does not mean "between zero and one".
-    //
-    // The signals are checked as well as the total, because a signal can go out of range and hide
-    // -> inside a passing score. A frequency of 1.5 only contributes 0.3, so if the other two are
-    // -> low the sum still lands under 1 and the broken signal never shows.
-    //
-    // What this does not do is prove the range holds for every input, only for these. The fixtures
-    // -> are chosen to hit the edges that matter: past the cap, far older than the half-life, and
-    // -> a future date. Generated inputs would close the rest; see ADR 0013 for why not yet.
+    // Nothing in the types says a signal is 0..1, so this assertion is the only thing holding it.
+    // Signals as well as the total, because a frequency of 1.5 only contributes 0.3 and hides
+    // -> inside a passing score whenever the other two are low.
+    // Only proves it for these inputs, which is why they sit at the edges: past the cap, far older
+    // -> than the half-life, and future-dated. ADR 0015 covers what would close the rest.
     it('keeps every score and every signal inside zero and one', () => {
         const touches = [
             ...many(60, MANNY.email, 0),
