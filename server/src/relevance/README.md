@@ -61,9 +61,26 @@ but present on all three. That is the shape the scoring is meant to reward.
 
 ## Two things that will confuse you otherwise
 
-**Nothing calls `scoreTeammates` yet.** That is not an oversight. It needs the
-collector to produce `CommitTouch[]`, which is Gabriella's half and not merged.
-The scorer is finished and tested against fixtures.
+**Nothing calls `scoreTeammates` yet.** That is not an oversight. The scorer is
+finished and tested against fixtures, and it is waiting on its inputs.
+
+Wiring it is one call from wherever step 8 runs, after the entry is saved:
+
+```ts
+scoreTeammates(touches, roster, { entry_id, incident_id, file_paths }, new Date());
+```
+
+Three things have to exist first, and **none of them are in this folder**:
+
+| input | who | status |
+|---|---|---|
+| `CommitTouch[]` | the collector, Gabriella | not started, no branch yet |
+| `TeamMember[]` | a roster query, unassigned | does not exist. `auth/queries.ts` only looks users up one at a time |
+| `file_paths` | the system-name-to-directory map from ADR 0011 | not built |
+
+The collector is the one on the critical path, since the reason generator reads
+its output too. The other two are small and unowned, which is the more likely
+way they get missed.
 
 **`now` is a parameter everywhere instead of `Date.now()`.** That is what lets a
 test assert a 14-day-old commit weighs exactly 0.5 rather than roughly a half.
