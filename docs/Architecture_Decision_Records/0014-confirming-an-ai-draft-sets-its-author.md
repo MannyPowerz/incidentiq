@@ -77,15 +77,32 @@ recover it.
 A human who wants to change the draft rejects it and writes their own entry as a
 normal `finding`.
 
-This is forced by the two-state model rather than chosen freely, and it is worth
-being honest about that. An edited draft is neither state: keeping
-`type='ai_draft'` claims the model wrote text the human rewrote, and flipping
-the type claims the human wrote text the model drafted. Both are false, and
-there is no third state without the column this ADR declines to add.
+**The reason is measurement, and it is the strongest argument in this ADR.**
+0007 committed the AI service to shipping a Minimum and letting observed usage
+decide the next increment, and it named the specific things that have to be
+watched for that to work: invalid-output rate, cost, and **reviewer edit
+effort**. It made "drafts consistently need heavy editing" the trigger for
+changing model tier.
 
-Refusing the edit is the cheaper resolution and reads truer to "the human
-decides" anyway. Deciding is accepting or rejecting. Rewriting is authoring, and
-authoring already has a path.
+In-place editing destroys that measurement. A confirmed `ai_draft` row would
+sometimes be text the model wrote and sometimes text a human rewrote, with
+nothing distinguishing them, so nobody could ever answer how often the drafts
+are good enough to use unchanged. Every trigger in 0007 that depends on edit
+effort becomes unfireable, and the whole ship-and-measure strategy quietly stops
+working while looking like it still does.
+
+Under confirm-or-reject, the ratio itself is the measurement. Confirms are
+drafts good enough to stand behind untouched; rejections are drafts that were
+not. That is a clean signal from day one and it costs nothing to collect.
+
+**The two-state model forces the same answer independently.** An edited draft is
+neither state: keeping `type='ai_draft'` claims the model wrote text the human
+rewrote, and flipping the type claims the human wrote text the model drafted.
+Both are false, and there is no third state without the column this ADR
+declines to add.
+
+It also reads truer to "the human decides". Deciding is accepting or rejecting.
+Rewriting is authoring, and authoring already has a path.
 
 ### "Which entries did a person write" filters on `type`, not `author_id`
 
@@ -120,7 +137,10 @@ accountable for the entry, whoever produced the words.
   keep true.
 - **Allowing edits and leaving `type='ai_draft'`** — rejected: the entry then
   claims machine authorship of text a human rewrote. Quieter than the previous
-  option and false in the same way.
+  option, false in the same way, and the version that does the real damage,
+  because it is the one that looks harmless. It is also what makes 0007's edit-
+  effort trigger unmeasurable, since a confirmed draft would no longer tell you
+  whether the model's output was usable.
 - **A `confirmed BOOLEAN` flag** — rejected: records that someone confirmed
   without recording who, which is strictly less than `author_id` already gives,
   and adds a column that can disagree with `author_id`.
@@ -143,7 +163,13 @@ accountable for the entry, whoever produced the words.
   should carry that on the field.
 - **There is no representation for an edited draft**, by construction. If
   editing turns out to be something people want, that is the trigger to revisit
-  `confirmed_by`, not a reason to bend the two states.
+  `confirmed_by`, not a reason to bend the two states. Whatever replaces this has
+  to keep untouched confirms distinguishable from edited ones, or it gives back
+  the measurement that motivated the rule.
+- **The confirm-to-reject ratio becomes the AI's quality metric**, for free and
+  from the first draft. 0007 said the ship-and-measure strategy only works if
+  somebody actually watches, and this is the number to watch. Nothing computes or
+  surfaces it yet; the data is simply there to be counted once anyone wants it.
 - **The two-state machine rides on a nullable foreign key.** It works, and it is
   less explicit than a column named for the job. Anyone reading the schema cold
   sees a nullable `author_id` and has to reach this ADR to learn that null and
