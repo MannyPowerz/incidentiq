@@ -7,6 +7,9 @@
  *
  * The three signals stay separate all the way to the output so the reason generator can name
  * whichever one dominated. Collapsing them into a single number would leave it nothing to say.
+ *
+ * Nothing calls this yet, and that is not an oversight: it needs the collector to produce the
+ * touches. See README.md in this folder for a worked example with real numbers.
  */
 import type {
     CommitTouch,
@@ -14,7 +17,9 @@ import type {
     TeammateScore,
     TeamMember
 } from './types.js';
+
 import { decayWeight, MS_PER_DAY } from './decay.js';
+
 import {
     FREQUENCY_CAP_COMMITS,
     FREQUENCY_WINDOW_DAYS,

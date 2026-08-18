@@ -1,8 +1,8 @@
 /**
- * constants.ts — the three numbers the relevance engine was tuned with.
+ * constants.ts — every number the relevance engine was tuned with. Six of them.
  *
- * All three were invented, not measured. They are together in one file so nobody adjusts one
- * without seeing the other two, which is what happens when they live beside the code that uses them.
+ * All six were invented, not measured. They are in one file so nobody adjusts one without seeing
+ * the rest, which is what happens when each lives beside the code that uses it.
  *
  * Changing them changes ranking only. No type, shape, or behaviour depends on their values, so a
  * bad number makes the order worse and never breaks anything.
