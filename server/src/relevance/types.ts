@@ -126,5 +126,8 @@ export type ReasonFor = (score: TeammateScore) => string;
 // --- UNOWNED — decide before shipping ---------------------------------------
 
 // 1. Git author emails may not match users.email. A mismatch silently drops that person from every
-//    score rather than erroring. Whoever hits it first, raise it.
+//    score rather than erroring. Mitigated for Manny in .mailmap (repo root) — confirmed for real:
+//    manny.smart35@gmail.com resolves to mannysmart35@gmail.com under `git log --format=%aE`.
+//    Gabriella's and Anthony's rows are placeholders in that file until their account emails are
+//    confirmed. The collector MUST read %aE, not %ae — the latter ignores .mailmap entirely.
 // 2. What the UI shows when every score is zero. A real answer, not a bug — the reason needs a line for it.

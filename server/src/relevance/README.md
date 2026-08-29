@@ -91,6 +91,11 @@ whoever owns incident creation before this ships.
 test assert a 14-day-old commit weighs exactly 0.5 rather than roughly a half.
 Do not "simplify" it away.
 
+**The collector must read `git log --format=%aE`, not `%ae`.** Capital `E` is
+mailmap-resolved; lowercase ignores `.mailmap` (repo root) entirely. Without
+this, a teammate whose git config differs from their account email silently
+drops out of every score with no error anywhere.
+
 ## Where the reasoning lives
 
 The comments in these files explain individual lines. The arguments behind the
