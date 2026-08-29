@@ -101,6 +101,19 @@ describe('timeline smoke test', () => {
         expect(res.status).toBe(401);
     });
 
+    // ADR 0014: 'ai_draft' and 'system' have no human author (migration 0002), but this route used
+    // -> to stamp the caller's token as author_id regardless of type, so any client could POST an
+    // -> 'ai_draft' and get a row that was machine-typed with a human author_id. The schema now
+    // -> excludes both, so the request never reaches the handler that would have done that.
+    it.each(['ai_draft', 'system'])('rejects a client-posted %s entry with 400', async (type) => {
+        const { auth, incidentId } = await setup();
+        const res = await request(app)
+            .post(`/incidents/${incidentId}/timeline`)
+            .set(auth)
+            .send({ type, body: { text: 'x' } });
+        expect(res.status).toBe(400);
+    });
+
     it("can't post to or read another org's incident (404)", async () => {
         const { auth } = await setup(); // our user is in 'Demo Team'
 
