@@ -30,10 +30,6 @@ export interface ServerToClient {
     'Invalid-Schema': (value: {error: string, event?: ClientToServer}) => void
 }
 
-//Payload every messsage sends including type and body
-export type SendingMessagePayload = TimelineEntry
-
-
 type UserRole = 'responder' | 'lead' | 'admin';
 
 //data properties within each socket connection

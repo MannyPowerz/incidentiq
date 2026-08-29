@@ -1,8 +1,8 @@
-import { pool } from "../../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
 import type { TypeServer, TypeSocket} from "../socketTypes-Schemas/socketTypes.js";
 import { TimelineEntry } from "../../timeline/types.js";
 import { insertTimelineEntry } from "../../timeline/queries.js";
+import { findIncidentById } from "../../incidents/queries.js";
 
 //Once joining a specific incident, users can send messages including a payload of incident_id, author_id, type, and body
 //Based off the Clients payloaded response to the server, we will save that into timeline_entries and know who is responding
@@ -18,19 +18,18 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
                 return
             }
 
-            //extracting org_id from incidents to still check and see stillness and credibility if the org_id
-            const { rows: [incidents]} = await pool.query(`SELECT org_id FROM incidents WHERE id = $1`, [incident_id])
+            //Org-gate to still check the stillness and credibility if the org_id
+            const incident = await findIncidentById(incident_id, socket.data.orgId);
 
-            //first check on orgId on this specific path; since we are creating independent socket events, nothing forces
-            //users to travel through events in a distinct linear direction either of calling one before the other.
-            if(incidents.org_id !== socket.data.orgId) {
-                console.log('OrgId is invalid to send message')
-                socket.emit('socket-error', {error: 'OrgId is invalid to send message'})
-                return
+            //Validates if the incident actually exist
+            if (!incident) {
+                console.log("Incident room doesn't exist");
+                socket.emit('socket-error', { error: 'Incident room/id does not exist' });
+                return;
             }
 
             //checks if socket is in the current incident room
-            if(!socket.rooms.has(formatRoomName(incident_id))) {
+            if(!socket.rooms.has(formatRoomName(incident.id))) {
                 console.log('Socket  does not exist in the room')
                 socket.emit('no-socket-in-room', {error: 'Socket  does not exist in the room'})
                 return

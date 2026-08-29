@@ -23,9 +23,7 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
             }
 
             const roomName = formatRoomName(incidentId)
-            /**joining room before quering history beacuse if swapped at this interval; specific inserts and broadcasting will be absent in history and live
-             * delivery
-             */
+            /**joining room before quering history to prevent duplicate entries*/
 
             await socket.join(roomName)
 
@@ -62,7 +60,7 @@ export function createRooms(io: TypeServer, socket: TypeSocket) {
             console.log("Unable to join incident room. Error: ", err)
             socket.emit('socket-error', {error: 'Unable to join incident Room'})
             //socket leaves for thrown exceptions that might've occured in the try block preventing users to be in a broken state
-            socket.leave(formatRoomName(incidentId)) 
+            await socket.leave(formatRoomName(incidentId)) 
         }
     });
 }
