@@ -41,7 +41,7 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/incidents', incidentRouter);
 app.use('/incidents/:id/timeline', timelineRouter);
-app.use('/incident/:id/ai-draft', aiDraftRouter)
+app.use('/incidents/:id/ai-draft', aiDraftRouter)
 app.use('/fingerprints', fingerprintsRouter);
 
 io.use(socketAuth);
