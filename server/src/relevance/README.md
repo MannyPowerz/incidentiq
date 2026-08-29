@@ -70,17 +70,22 @@ Wiring it is one call from wherever step 8 runs, after the entry is saved:
 scoreTeammates(touches, roster, { entry_id, incident_id, file_paths }, new Date());
 ```
 
-Three things have to exist first, and **none of them are in this folder**:
+Three things have to exist first:
 
 | input | who | status |
 |---|---|---|
 | `CommitTouch[]` | the collector, Gabriella | not started, no branch yet |
-| `TeamMember[]` | a roster query, unassigned | does not exist. `auth/queries.ts` only looks users up one at a time |
-| `file_paths` | the system-name-to-directory map from ADR 0011 | not built |
+| `TeamMember[]` | `findTeamRoster` in `queries.ts` | done |
+| `file_paths` | `resolveFilePaths` in `systemPaths.ts` | done, with a real gap: see the file's header |
 
-The collector is the one on the critical path, since the reason generator reads
-its output too. The other two are small and unowned, which is the more likely
-way they get missed.
+The collector is now the only one on the critical path, since the reason
+generator reads its output too.
+
+`resolveFilePaths` closes half a gap, not the whole thing. It maps a known
+system name to a directory, but `affected_system` is free text with no
+enum — a human can type anything at incident-creation time, and this only
+fires when what they typed matches a key in the map. Worth raising with
+whoever owns incident creation before this ships.
 
 **`now` is a parameter everywhere instead of `Date.now()`.** That is what lets a
 test assert a 14-day-old commit weighs exactly 0.5 rather than roughly a half.
