@@ -1,6 +1,6 @@
 import { pool } from '../src/db/pool';
 import {signAccessToken} from '../src/auth/tokens.js'
-import { beforeAll, afterEach, afterAll, describe, expect, it, beforeEach } from 'vitest';
+import { beforeAll, afterEach, afterAll, describe, expect, it} from 'vitest';
 import { createServer, type Server as HttpServer} from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { Server, type Socket as serverSocket } from 'socket.io';
@@ -54,8 +54,17 @@ describe('connection Room', () => {
     //Handles socket.io callback events into something we can await
     function waitFor<T>(client: ClientSocket, event: string): Promise<T> {
         return new Promise((resolve, reject) => {
-            client.once(event, (payload: T) => resolve(payload)) //using .once() so event can detach after firing once. Using .on() will fire multiple times and leak across test
-            client.once('error', (err) => reject(err))
+            //using .once() so event can detach after firing once. Using .on() will fire multiple times and leak across test
+            //making sure to include the ack to make sure the receiving side is sending the response
+            client.once(event, (payload:T, callback?) => {
+                //client recieved the payload
+                callback?.('recieved')
+                resolve(payload)
+            })
+            client.once('Invalid-Schema', (err:Error) => {
+                client.disconnect();
+                reject(err)
+            })
         })
     }
 
@@ -93,7 +102,7 @@ describe('connection Room', () => {
         const client = await connectAs(token)
 
         const joined = waitFor(client, 'success')
-        client.emit('join-room', incidentId);
+        client.emit('join-room', {incidentId, sinceId: undefined});
         await joined
 
         const room = io.of('/').adapter.rooms.get(formatRoomName(incidentId));
@@ -106,9 +115,9 @@ describe('connection Room', () => {
         const { token, userId, incidentId } = await seedFixture();
         const client = await connectAs(token)
 
-        client.emit('join-room', incidentId);
+        client.emit('join-room', {incidentId, sinceId: undefined});
         await waitFor(client, 'success');
-
+        
         const broadcast = waitFor<TimelineEntry>(client, 'new-message');
 
         //what the client sends to the server
@@ -126,10 +135,60 @@ describe('connection Room', () => {
         expect(entry.type).toBe('ai_draft');
         expect(entry.body.summary).toBe('hello')
 
+        //this assertion proves that both paths produce the same shape, and proves that the collapsing of the two event names still passes that
+        //this checks that calling getTime() on entry.created_at doesn't validate a NaN value.
+        expect(new Date(entry.created_at).getTime()).not.toBeNaN()
+
         const { rows } = await pool.query(
             `SELECT author_id, incident_id, type, body FROM timeline_entries WHERE incident_id = $1`,
             [incidentId]
         )
         expect(rows).toHaveLength(1)
+    })
+
+    //our 'send-history' proves to send a re-connected socket their incident's timeline from the last one it recieved;
+    it('emitting history entries', async () => {
+        const { token, userId, incidentId} = await seedFixture();
+
+        //inserting three to entries to amplify testing and durability of assertions
+        const { rows } = await pool.query(`INSERT INTO timeline_entries (incident_id, author_id, type, body) VALUES
+            ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)`,
+            [incidentId, userId, 'observation', {}, incidentId, userId, 'finding', {}, incidentId, userId, 'action', {}]
+        )
+
+        const client = await connectAs(token);
+
+        const history = waitFor<TimelineEntry[]>(client, 'send-history')
+        client.emit('join-room', {incidentId, sinceId: undefined})
+
+        const entries = await history
+
+        expect(entries.length).toBe(3)
+        expect(entries.map(e => e.type)).toEqual(['observation', 'finding', 'action'])
+    })
+
+    //verifies the our org gate still holds when using function findIncidentById; enlisting another org to verify the failure when a socket from one org can pull a timeline
+    //from another org
+    it('verify org gate', async() => {
+        const {token} = await seedFixture()
+
+        const { rows: [otherOrg] } = await pool.query(`INSERT INTO orgs (name) VALUES('otherOrg') RETURNING *`)
+        const { rows: [secondUser] } = await pool.query('INSERT INTO users (email, password_hash, role, org_id) VALUES($1, $2, $3, $4) RETURNING id, role',
+            ['other@gmail.com', '5678', 'lead', otherOrg.id])
+        const { rows: [secondIncident] } = await pool.query('INSERT INTO incidents (title, status, org_id, severity, created_by) VALUES($1, $2, $3, $4, $5) RETURNING id', 
+            ['bad', 'detected', otherOrg.id, 'P1', secondUser.id])
+        const clientA = await connectAs(token)
+        try {
+            const rejection = waitFor<{error: string}>(clientA, 'socket-error')
+            clientA.emit('join-room', {incidentId: secondIncident.id, sinceId: undefined})
+    
+            const result = await rejection
+            expect(result.error).toBeDefined()
+        } finally {
+            await pool.query(`DELETE FROM incidents WHERE id = $1`, [secondIncident.id])
+            await pool.query(`DELETE FROM users WHERE id = $1`, [secondUser.id])
+            await pool.query(`DELETE FROM orgs WHERE id = $1`, [otherOrg.id])
+            clientA.disconnect()
+        }
     })
 });

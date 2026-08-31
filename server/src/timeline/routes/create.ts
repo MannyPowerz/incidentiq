@@ -52,7 +52,7 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
 
     // broadcast AFTER the write succeeds — DB-write-before-broadcast. Room name matches
     // -> createRoom.ts's socket.join(String(incidentId)), so this reaches everyone already joined.
-    io.to(formatRoomName(incidentId)).emit('entry:new', entry);
+    io.to(formatRoomName(incidentId)).emit('new-message', entry);
 
     res.status(201).json({ entry });
 }
