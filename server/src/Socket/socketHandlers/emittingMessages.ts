@@ -1,7 +1,8 @@
-import { pool } from "../../db/pool.js";
 import { formatRoomName } from "./formatJoin.js";
-import type { TypeServer, TypeSocket, MessageCLientOrServer} from "../socketTypes-Schemas/socketTypes.js";
-
+import type { TypeServer, TypeSocket} from "../socketTypes-Schemas/socketTypes.js";
+import { TimelineEntry } from "../../timeline/types.js";
+import { insertTimelineEntry } from "../../timeline/queries.js";
+import { findIncidentById } from "../../incidents/queries.js";
 
 //Once joining a specific incident, users can send messages including a payload of incident_id, author_id, type, and body
 //Based off the Clients payloaded response to the server, we will save that into timeline_entries and know who is responding
@@ -13,41 +14,34 @@ export function emitAndPersist(io:TypeServer, socket: TypeSocket) {
             //ensuring validility at JOINING TIME rather than just joining
             if(!incident_id) {
                 console.log('Cannot send message: Incident id does not exist')
-                socket.emit('no-incidentId', {error: 'Cannot send message: Incident id does not exist'})
+                socket.emit('socket-error', {error: 'Cannot send message: Incident id does not exist'})
                 return
             }
 
-            //extracting org_id from incidents to still check and see stillness and credibility if the org_id
-            const { rows: [incidents]} = await pool.query(`SELECT org_id FROM incidents WHERE id = $1`, [incident_id])
+            //Org-gate to still check the stillness and credibility if the org_id
+            const incident = await findIncidentById(incident_id, socket.data.orgId);
 
-            //first check on orgId on this specific path; since we are creating independent socket events, nothing forces
-            //users to travel through events in a distinct linear direction either of calling one before the other.
-            if(incidents.org_id !== socket.data.orgId) {
-                console.log('OrgId is invalid to send message')
-                socket.emit('Invalid-org', {error: 'OrgId is invalid to send message'})
-                return
+            //Validates if the incident actually exist
+            if (!incident) {
+                console.log("Incident room doesn't exist");
+                socket.emit('socket-error', { error: 'Incident room/id does not exist' });
+                return;
             }
 
             //checks if socket is in the current incident room
-            if(!socket.rooms.has(formatRoomName(incident_id))) {
+            if(!socket.rooms.has(formatRoomName(incident.id))) {
                 console.log('Socket  does not exist in the room')
                 socket.emit('no-socket-in-room', {error: 'Socket  does not exist in the room'})
                 return
             }
 
-            const {rows: [entry]} = await pool.query<MessageCLientOrServer>(`INSERT INTO timeline_entries(incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING *`,
-                //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
-                [incident_id, socket.data.userId, type, body])
-            
+            //Decided to use query function insertTimelineEntry since they are the exact same INSERT with the same RETURNING*
+            //Using a raw pg query will create two INSERTS into one table one of which will serailizes explicitly and the other 
+            //leaning on pg's implicit object-handling
+            //using socket.data.userId prevents trusting whatever the client sends and authenticating themselves
+            const entry:TimelineEntry = await insertTimelineEntry(incident_id, socket.data.userId, type, body)
 
-            io.to(formatRoomName(incident_id)).emit('new-message', {
-                id: entry.id,//so client can reference the id later for other context's
-                incident_id: entry.incident_id,
-                author_id: entry.author_id,
-                type: entry.type,
-                body: entry.body,
-                locked: entry.locked
-            })
+            io.to(formatRoomName(incident_id)).emit('new-message', entry)
         }catch(err) {
             console.log('Error in sending and persisting messages: ', err);
             socket.emit('socket-error', {error: 'Error in sending and persisting messages'})
