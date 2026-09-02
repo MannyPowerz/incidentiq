@@ -1,5 +1,11 @@
-export type RoomSeverity = "Critical" | "High" | "Medium" | "Low"
-export type RoomsStatus = "Open" | "Investigating" | "Resolved"
+export type RoomSeverity = "P1" | "P2" | "P3" | "P4"
+
+export type RoomsStatus = 
+    | "detected"
+    | "investigating"
+    | "mitigated"
+    | "resolved"
+    | "postmortem"
 
 export type Room = {
     id: string;
