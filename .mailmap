@@ -1,0 +1,16 @@
+# Canonicalizes git author emails so `git log --format=%aE` (mailmap-resolved, capital E —
+# not %ae, which is raw and ignores this file) agrees with users.email. The relevance collector
+# must read author emails this way, or a mismatch here silently drops that person from every
+# score (types.ts, "UNOWNED" section).
+#
+# Format: Proper Name <canonical@email> <email-seen-in-a-commit>
+# One confirmed entry below; two are placeholders until the real account emails are known —
+# see the message to the team about filling them in.
+
+Emmanuel Hailu <mannysmart35@gmail.com> <manny.smart35@gmail.com>
+
+# TODO: Gabriella — commits as gabrielaidg03@gmail.com. Confirm her incidentiq account email
+# and add: Gabriella <account-email> <gabrielaidg03@gmail.com>
+
+# TODO: Anthony — commits as a GitHub noreply address (113482331+Tony3243@users.noreply.github.com).
+# Confirm his incidentiq account email and add: Anthony Gomez <account-email> <113482331+Tony3243@users.noreply.github.com>
