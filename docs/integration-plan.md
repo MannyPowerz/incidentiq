@@ -422,6 +422,6 @@ a demo of nothing. That is why it's first in Manny's schedule.
 - CI
 - Persisting relevance scores
 - Five more signatures
-- Dashboard wiring — not in the Minimum demo definition, `RoomsPage` covers the post-login landing (`schedule.md` PMVP-01)
-- Raw scanner evidence in the UI — the AI draft's text already carries it in human-readable form (`schedule.md` PMVP-02)
-- A browser view of the agent — CLI-only for the MVP, see `agent-architecture.md` §3 (`schedule.md` PMVP-03)
+- Dashboard wiring — not in the Minimum demo definition, `RoomsPage` covers the post-login landing (`schedule.md` Dashboard wiring)
+- Raw scanner evidence in the UI — the AI draft's text already carries it in human-readable form (`schedule.md` Raw evidence display)
+- A browser view of the agent — CLI-only for the MVP, see `agent-architecture.md` §3 (`schedule.md` Agent browser view)

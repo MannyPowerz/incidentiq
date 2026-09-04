@@ -103,16 +103,16 @@ committed to.
 - **A dashboard/overview page is deferred.** Not in the Minimum demo
   definition below; `RoomsPage` already serves as the post-login landing
   page. Full reasoning and the revisit trigger are in `schedule.md`, task
-  `PMVP-01`.
+  Dashboard wiring.
 - **Raw scanner evidence (ports, tunnel interfaces) is not surfaced
   separately in the UI.** The AI draft's `why_it_matters` / `likely_fix` text
   is the human-readable version of that same evidence, per the Minimum
-  scope for "AI Log Drafting" above. See `schedule.md`, task `PMVP-02`.
+  scope for "AI Log Drafting" above. See `schedule.md`, task Raw evidence display.
 - **The Tier 1/2 Scanner has no browser interface.** It is a CLI process on
   the developer's machine, consistent with "Local Agent" in
   `architecture.md`. A browser view of scanner activity was implied by an
   informal "Scanner + React" grouping on the team board but is not required
-  by the Tier 1/2 Scanner rows above. See `schedule.md`, task `PMVP-03`.
+  by the Tier 1/2 Scanner rows above. See `schedule.md`, task Agent browser view.
 
 Two people are executing this build plan instead of three. `schedule.md` has
 the full task breakdown and dates; `integration-plan.md` has how the pieces
