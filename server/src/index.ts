@@ -15,6 +15,7 @@ import { incidentRouter } from './incidents/routes/index.js';
 import { timelineRouter } from './timeline/routes/index.js';
 import { fingerprintsRouter } from './fingerprints/routes/index.js';
 import { app, server, io } from './socketServer.js';
+import { aiDraftRouter } from './ai/routes/index.js';
 
 // Fail fast if the DB is unreachable BEFORE we accept any traffic. A server that
 // booted on a dead pool would still pass its own /health check and only start
@@ -40,6 +41,7 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/incidents', incidentRouter);
 app.use('/incidents/:id/timeline', timelineRouter);
+app.use('/incidents/:id/ai-draft', aiDraftRouter)
 app.use('/fingerprints', fingerprintsRouter);
 
 io.use(socketAuth);
