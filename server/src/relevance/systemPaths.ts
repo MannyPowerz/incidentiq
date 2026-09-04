@@ -24,7 +24,12 @@ const SYSTEM_TO_PATHS: Record<string, string[]> = {
     sockets: ['server/src/Socket'],
     // the one value actually used anywhere in this repo today (incidents.smoke.test.ts)
     postgres: ['server/src/db'],
-    database: ['server/src/db']
+    database: ['server/src/db'],
+    // added for the agent's port -> system mapping (agent-architecture.md §10): a dead port on
+    // -> 5173 or 3000 needs a system name the agent can put in Detection.affectedSystem, and it
+    // -> has to be a key here or the incident it creates scores nobody.
+    client: ['client/src'],
+    server: ['server/src']
 };
 
 /**

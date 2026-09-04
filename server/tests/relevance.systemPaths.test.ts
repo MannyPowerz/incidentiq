@@ -30,4 +30,11 @@ describe('resolveFilePaths', () => {
     it('returns an empty array for a system name with no known mapping', () => {
         expect(resolveFilePaths('some system nobody typed before')).toEqual([]);
     });
+
+    // the agent maps a dead port to one of these two names (agent-architecture.md §10);
+    // missing either one means an agent-created incident scores nobody.
+    it('maps client and server, for the agent\'s port -> system mapping', () => {
+        expect(resolveFilePaths('client')).toEqual(['client/src']);
+        expect(resolveFilePaths('server')).toEqual(['server/src']);
+    });
 });
