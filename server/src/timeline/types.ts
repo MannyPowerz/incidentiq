@@ -12,7 +12,7 @@ export interface TimelineEntry {
 
     incident_id: number; // SQL: BIGINT
 
-    author_id: number | null; //author_id no means "Who is accountable for this" instead of "who wrote this"
+    author_id: number | null; //author_id now means "Who is accountable for this" instead of "who wrote this"
 
     type: TimelineEntryType; // SQL: TEXT + CHECK
 
