@@ -7,15 +7,19 @@ import { requireAuth, validateBody } from '../../auth/middleware.js';
 import { handleCreateTimelineEntry } from './create.js';
 import { handleListTimelineEntries } from './get.js'
 
-// the body a client may POST. type is a closed set (mirrors the DB CHECK); body is left permissive
-// (z.record) because its shape varies by entry type and isn't pinned down at Minimum.
+// type is narrower than the DB CHECK on purpose: 'system' and 'ai_draft' have no human author
+// (migration 0002), but nothing enforced that until now — this route stamped the caller's token
+// -> as author_id regardless of type, so any client could POST an 'ai_draft' and get a row that
+// -> is machine-typed with a human author_id. Excluding both here makes that row unreachable
+// -> through this route instead of relying on a branch further down to catch it (ADR 0014).
+// The machine paths insert directly via insertTimelineEntry, which already accepts a null author.
+// body is left permissive (z.record) because its shape varies by entry type and isn't pinned down
+// at Minimum.
 const postTimelineEntrySchema = z.object({
     type: z.enum([
         'observation',
         'action',
-        'finding',
-        'system',
-        'ai_draft'
+        'finding'
     ]),
     body : z.record(
         z.string(),
