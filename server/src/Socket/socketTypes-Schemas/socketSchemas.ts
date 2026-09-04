@@ -1,5 +1,6 @@
 import {z} from 'zod'
 import type { ClientToServer } from './socketTypes.js'
+import { ClientPostableTypes } from '../../timeline/types.js'
 
 //This schema emmits a number identically the incidentId
 const joinRoomSchema = z.object({
@@ -11,7 +12,7 @@ const joinRoomSchema = z.object({
 
 const SendingMessageSchema = z.object({
     incident_id: z.number(),
-    type: z.enum(['observation', 'action', 'finding']),//same closed set as postTimelineEntrySchema
+    type: z.enum(ClientPostableTypes),//same closed set as postTimelineEntrySchema
     body: z.object({
         summary: z.string(),
         why_it_matters: z.string(),
