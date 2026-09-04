@@ -2,7 +2,7 @@
 
 **Purpose:** every seam between components, who owns each side, what crosses it, and in what order it all comes together.
 **Team:** Manny, Anthony. Gabriella has left; her collector and her UI branch are reassigned below.
-**Target:** code freeze Fri Sep 26, demo Fri Oct 3. See `schedule.md`.
+**Target:** coding starts Sat Sep 5, code freeze Fri Oct 2, demo Fri Oct 9. See `schedule.md`.
 **Companions:** `agent-architecture.md`, `architecture.md`, `contracts.md`
 
 ---
@@ -149,7 +149,7 @@ patterns, one new route.
 
 **If Anthony built it differently, the agent's `client.ts` follows his shape.**
 This section is a proposal so the two sides have something concrete to agree
-on before either is written. **Decide by Sep 5.**
+on before either is written. **Decide by Fri Sep 11.**
 
 The confirm endpoint from ADR 0014 lives in the same PR:
 
@@ -380,11 +380,11 @@ SETUP (before the demo starts)
    say:      "Two machines, one diff, no GitHub API."
 ```
 
-Rehearse it twice on Oct 2. Time it. It should be under six minutes.
+Rehearse it twice on Thu Oct 8. Time it. It should be under six minutes.
 
 ## 11. If something slips — fallbacks, decided now
 
-| If this isn't done by Sep 26 | Fallback | Cost |
+| If this isn't done by Fri Oct 2 | Fallback | Cost |
 |---|---|---|
 | Agent | Manually `POST /incidents` + `POST /draft` with curl during the demo. Show the agent code. | Lose the opener's magic, keep the flow |
 | Collector | `scoreEntry` returns a hardcoded fixture for the demo repo | Relevance shows, but it's fake — say so |
@@ -412,8 +412,8 @@ a demo of nothing. That is why it's first in Manny's schedule.
 - Collector unowned → Manny, spec in §7
 
 **Still open, needs a decision:**
-- Agent auth → ADR 0016, Manny, by Sep 5 (`agent-architecture.md` §8)
-- Draft endpoint shape → Anthony confirms or counter-proposes by Sep 5
+- Agent auth → ADR 0016, Manny, by Fri Sep 11 (`agent-architecture.md` §8)
+- Draft endpoint shape → Anthony confirms or counter-proposes by Wed Sep 9
 - Anthony's account email for `.mailmap` → any day now
 
 **Deferred past the demo, on purpose:**
