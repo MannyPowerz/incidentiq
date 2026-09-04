@@ -88,3 +88,32 @@ The demo works when:
 You can fake the AI draft with a template if needed.
 You can show relevance with just two machines.
 Do not add anything beyond this until it works end to end.
+
+---
+
+## Team amendments — Sep 2026, after Gabriella left the team
+
+The feature tiers above are unchanged and none of these amendments touch the
+spine. They apply "the rule that protects the ship date" (above) to three
+implementation-level tasks that existed in the team's Notion board but were
+never in this document — none of them are named anywhere in the Feature Tiers
+table, so cutting them does not narrow anything this document originally
+committed to.
+
+- **A dashboard/overview page is deferred.** Not in the Minimum demo
+  definition below; `RoomsPage` already serves as the post-login landing
+  page. Full reasoning and the revisit trigger are in `schedule.md`, task
+  `PMVP-01`.
+- **Raw scanner evidence (ports, tunnel interfaces) is not surfaced
+  separately in the UI.** The AI draft's `why_it_matters` / `likely_fix` text
+  is the human-readable version of that same evidence, per the Minimum
+  scope for "AI Log Drafting" above. See `schedule.md`, task `PMVP-02`.
+- **The Tier 1/2 Scanner has no browser interface.** It is a CLI process on
+  the developer's machine, consistent with "Local Agent" in
+  `architecture.md`. A browser view of scanner activity was implied by an
+  informal "Scanner + React" grouping on the team board but is not required
+  by the Tier 1/2 Scanner rows above. See `schedule.md`, task `PMVP-03`.
+
+Two people are executing this build plan instead of three. `schedule.md` has
+the full task breakdown and dates; `integration-plan.md` has how the pieces
+connect.
