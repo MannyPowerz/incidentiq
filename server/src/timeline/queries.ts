@@ -61,3 +61,19 @@ export async function confirmAiDraft(
     );
     return rows[0] ?? null
 }
+
+export async function rejectAiDraft(
+    entryId: number, 
+    incidentId: number 
+): Promise<TimelineEntry | null> {
+    const { rows } = await pool.query(
+        `DELETE FROM timeline_entries
+        WHERE id = $1
+        AND incident_id = $2
+        AND author_id IS null
+        AND type = 'ai_draft'
+        RETURNING *`,
+        [entryId, incidentId]
+    );
+    return rows[0] ?? null
+}
