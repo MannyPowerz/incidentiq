@@ -42,3 +42,22 @@ export async function findTimelineEntriesSince(
     );
     return rows;
 }
+
+//Confirm query for and ai-draft; uses an UPDATE guard to stamp author_id into an actuall number value for an unconfirmed draft/row
+export async function confirmAiDraft(
+    entryId: number, 
+    incidentId: number, 
+    userId: number
+): Promise<TimelineEntry | null> {
+    const { rows } = await pool.query(
+        `UPDATE timeline_entries
+        SET author_id = $1
+        WHERE id = $2
+        AND incident_id = $3
+        AND type = 'ai_draft'
+        AND author_id IS null
+        RETURNING *`,
+        [userId, entryId, incidentId]
+    );
+    return rows[0] ?? null
+}
