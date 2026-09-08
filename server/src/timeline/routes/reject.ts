@@ -11,10 +11,10 @@ import { TimelineEntry } from "../types.js";
  * -> broadcast the entry that was deleted to everyone in the room -> respond including a status code of 200.
 */
 export async function handleRejectAiDraft(
-    req: Request<{entryId: string, incidentId: string}, ErrorResponse | TimelineEntry, {}, {org_id: number, userId: number}>, 
+    req: Request<{entry_id: string, id: string}, any, {org_id: number}>, 
     res: Response<ErrorResponse | TimelineEntry>) {
-    const entryId = Number(req.params.entryId);
-    const incidentId = Number(req.params.incidentId);
+    const entryId = Number(req.params.entry_id);
+    const incidentId = Number(req.params.id);
     const orgId = req.user!.org_id;
 
     const incident = await findIncidentById(incidentId, orgId);

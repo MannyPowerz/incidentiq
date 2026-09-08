@@ -13,10 +13,10 @@ import { formatRoomName } from '../../Socket/socketHandlers/formatJoin.js';
  * broadcasting to the room -> to then a status code of 200
 */
 export async function handleConfirmAiDraft(
-    req: Request<{id: string, entryId: string}, ErrorResponse | TimelineEntry, {}, {orgId: number, userId: number}>, 
+    req: Request<{id: string, entry_id: string}, any, {org_id: number, sub: number}>, 
     res: Response<ErrorResponse | TimelineEntry>) {
     const incidentId = Number(req.params.id);
-    const entryId = Number(req.params.entryId)
+    const entryId = Number(req.params.entry_id)
     const orgId = req.user!.org_id
     const userId = Number(req.user!.sub)
 
