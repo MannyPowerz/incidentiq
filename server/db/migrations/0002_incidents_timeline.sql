@@ -31,7 +31,7 @@ CREATE TABLE timeline_entries (
   id BIGSERIAL PRIMARY KEY,               -- the ordering truth: timelines sort by (incident_id, id), NEVER by socket arrival time (CLAUDE.md invariant; schema.test.ts covers it)
   
   incident_id BIGINT NOT NULL,
-  author_id BIGINT,                       -- nullable on purpose: 'system' and 'ai_draft' entries have no human author
+  author_id BIGINT,                       -- valid worflow follows a two-state author where it rides on a nullable FK
 
   type TEXT NOT NULL,
   body JSONB NOT NULL,                    -- JSONB over JSON: indexable/queryable inside (summary, why_it_matters, likely_fix) and matches the ::jsonb cast schema.test.ts already uses; byte-exact input formatting isn't worth keeping
