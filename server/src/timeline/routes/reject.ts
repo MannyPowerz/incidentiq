@@ -59,14 +59,14 @@ export async function handleRejectAiDraft(
     //This guard exist to theoretically handle the scenerio of someone request a confirm/reject on it between our check and delete
     if(!rejected) {
         res.status(409).json({
-            error: 'configuration_error',
+            error: 'entry_state_changed',
             message: 'ai_draft entry was already changed before it could be rejected'
         });
         return
     }
 
     //The room is broadcasting the whole entry if the id wasn't enough to distinguish what was deleted
-    io.to(formatRoomName(incidentId)).emit('new-message', rejected)
+    io.to(formatRoomName(incidentId)).emit('reject-draft', rejected)
     
     //status 200 instead of 204 beacuse we are deleting with a response body of the rejected entry
     res.status(200).json(rejected)

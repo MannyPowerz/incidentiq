@@ -71,7 +71,7 @@ export async function handleConfirmAiDraft(
         return
     }
 
-    io.to(formatRoomName(incidentId)).emit('new-message', confirmed)
+    io.to(formatRoomName(incidentId)).emit('confirm-draft', confirmed)
 
     res.status(200).json(confirmed)
 }

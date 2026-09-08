@@ -22,7 +22,7 @@ export async function insertTimelineEntry(
 }
 
 // Selects a specified singular entry in refrence from an id and incident id
-export async function findTimelineEntryById(entryId: number, incidentId: number): Promise<TimelineEntry> {
+export async function findTimelineEntryById(entryId: number, incidentId: number): Promise<TimelineEntry | null> {
     const { rows } = await pool.query(`SELECT * FROM timeline_entries 
         WHERE id = $1 
         AND incident_id = $2`,
