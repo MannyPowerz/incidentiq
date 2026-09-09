@@ -65,7 +65,7 @@ export async function confirmAiDraft(
         WHERE id = $2
         AND incident_id = $3
         AND type = 'ai_draft'
-        AND author_id IS null
+        AND author_id IS NULL
         RETURNING *`,
         [userId, entryId, incidentId]
     );

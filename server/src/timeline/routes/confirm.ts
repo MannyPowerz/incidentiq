@@ -29,7 +29,7 @@ export async function handleConfirmAiDraft(
         return
     }
 
-    const confirmed = await confirmAiDraft(entryId, incidentId, userId);
+    const confirmed = await confirmAiDraft(userId, entryId, incidentId);
 
     //when draft is null, it diagnosis the difference between if it's nonexistent or if someone has already claimed it
     if(!confirmed) {
