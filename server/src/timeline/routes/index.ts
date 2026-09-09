@@ -6,6 +6,9 @@ import { Router } from 'express'
 import { requireAuth, validateBody } from '../../auth/middleware.js';
 import { handleCreateTimelineEntry } from './create.js';
 import { handleListTimelineEntries } from './get.js'
+import { ClientPostableTypes } from '../types.js';
+import { handleConfirmAiDraft } from './confirm.js';
+import { handleRejectAiDraft } from './reject.js';
 
 // type is narrower than the DB CHECK on purpose: 'system' and 'ai_draft' have no human author
 // (migration 0002), but nothing enforced that until now — this route stamped the caller's token
@@ -16,11 +19,7 @@ import { handleListTimelineEntries } from './get.js'
 // body is left permissive (z.record) because its shape varies by entry type and isn't pinned down
 // at Minimum.
 const postTimelineEntrySchema = z.object({
-    type: z.enum([
-        'observation',
-        'action',
-        'finding'
-    ]),
+    type: z.enum(ClientPostableTypes),
     body : z.record(
         z.string(),
         z.unknown()
@@ -35,3 +34,9 @@ timelineRouter.post('/', requireAuth, validateBody(postTimelineEntrySchema), han
 
 // GET has no body, so no validateBody — requireAuth still gates it.
 timelineRouter.get('/' , requireAuth, handleListTimelineEntries);
+
+//verb: PATCH - updating a nullable author_id into an actual defined value given an entry_id param;
+timelineRouter.patch('/:entry_id/confirmed', requireAuth, handleConfirmAiDraft)
+
+//verb: DELETE - deleting nullable entry_id params 
+timelineRouter.delete('/:entry_id/rejected', requireAuth, handleRejectAiDraft)

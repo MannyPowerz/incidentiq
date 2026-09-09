@@ -21,6 +21,16 @@ export async function insertTimelineEntry(
     return rows[0];
 }
 
+// Selects a specified singular entry in refrence from an id and incident id
+export async function findTimelineEntryById(entryId: number, incidentId: number): Promise<TimelineEntry | null> {
+    const { rows } = await pool.query(`SELECT * FROM timeline_entries 
+        WHERE id = $1 
+        AND incident_id = $2`,
+        [entryId, incidentId]
+    )
+    return rows[0] ?? null
+}
+
 // oldest-first, chat-log order (what the UI wants). ORDER BY id, not arrival time — the id
 // sequence is the ordering truth; the network can deliver out of order, the sequence can't.
 export async function findTimelineEntriesByIncident(incidentId: number): Promise<TimelineEntry[]> {
@@ -41,4 +51,40 @@ export async function findTimelineEntriesSince(
         [incidentId, sinceId]
     );
     return rows;
+}
+
+//Confirm query for and ai-draft; uses an UPDATE guard to stamp author_id into an actuall number value for an unconfirmed draft/row
+export async function confirmAiDraft(
+    entryId: number, 
+    incidentId: number, 
+    userId: number
+): Promise<TimelineEntry | null> {
+    const { rows } = await pool.query(
+        `UPDATE timeline_entries
+        SET author_id = $1
+        WHERE id = $2
+        AND incident_id = $3
+        AND type = 'ai_draft'
+        AND author_id IS NULL
+        RETURNING *`,
+        [userId, entryId, incidentId]
+    );
+    return rows[0] ?? null
+}
+
+//Rejecting/deleting an ai entry that no one will stand by
+export async function rejectAiDraft(
+    entryId: number, 
+    incidentId: number 
+): Promise<TimelineEntry | null> {
+    const { rows } = await pool.query(
+        `DELETE FROM timeline_entries
+        WHERE id = $1
+        AND incident_id = $2
+        AND author_id IS null
+        AND type = 'ai_draft'
+        RETURNING *`,
+        [entryId, incidentId]
+    );
+    return rows[0] ?? null
 }
