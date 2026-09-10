@@ -19,7 +19,7 @@ Each task below is one Notion card. Copy the block, paste, done.
 
 | Date | Checkpoint | If it fails |
 |---|---|---|
-| **Fri Sep 11** | Agent auth ADR written. Draft endpoint shape agreed. Client proxy working. | Everything slides a week. The Oct 9 demo becomes Oct 16. |
+| **Fri Sep 11** | ~~Agent auth ADR written.~~ Done Sep 5. Draft endpoint shape agreed. Client proxy working. | Everything slides a week. The Oct 9 demo becomes Oct 16. |
 | **Fri Sep 18** | Collector merged. Sign-in wired and timed. Agent scanner done. | Manny stalls in week 4. Decide: extend to Oct 16, or cut relevance from the demo. |
 | **Fri Sep 25** | Relevance wiring working in a test. VPN_LOOPBACK fires locally. Timeline wired end to end. | Cut the UI polish pass entirely. Move the demo to Oct 16. |
 
@@ -29,12 +29,23 @@ Each task below is one Notion card. Copy the block, paste, done.
 
 | | Manny | Anthony |
 |---|---|---|
-| Week 1 · Sep 5 – 11 | 11 | 9 |
-| Week 2 · Sep 12 – 18 | 13 | 12 |
-| Week 3 · Sep 19 – 25 | 12 | 13 |
-| Week 4 · Sep 26 – Oct 2 | 11 | 8 |
-| Week 5 · Oct 3 – 9 | 6 | 3 |
-| **Total** | **~53** | **~45** |
+| Week 1 · Sep 5 – 11 | 3.5 | 0.6 |
+| Week 2 · Sep 12 – 18 | 17 | 10 |
+| Week 3 · Sep 19 – 25 | 18 | 21 |
+| Week 4 · Sep 26 – Oct 2 | 12.5 | 15 |
+| Week 5 · Oct 3 – 9 | 19.5 | 13.5 |
+| **Total** | **~70.5** | **~60** |
+
+**These are recomputed from the actual master list below, not hand-tracked** —
+the previous version of this table had drifted out of sync with the real due
+dates after the Sep 5 reschedule, and the two tasks added today (Agent
+credentials build, Incident reuse by system) are folded in. **Two weeks are
+genuinely overloaded and this predates today:** Anthony's week 3 (Sep 19–25)
+carries Environment scanner (9h) + Wire relevance into entries (5h) + VPN
+signature (7h) = 21h in one week, and Manny's week 5 is 19.5h. Both need a real
+rebalancing pass — moving due dates, not just totals — which is separate work
+from today's ADRs and hasn't been done yet. Flagging it here rather than
+leaving a wrong-looking-fine number in the table.
 
 Manny is heavier because he absorbed the collector and all of the UI when
 Gabriella left. His agent share is one ADR. If that feels wrong, the swap is the
@@ -58,7 +69,9 @@ is to leave it.
 | AI delivery PR | Open AI delivery PR (draft route + confirm route) off `main` | Anthony | Sep 12 | 2 | Settle draft endpoint shape |
 | Reason generator PR | Open reason generator PR off `main` | Anthony | Sep 12 | 2 | — (unblocked, queue merged) |
 | All-zero reason sentence | What the reason says when nobody has touched the files | Anthony | Sep 12 | 0.5 | — |
-| Agent auth ADR | ADR 0016 — agent authentication | Manny | Sep 11 | 1.5 | — |
+| ~~Agent auth ADR~~ **DONE** | ADR 0016 — Dedicated Agent Credentials, written Sep 5 | Manny | Sep 5 | 1.5 | — |
+| Agent credentials build | Migration + `POST /auth/agent-keys` + `requireAgentKey` middleware, per ADR 0016 | Manny | Sep 23 | 4 | — |
+| Incident reuse by system | `findIncidentsByOrg` filter + agent-side reuse check, per ADR 0017 | Manny | Sep 18 | 3.5 | — |
 | Agent scaffold and contract | `agent/` scaffold + `types.ts` contract | Anthony | Sep 12 | 1.5 | — |
 | Client proxy setup | Vite proxy, `socket.io-client`, client env | Manny | Sep 11 | 2 | — |
 | Wire sign-in | Wire sign-in and register + route guard — **timed** | Manny | Sep 15 | 4.5 | Client proxy setup |
@@ -77,7 +90,7 @@ is to leave it.
 | Wire live updates | Wire socket: join, live entries, history replay | Manny | Sep 26 | 4 | Wire room details |
 | Confirm button | Confirm button on `ai_draft` entries | Manny | Sep 26 | 1.5 | Wire live updates, AI delivery PR |
 | Private card and gate | Private card + gate + debounce | Anthony | Sep 30 | 5 | VPN signature |
-| Agent HTTP client | HTTP client — login, refresh, create, draft, publish | Anthony | Oct 1 | 3.5 | Agent auth ADR, AI delivery PR |
+| Agent HTTP client | HTTP client — login (via AgentKey), create-or-reuse incident, draft, publish | Anthony | Oct 1 | 3.5 | Agent credentials build, Incident reuse by system, AI delivery PR |
 | Agent run loop | Run loop + `demo-dead-port.ts` | Anthony | Oct 2 | 2.5 | Private card and gate, Agent HTTP client |
 | Relevant-to-you section | "Relevant to you" section + reason under entries | Manny | Oct 1 | 5 | Wire relevance into entries, Relevance on page load, Wire live updates |
 | Fingerprint comparison | Fingerprints comparison view | Manny | Oct 2 | 2 | Wire rooms list |
@@ -209,8 +222,20 @@ Folded in from the "Application Layout" line item on the original board: a route
 
 ### Agent auth ADR
 **Owner:** Manny · **Due:** Fri Sep 11 · **Est:** 1.5h · **Blocked by:** —
-**Description:** A headless process needs a JWT. No document says how. Four options laid out in `agent-architecture.md` §8 with a recommendation: email + password in the agent's local config, zero server change, same threat model as `.env` holding `DATABASE_URL`. Record the recommendation or overrule it, name the upgrade path (dedicated agent tokens), name the trigger for it. **Blocks Agent HTTP client.** Number is 0016 — next free across every branch.
-**Done when:** ADR merged; Agent HTTP client has a decision to build against.
+**Description:** ~~A headless process needs a JWT. No document says how.~~ **Decided Sep 5:** Dedicated Agent Credentials — a new `agent_credentials` table, keys issued once via `POST /auth/agent-keys`, verified by a new `requireAgentKey` middleware. Not a password, not a pasted JWT — see ADR 0016 for the full reasoning, including why the agent's own security posture ruled out storing a login credential on the machine this product watches for compromise.
+**Done when:** ~~ADR merged; Agent HTTP client has a decision to build against.~~ **Done.** The decision is made; the build is its own task below (Agent credentials build), since this turned out to be a migration and an endpoint, not documentation alone.
+
+### Agent credentials build
+**Owner:** Manny · **Due:** Wed Sep 23 · **Est:** 4h · **Blocked by:** —
+Moved off collector week on purpose — it only needs to land before Anthony's Agent HTTP client (Oct 1), and Build the collector (8h) already fills week 2. No reason to compete for the same days.
+**Description:** The actual implementation of ADR 0016. `agent_credentials` migration (mirrors `refresh_tokens`: `user_id` FK, `key_hash`, `label`, `revoked_at`). `POST /auth/agent-keys` — authenticated, generates with `signRefreshToken()`'s pattern, hashes with `hashRefreshToken()`'s pattern, returns the raw key once. `requireAgentKey` middleware, parallel to `requireAuth`, populating `req.user` in the same shape so no existing handler changes. **Blocks Agent HTTP client** — Anthony cannot authenticate for real until this exists.
+**Done when:** A key issued via the endpoint successfully authenticates a request to `PUT /fingerprints` through `requireAgentKey`.
+
+### Incident reuse by system
+**Owner:** Manny · **Due:** Fri Sep 18 · **Est:** 3.5h · **Blocked by:** —
+Independent of the credentials work below — a query filter and agent-side logic, unrelated to how the agent authenticates.
+**Description:** The actual implementation of ADR 0017. `findIncidentsByOrg` gains an optional `affectedSystem` filter; `GET /incidents` accepts `?affected_system=`. Not urgent for the demo's single run-through, but real for dogfooding — without it, a signature that fires more than once creates a separate incident every time instead of accumulating entries on one. Pulled into scope rather than deferred, since dogfooding week would otherwise surface it live in front of a room full of duplicate incidents.
+**Done when:** Posting the same `affected_system` twice through the agent produces one incident with two entries, not two incidents.
 
 ---
 

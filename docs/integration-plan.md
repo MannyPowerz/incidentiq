@@ -129,6 +129,18 @@ nobody.
 The agent posts an approved detection. Data flow says step 5 → step 6 (AI
 draft) → step 7 (DB). The agent needs one endpoint that does 6 and 7.
 
+**Every call the agent makes uses `Authorization: AgentKey <key>`, not a
+Bearer JWT.** Decided in ADR 0016 — Dedicated Agent Credentials, not a
+password or a pasted token. `requireAgentKey` populates `req.user` in the
+same shape `requireAuth` does, so every route below needs no change to accept
+either.
+
+**Before creating an incident, the agent checks for one to reuse.** Decided
+in ADR 0017. `GET /incidents?affected_system=X` first; if an open one exists,
+post the draft onto it via the route below instead of creating a new
+incident. This only changes the agent's own client logic — `POST /incidents`
+itself is unchanged for human callers.
+
 **Proposed, in Anthony's delivery PR:**
 
 ```
@@ -403,6 +415,8 @@ a demo of nothing. That is why it's first in Manny's schedule.
 - CORS / cookie / socket.io-client → Vite proxy (§3.1)
 - No route guard → folded into token-in-memory state (§3.2)
 - No draft endpoint → proposed shape (§4)
+- No agent auth mechanism → Dedicated Agent Credentials, ADR 0016 (§4)
+- Every detection created a new incident, no reuse → agent checks for an open one first, ADR 0017 (§4)
 - Step 8 unowned → Anthony, `scoreEntry`, three call sites (§5)
 - How scores reach the browser → attached to broadcast, recomputed on GET (§5.4–5.5)
 - Step 10 vs ADR 0001 ordering conflict → chronological + "relevant to you" section (§6)
