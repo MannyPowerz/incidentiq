@@ -5,7 +5,6 @@ export type RoomTab =
     | "Overview"
     | "Timeline"
     | "AI Analysis"
-    | "Related Incidents"
 
 type RoomTabsProps = {
     activeTab: RoomTab
@@ -16,7 +15,6 @@ const roomTabs: RoomTab [] = [
     "Overview",
     "Timeline",
     "AI Analysis",
-    "Related Incidents",
 ]
 
 export default function RoomTabs ({ activeTab, onTabChange } : RoomTabsProps ) : JSX.Element {
