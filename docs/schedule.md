@@ -13,8 +13,8 @@ a Saturday).
 
 Each task below is one Notion card. Copy the block, paste, done.
 
-**Status update, Sep 11:** Manny had no work capacity Sep 11–12, resuming Sep
-13. The only two Manny tasks that had a Sep 12 due date were both under an hour
+**Status update, Sep 11:** Manny had no work capacity Sep 7–12 (6 days), resuming
+Sep 13. The only two Manny tasks that had a Sep 12 due date were both under an hour
 combined (room details merge, index migration) and move to Sep 13 below —
 still inside Week 2's Sep 12–18 window, so the Hours table is unchanged. No
 other date moves: Wire sign-in (due Sep 15) still has three full days of
@@ -136,7 +136,7 @@ is to leave it.
 
 ### Bring in room details page
 **Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
-Moved from Sep 12 — no Manny capacity Sep 11–12, resuming Sep 13. Still inside Week 2, no other date affected.
+Moved from Sep 12 — no Manny capacity Sep 7–12 (6 days), resuming Sep 13. Still inside Week 2, no other date affected since nothing else was due in that window.
 **Description:** Gabriella's `feat/room-details-page` adds 1,959 lines across 29 files, including `RoomDetailsPage.tsx`, the timeline tab, `timelineEvents.ts`, and `formatDateTime.ts`. It was never PR'd. **`main` has no room details page at all** — only Dashboard, Rooms, and SignIn — so this is the only place the screen the demo runs on exists.
 It is 51 commits behind `main` but **merges clean, verified with `git merge-tree`: zero conflicts.** So this is `git merge main` on the branch, not a rebase, and not the 2-hour job it was first estimated at.
 **Done when:** Merged. `client/src/pages/RoomDetailsPage.tsx` exists on `main`.
