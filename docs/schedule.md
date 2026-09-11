@@ -13,13 +13,21 @@ a Saturday).
 
 Each task below is one Notion card. Copy the block, paste, done.
 
+**Status update, Sep 11:** Manny had no work capacity Sep 11–12, resuming Sep
+13. The only two Manny tasks that had a Sep 12 due date were both under an hour
+combined (room details merge, index migration) and move to Sep 13 below —
+still inside Week 2's Sep 12–18 window, so the Hours table is unchanged. No
+other date moves: Wire sign-in (due Sep 15) still has three full days of
+runway from Sep 13, and Checkpoint 2 (Sep 18) has five days from Sep 13. Not
+flagged as at-risk unless something else slips too.
+
 ---
 
 ## Checkpoints — the three dates that matter
 
 | Date | Checkpoint | If it fails |
 |---|---|---|
-| **Fri Sep 11** | ~~Agent auth ADR written.~~ Done Sep 5. Draft endpoint shape agreed. Client proxy working. | Everything slides a week. The Oct 9 demo becomes Oct 16. |
+| **Fri Sep 11** | ~~Agent auth ADR written.~~ Done Sep 5. Draft endpoint shape agreed. ~~Client proxy working.~~ Done Sep 5, verified end-to-end — still on `client/proxy-setup`, not yet merged to `main`. | Everything slides a week. The Oct 9 demo becomes Oct 16. |
 | **Fri Sep 18** | Collector merged. Sign-in wired and timed. Agent scanner done. | Manny stalls in week 4. Decide: extend to Oct 16, or cut relevance from the demo. |
 | **Fri Sep 25** | Relevance wiring working in a test. VPN_LOOPBACK fires locally. Timeline wired end to end. | Cut the UI polish pass entirely. Move the demo to Oct 16. |
 
@@ -63,8 +71,8 @@ is to leave it.
 | Send account email | Send account email for `.mailmap` | Anthony | Sep 8 | 0.1 | — |
 | ~~Merge the queue~~ **DONE** | #19–#24 all merged Sep 4. `main` green at 94 tests, `tsc` clean | Manny | Sep 4 | 1.5 | — |
 | ~~Add path map keys~~ **DONE** | Added `client`, `server` keys to `SYSTEM_TO_PATHS` (commit 086602b, merged in #20) | Manny | Sep 4 | 0.5 | — |
-| Bring in room details page | Merge main into Gabriella's `feat/room-details-page` and PR it (verified conflict-free) | Manny | Sep 12 | 0.5 | — (unblocked, queue merged) |
-| Add database indexes | Indexes migration `0005` | Manny | Sep 12 | 0.5 | — (unblocked, queue merged) |
+| Bring in room details page | Merge main into Gabriella's `feat/room-details-page` and PR it (verified conflict-free) | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
+| Add database indexes | Indexes migration `0005` | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
 | Settle draft endpoint shape | Confirm or counter-propose the `POST /incidents/:id/draft` shape | Anthony | Sep 9 | 0.5 | — |
 | AI delivery PR | Open AI delivery PR (draft route + confirm route) off `main` | Anthony | Sep 12 | 2 | Settle draft endpoint shape |
 | Reason generator PR | Open reason generator PR off `main` | Anthony | Sep 12 | 2 | — (unblocked, queue merged) |
@@ -73,7 +81,7 @@ is to leave it.
 | Agent credentials build | Migration + `POST /auth/agent-keys` + `requireAgentKey` middleware, per ADR 0016 | Manny | Sep 23 | 4 | — |
 | Incident reuse by system | `findIncidentsByOrg` filter + agent-side reuse check, per ADR 0017 | Manny | Sep 18 | 3.5 | — |
 | Agent scaffold and contract | `agent/` scaffold + `types.ts` contract | Anthony | Sep 12 | 1.5 | — |
-| Client proxy setup | Vite proxy, `socket.io-client`, client env | Manny | Sep 11 | 2 | — |
+| ~~Client proxy setup~~ **DONE** | Vite proxy, `socket.io-client`, client env — verified end-to-end Sep 5, on `client/proxy-setup`, awaiting merge | Manny | Sep 11 | 2 | — |
 | Wire sign-in | Wire sign-in and register + route guard — **timed** | Manny | Sep 15 | 4.5 | Client proxy setup |
 | Build the collector | Collector — `collectTouches` | Manny | Sep 17 | 8 | Merge the queue |
 | Collector tests | Tests for `collectTouches`, mutation-verified | Manny | Sep 19 | 3 | Build the collector |
@@ -90,7 +98,7 @@ is to leave it.
 | Wire live updates | Wire socket: join, live entries, history replay | Manny | Sep 26 | 4 | Wire room details |
 | Confirm button | Confirm button on `ai_draft` entries | Manny | Sep 26 | 1.5 | Wire live updates, AI delivery PR |
 | Private card and gate | Private card + gate + debounce | Anthony | Sep 30 | 5 | VPN signature |
-| Agent HTTP client | HTTP client — login (via AgentKey), create-or-reuse incident, draft, publish | Anthony | Oct 1 | 3.5 | Agent credentials build, Incident reuse by system, AI delivery PR |
+| Agent HTTP client | HTTP client — login (JWT for now, see `agent-architecture.md` §6.7 status note), create-or-reuse incident, draft, publish | Anthony | Oct 1 | 3.5 | AI delivery PR |
 | Agent run loop | Run loop + `demo-dead-port.ts` | Anthony | Oct 2 | 2.5 | Private card and gate, Agent HTTP client |
 | Relevant-to-you section | "Relevant to you" section + reason under entries | Manny | Oct 1 | 5 | Wire relevance into entries, Relevance on page load, Wire live updates |
 | Fingerprint comparison | Fingerprints comparison view | Manny | Oct 2 | 2 | Wire rooms list |
@@ -127,13 +135,15 @@ is to leave it.
 **Done when:** Both keys present, `relevance.systemPaths.test.ts` updated and passing.
 
 ### Bring in room details page
-**Owner:** Manny · **Due:** Sat Sep 12 · **Est:** 30 min · **Blocked by:** Merge the queue
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+Moved from Sep 12 — no Manny capacity Sep 11–12, resuming Sep 13. Still inside Week 2, no other date affected.
 **Description:** Gabriella's `feat/room-details-page` adds 1,959 lines across 29 files, including `RoomDetailsPage.tsx`, the timeline tab, `timelineEvents.ts`, and `formatDateTime.ts`. It was never PR'd. **`main` has no room details page at all** — only Dashboard, Rooms, and SignIn — so this is the only place the screen the demo runs on exists.
 It is 51 commits behind `main` but **merges clean, verified with `git merge-tree`: zero conflicts.** So this is `git merge main` on the branch, not a rebase, and not the 2-hour job it was first estimated at.
 **Done when:** Merged. `client/src/pages/RoomDetailsPage.tsx` exists on `main`.
 
 ### Add database indexes
-**Owner:** Manny · **Due:** Sat Sep 12 · **Est:** 30 min · **Blocked by:** Merge the queue
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+Moved from Sep 12, same reason as the task above.
 **Description:** No `CREATE INDEX` exists anywhere. `incidents.org_id` and `timeline_entries.incident_id` are the filter column on every read of their tables. `0005_indexes.sql` with two `CREATE INDEX` statements. Not in the demo path — do it because it's 30 minutes and it's an interview question.
 **Done when:** Migration applies cleanly on a fresh test DB; `schema.test.ts` still passes.
 
@@ -184,8 +194,8 @@ It is 51 commits behind `main` but **merges clean, verified with `git merge-tree
 
 # Part: Client Wiring (Manny)
 
-### Client proxy setup
-**Owner:** Manny · **Due:** Fri Sep 11 · **Est:** 2h · **Blocked by:** —
+### Client proxy setup — DONE
+**Owner:** Manny · **Due:** Fri Sep 11 · **Est:** 2h · **Blocked by:** — · **Status:** verified end-to-end Sep 5, three commits on `client/proxy-setup`, PR not yet opened/merged
 **Description:** Three things break the moment the client makes a real call: no CORS on Express or Socket.io, `sameSite: 'strict'` on the refresh cookie means it's never sent cross-origin, and `socket.io-client` isn't a client dep. One Vite `server.proxy` block for `/auth`, `/incidents`, `/fingerprints`, `/socket.io` (with `ws: true`) fixes all three by making the client same-origin. Exact block in `integration-plan.md` §3.1. `npm i socket.io-client`. Add `client/.env.example` with `VITE_API_URL`. **Do this first — nothing else in the client can be tested until it lands.**
 **Done when:** `fetch('/health')` from the browser console on `:5173` returns `{ status: 'ok' }`.
 
@@ -228,7 +238,7 @@ Folded in from the "Application Layout" line item on the original board: a route
 ### Agent credentials build
 **Owner:** Manny · **Due:** Wed Sep 23 · **Est:** 4h · **Blocked by:** —
 Moved off collector week on purpose — it only needs to land before Anthony's Agent HTTP client (Oct 1), and Build the collector (8h) already fills week 2. No reason to compete for the same days.
-**Description:** The actual implementation of ADR 0016. `agent_credentials` migration (mirrors `refresh_tokens`: `user_id` FK, `key_hash`, `label`, `revoked_at`). `POST /auth/agent-keys` — authenticated, generates with `signRefreshToken()`'s pattern, hashes with `hashRefreshToken()`'s pattern, returns the raw key once. `requireAgentKey` middleware, parallel to `requireAuth`, populating `req.user` in the same shape so no existing handler changes. **Blocks Agent HTTP client** — Anthony cannot authenticate for real until this exists.
+**Description:** The actual implementation of ADR 0016. `agent_credentials` migration (mirrors `refresh_tokens`: `user_id` FK, `key_hash`, `label`, `revoked_at`). `POST /auth/agent-keys` — authenticated, generates with `signRefreshToken()`'s pattern, hashes with `hashRefreshToken()`'s pattern, returns the raw key once. `requireAgentKey` middleware, parallel to `requireAuth`, populating `req.user` in the same shape so no existing handler changes. **No longer blocks Agent HTTP client** — Sep 11 decision keeps the JWT flow for the first working agent; this becomes the follow-up switch, not a prerequisite. See `agent-architecture.md` §6.7's status note for the trigger to actually do the switch.
 **Done when:** A key issued via the endpoint successfully authenticates a request to `PUT /fingerprints` through `requireAgentKey`.
 
 ### Incident reuse by system
@@ -262,8 +272,8 @@ Independent of the credentials work below — a query filter and agent-side logi
 **Done when:** Card renders for a detection; Enter does nothing and doesn't re-prompt for five minutes; `y` returns control to the loop.
 
 ### Agent HTTP client
-**Owner:** Anthony · **Due:** Thu Oct 1 · **Est:** 3.5h · **Blocked by:** Agent auth ADR, AI delivery PR
-**Description:** §6.7. Native `fetch`. `login()` reads `Set-Cookie` off the response and holds the refresh cookie in memory; `refresh()` sends it back as a `Cookie` header. `createIncident`, `requestDraft` (targets whatever Settle draft endpoint shape settled), `publishFingerprint`. On `401 token_expired` → refresh once → retry. Any other 401 → re-login once → exit. Mock `fetch` in tests; the expired-refresh-retry path is the one to pin.
+**Owner:** Anthony · **Due:** Thu Oct 1 · **Est:** 3.5h · **Blocked by:** AI delivery PR
+**Description:** §6.7 — read the status note at the top of that section first. Building the JWT flow now, `AgentKey` is the documented follow-up, not a prerequisite for this task. Native `fetch`. `login()` reads `Set-Cookie` off the response and holds the refresh cookie in memory; `refresh()` sends it back as a `Cookie` header. `createIncident`, `requestDraft` (targets whatever Settle draft endpoint shape settled), `publishFingerprint`. On `401 token_expired` → refresh once → retry. Any other 401 → re-login once → exit. Mock `fetch` in tests; the expired-refresh-retry path is the one to pin.
 **Done when:** Against a running server, `login()` returns a token, `publishFingerprint()` produces a row in `GET /fingerprints`.
 
 ### Agent run loop

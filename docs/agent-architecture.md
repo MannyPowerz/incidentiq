@@ -15,11 +15,11 @@ finds, and shows the developer a private card when something fires.
 
 **It detects. It never decides what to share.** Nothing leaves the machine until
 a human says yes. This is the line from `architecture.md` that governs the whole
-design — *"The agent detects. The human decides. The database remembers. The
-socket delivers."* — and every module below is shaped by it.
+design — _"The agent detects. The human decides. The database remembers. The
+socket delivers."_ — and every module below is shaped by it.
 
 It is also **step 1 of the Minimum demo definition** (`build-plan.md` line 82):
-*"A developer's scanner catches a VPN failure."* The demo opens with this.
+_"A developer's scanner catches a VPN failure."_ The demo opens with this.
 Without it there is no demo.
 
 ## 2. Why it was missed, briefly
@@ -33,22 +33,24 @@ it because nobody had it.
 
 `build-plan.md`'s tiers for the scanner:
 
-| Tier | Minimum | Complete | Post-MVP |
-|---|---|---|---|
-| Tier 1 | **Port responsiveness check + VPN demo scenario** | all three checks | expanded list |
-| Tier 2 | **Fingerprint publishing + Node version diff** | lockfile + migration drift | git collision |
+| Tier   | Minimum                                           | Complete                   | Post-MVP      |
+| ------ | ------------------------------------------------- | -------------------------- | ------------- |
+| Tier 1 | **Port responsiveness check + VPN demo scenario** | all three checks           | expanded list |
+| Tier 2 | **Fingerprint publishing + Node version diff**    | lockfile + migration drift | git collision |
 
 **Built for the MVP:**
+
 - One signature: `VPN_LOOPBACK`
 - The private card and the human gate (CLI)
 - Fingerprint collection and publish via the existing `PUT /fingerprints`
 - Posting an approved detection to the server
 
 **Explicitly deferred, with the reason:**
+
 - `ENV_VAR_MISSING`, `PORT_COLLISION`, all three Tier 2 signatures — above
   Minimum. The signature interface makes each one an additive file later.
 - chokidar file watching — the Minimum scans on an interval; watching is a
-  refinement of *when* to scan, not *what*.
+  refinement of _when_ to scan, not _what_.
 - Writing to `signatures_detected` — step 11 (archive mining) is not in the
   demo definition, and the server has no endpoint for it yet.
 - Picking an existing incident to post into — the Minimum creates a new one.
@@ -63,9 +65,9 @@ it because nobody had it.
   read-only page listing recent rows is the natural next slice, not a
   rewrite of anything here.
 
-`build-plan.md` line 71 is the rule that makes this defensible: *"If any feature
+`build-plan.md` line 71 is the rule that makes this defensible: _"If any feature
 is at risk of missing Minimum, it borrows time from a feature sitting above
-Minimum — never from the spine."*
+Minimum — never from the spine."_
 
 ## 4. Where it lives
 
@@ -111,37 +113,37 @@ and `ai/types.ts` did for their splits.
 /** What one scan of the machine produced. Every signature reads from this. */
 export interface EnvSnapshot {
     takenAt: Date;
-    nodeVersion: string;          // process.version
-    osArch: string;               // `${os.platform()}-${os.arch()}`
-    lockfileHash: string | null;  // sha256 of package-lock.json, null if absent
-    appliedMigrations: string[];  // filenames in the migrations dir
-    ports: PortProbe[];           // one per configured port
-    tunnelInterfaces: string[];   // names of utun*/tun* interfaces present
+    nodeVersion: string; // process.version
+    osArch: string; // `${os.platform()}-${os.arch()}`
+    lockfileHash: string | null; // sha256 of package-lock.json, null if absent
+    appliedMigrations: string[]; // filenames in the migrations dir
+    ports: PortProbe[]; // one per configured port
+    tunnelInterfaces: string[]; // names of utun*/tun* interfaces present
 }
 
 export interface PortProbe {
     port: number;
-    bound: boolean;       // something is listening (EADDRINUSE when we try to bind)
-    responsive: boolean;  // a TCP connect succeeded AND bytes came back within the timeout
+    bound: boolean; // something is listening (EADDRINUSE when we try to bind)
+    responsive: boolean; // a TCP connect succeeded AND bytes came back within the timeout
     latencyMs: number | null;
 }
 
 /** What a signature says when it fires. */
 export interface Detection {
-    signatureId: string;          // matches Signature.id, e.g. 'VPN_LOOPBACK'
+    signatureId: string; // matches Signature.id, e.g. 'VPN_LOOPBACK'
     tier: 1 | 2;
-    severity: 'info' | 'warn' | 'critical';
-    title: string;                // one line, becomes the incident title
-    explanation: string;          // the card body and the AI draft context
-    affectedSystem: string;       // must be a key resolveFilePaths knows, e.g. 'auth'
-    evidence: Record<string, unknown>;  // the raw facts, for the payload
+    severity: "info" | "warn" | "critical";
+    title: string; // one line, becomes the incident title
+    explanation: string; // the card body and the AI draft context
+    affectedSystem: string; // must be a key resolveFilePaths knows, e.g. 'auth'
+    evidence: Record<string, unknown>; // the raw facts, for the payload
 }
 
 /** One self-contained check. The engine is a loop over an array of these. */
 export interface Signature {
     id: string;
     tier: 1 | 2;
-    severity: 'info' | 'warn' | 'critical';
+    severity: "info" | "warn" | "critical";
     /** Pure. Reads the snapshot, returns a Detection or null. No I/O here. */
     evaluate(snapshot: EnvSnapshot): Detection | null;
 }
@@ -183,14 +185,14 @@ fails on its first scan is worse than one that refuses to boot.
 One exported function, `collect(config): Promise<EnvSnapshot>`. Everything in
 it is Node built-ins:
 
-| field | how |
-|---|---|
-| `nodeVersion` | `process.version` |
-| `osArch` | `os.platform()` + `os.arch()` |
-| `lockfileHash` | `createHash('sha256')` over `<root>/package-lock.json`; `null` if the file is absent |
-| `appliedMigrations` | `readdir(<root>/server/db/migrations)` filtered to `.sql`, sorted |
-| `tunnelInterfaces` | `Object.keys(os.networkInterfaces())` filtered to `/^(utun|tun|tap|wg)/` |
-| `ports` | one `probePort()` per configured port, run concurrently |
+| field               | how                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------ | --- | --- | ----- |
+| `nodeVersion`       | `process.version`                                                                    |
+| `osArch`            | `os.platform()` + `os.arch()`                                                        |
+| `lockfileHash`      | `createHash('sha256')` over `<root>/package-lock.json`; `null` if the file is absent |
+| `appliedMigrations` | `readdir(<root>/server/db/migrations)` filtered to `.sql`, sorted                    |
+| `tunnelInterfaces`  | `Object.keys(os.networkInterfaces())` filtered to `/^(utun                           | tun | tap | wg)/` |
+| `ports`             | one `probePort()` per configured port, run concurrently                              |
 
 **`probePort()` is the only non-trivial piece.** "Bound but not responding" is
 two separate facts:
@@ -210,7 +212,10 @@ the scan continues. One flaky port must not stop the cycle.
 ### 6.3 `engine.ts` — the loop
 
 ```ts
-export function runSignatures(snapshot: EnvSnapshot, registry: Signature[]): Detection[]
+export function runSignatures(
+    snapshot: EnvSnapshot,
+    registry: Signature[],
+): Detection[];
 ```
 
 Map over the registry, call `evaluate`, keep the non-nulls. Ten lines. The
@@ -245,10 +250,11 @@ evaluate(snapshot) {
 
 **A design call worth stating:** the tunnel interface **raises severity, it does
 not gate the detection.** `build-plan.md` Minimum is "port responsiveness check
-+ VPN demo scenario" — the port check is the mechanism, the VPN is the story
-told about it. Making the tunnel a hard requirement would mean the demo cannot
-run without a real VPN connected, and it would miss the identical symptom from
-a hung process. Bound-and-dead fires; tunnel-present makes it critical.
+
+- VPN demo scenario" — the port check is the mechanism, the VPN is the story
+  told about it. Making the tunnel a hard requirement would mean the demo cannot
+  run without a real VPN connected, and it would miss the identical symptom from
+  a hung process. Bound-and-dead fires; tunnel-present makes it critical.
 
 **Pure function.** No I/O, takes a snapshot, returns a detection or null. Tested
 with three fixtures: nothing dead → null; dead port, no tunnel → warn; dead port
@@ -297,15 +303,29 @@ publishing") and it needs no new server code.
 
 ### 6.7 `client.ts` — HTTP, and the one decision inside it
 
+> **Status, as of Sep 11:** this section describes the JWT flow (`login` /
+> `refresh` / `token_expired`), which is what actually gets built first. **ADR
+> 0016 decided Dedicated Agent Credentials instead** — a header-based
+> `AgentKey`, no login, no refresh, no expiry — and that ADR is the intended
+> end state, not this section. The two disagree on purpose right now: building
+> against the JWT flow below gets an end-to-end agent working sooner, and the
+> switch to `AgentKey` happens as a deliberate follow-up, not silently. **The
+> trigger to do that switch:** before the agent is ever handed to anyone who
+> isn't the person who built it, since JWT here means the agent holds a
+> credential to the developer's full account with no way to revoke just the
+> agent. Whoever picks this up should update this section, `§6.8`, and
+> `schedule.md`'s `Agent HTTP client` task at that point — all three currently
+> assume JWT and would need to flip together.
+
 Five calls, all against endpoints that exist or are in open PRs:
 
-| call | endpoint | status |
-|---|---|---|
-| `login()` | `POST /auth/login` | on `main` |
-| `refresh()` | `POST /auth/refresh` | on `main` |
-| `createIncident(detection)` | `POST /incidents` | on `main` |
+| call                                  | endpoint                    | status                                              |
+| ------------------------------------- | --------------------------- | --------------------------------------------------- |
+| `login()`                             | `POST /auth/login`          | on `main`                                           |
+| `refresh()`                           | `POST /auth/refresh`        | on `main`                                           |
+| `createIncident(detection)`           | `POST /incidents`           | on `main`                                           |
 | `requestDraft(incidentId, detection)` | `POST /incidents/:id/draft` | **Anthony's delivery PR — see integration-plan §4** |
-| `publishFingerprint(body)` | `PUT /fingerprints` | on `main` |
+| `publishFingerprint(body)`            | `PUT /fingerprints`         | on `main`                                           |
 
 Native `fetch`. The refresh cookie is `httpOnly` — irrelevant to a Node client,
 which reads `Set-Cookie` off the login response and sends it back as a `Cookie`
@@ -317,6 +337,10 @@ call `refresh()` once and retry. Any other 401 means re-login. This is exactly
 why `middleware.ts` distinguishes `token_expired` from `token_invalid`.
 
 ### 6.8 `index.ts` — the run loop
+
+> **Status:** `login` here is the JWT flow, per §6.7's note above. Once that
+> switches to `AgentKey`, this line becomes "read the key from config" — no
+> network call, no in-memory session to hold at all.
 
 ```
 load config, fail fast on anything missing
@@ -369,12 +393,12 @@ owns it since he owns auth.
 
 The options, so the ADR has something to choose between:
 
-| option | server change | secret on disk | verdict for Minimum |
-|---|---|---|---|
-| A. Paste an access token | none | yes, 15-min lifetime | **no** — expires before the second scan |
-| B. Paste the refresh token | none | yes, 30-day | works, but extracting an httpOnly cookie by hand is hostile UX |
-| **C. Email + password in agent config** | **none** | **yes** | **recommended** — zero server work, same threat model as `.env` holding `DATABASE_URL` |
-| D. Dedicated agent token / API key | new endpoint + table or column | yes, revocable | the right long-term answer; not Minimum |
+| option                                  | server change                  | secret on disk       | verdict for Minimum                                                                    |
+| --------------------------------------- | ------------------------------ | -------------------- | -------------------------------------------------------------------------------------- |
+| A. Paste an access token                | none                           | yes, 15-min lifetime | **no** — expires before the second scan                                                |
+| B. Paste the refresh token              | none                           | yes, 30-day          | works, but extracting an httpOnly cookie by hand is hostile UX                         |
+| **C. Email + password in agent config** | **none**                       | **yes**              | **recommended** — zero server work, same threat model as `.env` holding `DATABASE_URL` |
+| D. Dedicated agent token / API key      | new endpoint + table or column | yes, revocable       | the right long-term answer; not Minimum                                                |
 
 **Recommend C, record D as the upgrade path.** The agent runs on the
 developer's own machine reading the developer's own credentials. That is the
@@ -384,15 +408,15 @@ someone wants to revoke an agent without changing their password.
 
 ## 9. Error handling
 
-| failure | behaviour |
-|---|---|
-| Missing config | exit non-zero at startup, variable named |
-| Server unreachable at login | exit non-zero, URL named — an agent with no server is useless |
-| Server unreachable mid-loop | log once, keep scanning, retry on next cycle; do not exit |
-| One port probe throws | record it as unprobed, continue the scan |
-| `401 token_expired` | refresh once, retry once |
-| `401` anything else | re-login once; if that fails, exit |
-| `POST` after `y` fails | print the error, do not suppress — the dev should be able to retry |
+| failure                     | behaviour                                                                  |
+| --------------------------- | -------------------------------------------------------------------------- |
+| Missing config              | exit non-zero at startup, variable named                                   |
+| Server unreachable at login | exit non-zero, URL named — an agent with no server is useless              |
+| Server unreachable mid-loop | log once, keep scanning, retry on next cycle; do not exit                  |
+| One port probe throws       | record it as unprobed, continue the scan                                   |
+| `401 token_expired`         | refresh once, retry once                                                   |
+| `401` anything else         | re-login once; if that fails, exit                                         |
+| `POST` after `y` fails      | print the error, do not suppress — the dev should be able to retry         |
 | Signature `evaluate` throws | catch per-signature, log, continue — one broken check cannot kill the loop |
 
 The pattern is the same as the server's: fail fast on things that are wrong at
@@ -416,14 +440,14 @@ boot, fail soft on things that are wrong at runtime.
 
 Per ADR 0015: examples, real I/O where the value is, verified by mutation.
 
-| module | test type | notes |
-|---|---|---|
-| `vpnLoopback.evaluate` | pure, fixtures | three cases (§6.4). Mutate the `bound && !responsive` to `||` — must fail |
-| `engine.runSignatures` | pure | a registry of two fakes, one fires, one doesn't |
-| `scanner.probePort` | **real sockets** | spin up a `net.Server` that accepts and never writes → `bound: true, responsive: false`. Spin up one that echoes → `responsive: true`. Nothing listening → `bound: false`. This is the one place a mock would hide the exact bug the signature exists to catch |
-| `fingerprint.toBody` | pure | snapshot in, body out, `null` lockfile stays `null` |
-| `client.*` | mocked `fetch` | the `token_expired` → refresh → retry path is the case worth pinning |
-| `card` | not unit-tested | it's `readline`; the run loop's `y`/`N` branching is covered by testing the loop with a stubbed card |
+| module                 | test type        | notes                                                                                                                                                                                                                                                          |
+| ---------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------- |
+| `vpnLoopback.evaluate` | pure, fixtures   | three cases (§6.4). Mutate the `bound && !responsive` to `                                                                                                                                                                                                     |     | ` — must fail |
+| `engine.runSignatures` | pure             | a registry of two fakes, one fires, one doesn't                                                                                                                                                                                                                |
+| `scanner.probePort`    | **real sockets** | spin up a `net.Server` that accepts and never writes → `bound: true, responsive: false`. Spin up one that echoes → `responsive: true`. Nothing listening → `bound: false`. This is the one place a mock would hide the exact bug the signature exists to catch |
+| `fingerprint.toBody`   | pure             | snapshot in, body out, `null` lockfile stays `null`                                                                                                                                                                                                            |
+| `client.*`             | mocked `fetch`   | the `token_expired` → refresh → retry path is the case worth pinning                                                                                                                                                                                           |
+| `card`                 | not unit-tested  | it's `readline`; the run loop's `y`/`N` branching is covered by testing the loop with a stubbed card                                                                                                                                                           |
 
 ## 12. The demo trigger
 
@@ -433,7 +457,9 @@ The demo has to reproduce "bound but not responding" on command. A script,
 ```ts
 // Binds the port and accepts connections but never writes a byte.
 // That is exactly the symptom VPN_LOOPBACK detects.
-net.createServer((socket) => { /* hold it open, say nothing */ }).listen(5173);
+net.createServer((socket) => {
+    /* hold it open, say nothing */
+}).listen(5173);
 ```
 
 Run it, start the agent, the card appears within one scan interval. Kill it,
