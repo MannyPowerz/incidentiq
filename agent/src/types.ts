@@ -26,7 +26,7 @@ export interface PortProbe {
 
 //the machine's present output's once it was scanned.The signature reads from this beacuse it is everything that defines tier 1 scan
 export interface EnvSnapShot {
-    takenAt: Date;
+    readonly takenAt: number;// using a number with readonly and not a Date type sidesteps the mutability problem allowing no changes in this column
     nodeVersion: string; //node.version
     osArch: string; //`${os.platform()}-${os.arch()}`
     lockFilehash: string | null; //sha256 of package-lock.json, null if absent
