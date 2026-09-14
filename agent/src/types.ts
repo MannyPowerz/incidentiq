@@ -13,26 +13,26 @@
  */
 
 export interface PortProbe {
-    port: number;
+    readonly port: number;
 
     //a true value is determined if net.createServer().listen(port) outputs EADDRINUSE
-    bound: boolean;
+    readonly bound: boolean;
 
     //the validility of this value is determined if by the time the agent probe has timedout, we check if we get any bytes back
-    responsive: boolean;
+    readonly responsive: boolean;
 
-    latencyMs: number | null;
+    readonly latencyMs: number | null;
 }
 
 //the machine's present output's once it was scanned.The signature reads from this beacuse it is everything that defines tier 1 scan
 export interface EnvSnapShot {
     readonly takenAt: number;// using a number with readonly and not a Date type sidesteps the mutability problem allowing no changes in this column
-    nodeVersion: string; //node.version
-    osArch: string; //`${os.platform()}-${os.arch()}`
-    lockFilehash: string | null; //sha256 of package-lock.json, null if absent
-    appliedMigrations: string[]; //`readdir(<root>/server/db/migrations)` filtered to `.sql`, sorted
-    ports: PortProbe[]; //one per configed port
-    tunnelInterface: string[] //names of utun*/tun*/tap*/wg interfaces present
+    readonly nodeVersion: string; //node.version
+    readonly osArch: string; //`${os.platform()}-${os.arch()}`
+    readonly lockFilehash: string | null; //sha256 of package-lock.json, null if absent
+    readonly appliedMigrations: string[]; //`readdir(<root>/server/db/migrations)` filtered to `.sql`, sorted
+    readonly ports: PortProbe[]; //one per configed port
+    readonly tunnelInterface: string[] //names of utun*/tun*/tap*/wg interfaces present
 }
 
 //the agent's entire output surface
