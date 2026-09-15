@@ -108,6 +108,7 @@ is to leave it.
 | Dogfood week | Dogfood — use it daily, file bugs | Both | Oct 7 | 3 | End-to-end run |
 | Fix dogfood bugs | Fix whatever the dogfood week surfaced, severity order | Both | Oct 9 | 3 | Dogfood week |
 | Clean checkout README | README — run from clean checkout | Manny | Oct 8 | 1.5 | End-to-end run |
+| Add CONTRIBUTING.md | State the AI-assisted workflow plainly | Manny | Oct 8 | 0.5 | — |
 | Demo rehearsal | Demo runbook rehearsal ×2, timed | Both | Oct 9 | 2 | Fix dogfood bugs |
 
 ---
@@ -352,6 +353,11 @@ Independent of the credentials work below — a query filter and agent-side logi
 **Owner:** Manny · **Due:** Thu Oct 8 · **Est:** 1.5h · **Blocked by:** End-to-end run
 **Description:** Clone → running demo in under ten minutes for someone who has never seen the repo. Postgres setup, `.env` from `.env.example` for server, client, and agent, `npm run migrate`, seed, three `npm run dev`s. Test it on a fresh clone yourself. This is what a reviewer or interviewer opens first.
 **Done when:** A fresh clone reaches the runbook's SETUP state following only the README.
+
+### Add CONTRIBUTING.md
+**Owner:** Manny · **Due:** Thu Oct 8 · **Est:** 30 min · **Blocked by:** —
+**Description:** State the actual workflow plainly rather than let a silent Contributors graph invite a guess: AI-assisted via Claude Code for planning, review, and test-writing; implementation and every architectural decision are mine, documented in `docs/Architecture_Decision_Records/`. Verified Sep 15 that Claude does not appear in GitHub's Contributors graph at all — that graph reads the git `Author` field only, which has always been the human on every commit in this repo — so this file isn't damage control, it's stating a real, defensible process before anyone has to ask.
+**Done when:** The file exists at the repo root and says how the project was actually built.
 
 ### Demo rehearsal
 **Owner:** Both · **Due:** Fri Oct 9 · **Est:** 2h · **Blocked by:** Fix dogfood bugs
