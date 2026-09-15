@@ -7,6 +7,5 @@
 -- CONCURRENTLY avoids locking a table under live write traffic — this schema has none yet, so the restriction costs nothing real today. Revisit only if this ever runs against a table with production traffic.
 -- Matches every org_id filter in incidents/queries.ts — get, list, and resolve.
 CREATE INDEX incidents_org_id_idx ON incidents (org_id);
--- Matches every incident_id filter in timeline/queries.ts — the full list and the
--- reconnect gap-fill.
+-- Matches every incident_id filter in timeline/queries.ts — the full list and the reconnect gap-fill.
 CREATE INDEX timeline_entries_incident_id_idx ON timeline_entries (incident_id);
