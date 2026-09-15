@@ -76,9 +76,9 @@ describe('ai-draft route', () => {
         const {auth, incidentId} = await mintToken();
 
         const response = {
+            likely_fix: 'nothing',
             summary: `Salah is the best fùtballer`,
-            why_it_matters: 'He is the 3rd top scoere for liverpool',
-            likely_fix: 'nothing'
+            why_it_matters: 'He is the 3rd top scoere for liverpool'
         }
 
         invokeMock.mockResolvedValue(response)
@@ -88,8 +88,8 @@ describe('ai-draft route', () => {
         .set(auth)
         .send({incidentId: incidentId, context: 'same logged output', kind: 'log'})//disincluded body beacuse 
 
-        expect(posting.status).toBe(200)
-        expect(posting.body).toStrictEqual(response)//toStrictEqual would reject a response with an undefined field and should hold the response into the same exactness
+        expect(posting.status).toBe(201)
+        expect(posting.body.body).toStrictEqual(response)//toStrictEqual would reject a response with an undefined field and should hold the response into the same exactness
     })
 
     it('throws for missing draft column', async() => {

@@ -20,6 +20,12 @@ export interface ServerToClient {
     //types for emitting messages/failures
     'new-message': (value: TimelineEntry) => void
 
+    //for a confirmed-draft - the draft already exist, we are just updating the author_id
+    'confirm-draft' : (value: TimelineEntry) => void
+
+    //deleting and rejecting an inevitabley disassociated ai draft
+    'reject-draft': (value: TimelineEntry) => void
+
     //universal error for any type of Socket handler
     'socket-error': (value: {error: string}) => void
 

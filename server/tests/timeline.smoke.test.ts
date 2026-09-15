@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import type { AddressInfo } from 'node:net';
 import { io as ioc, type Socket as ClientSocket } from 'socket.io-client';
 import { pool } from '../src/db/pool.js';
@@ -40,11 +41,16 @@ async function setup() {
     const creds = { email: 'timeline@example.com', password: 'password123' };
     const reg = await request(app).post('/auth/register').send(creds);
     const token = reg.body.accessToken as string;
+    
+    //decoding token to get user_id
+    const decoding = jwt.decode(token) as {sub: string, org_id: string, role: string};
+    const userId = Number(decoding.sub)
+
     const created = await request(app)
         .post('/incidents')
         .set({ Authorization: `Bearer ${token}` })
         .send({ title: 'DB down', severity: 'P1' });
-    return { token, auth: { Authorization: `Bearer ${token}` }, incidentId: created.body.incident.id };
+    return { token, auth: { Authorization: `Bearer ${token}` }, incidentId: created.body.incident.id, userId: userId };
 }
 
 describe('timeline smoke test', () => {
@@ -174,4 +180,54 @@ describe('timeline smoke test', () => {
             });
         });
     });
+
+    it('confirms/updates author_id', async() => {
+        const { auth, incidentId, userId} = await setup();
+
+        const { 
+            rows: [aiEntry]
+        } = await pool.query(`INSERT INTO timeline_entries (incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING id`,
+            [incidentId, null, 'ai_draft', {}]
+        )
+
+        const { 
+            rows: [observationEntry]
+        } = await pool.query(`INSERT INTO timeline_entries (incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING id`,
+            [incidentId, null, 'action', {text: 'hi'}]
+        )
+
+        try {
+            const update = await request(app)
+                .patch(`/incidents/${incidentId}/timeline/${aiEntry.id}/confirmed`)
+                .set(auth)
+            expect(update.status).toBe(200)
+            expect(update.body.type).toBe('ai_draft')
+            expect(update.body.author_id).toBe(userId)
+
+            // throws and denies access for non-ai entries 
+            const otherUpdate = await  request(app)
+                .patch(`/incidents/${incidentId}/timeline/${observationEntry.id}/confirmed`)
+                .set(auth)
+            expect(otherUpdate.status).toBe(409)
+            expect(otherUpdate.body.error).toMatch('not_ai_draft')
+        }finally{ 
+            await pool.query(`DELETE FROM timeline_entries WHERE id = $1`, [aiEntry.id])
+        }
+    })
+
+    it('deletes an entry', async() => {
+        const { auth, incidentId, userId} = await setup()
+
+        const { 
+            rows: [entry]
+        } = await pool.query(`INSERT INTO timeline_entries (incident_id, author_id, type, body) VALUES($1, $2, $3, $4) RETURNING id`,
+            [incidentId, null, 'ai_draft', {}]
+        )
+
+        const deleting = await request(app)
+            .delete(`/incidents/${incidentId}/timeline/${entry.id}/rejected`)
+            .set(auth)
+        expect(deleting.status).toBe(200)
+        expect(deleting.body.author_id).toBe(null)
+    })
 });
