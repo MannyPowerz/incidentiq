@@ -8,7 +8,7 @@ type StatusBadgeProps = {
 
 export default function StatusBadge ({ status, } : StatusBadgeProps ) : JSX.Element {
     return (
-        <span className={`status-badge status-badge-${status.toLocaleLowerCase()}`}>
+        <span className={`status-badge status-badge-${status.toLowerCase()}`}>
             {status}
         </span>
     )

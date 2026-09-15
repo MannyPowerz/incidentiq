@@ -1,0 +1,481 @@
+.room-timeline {
+    display: flex;
+    flex: 1;
+
+    width: 100%;
+    min-height: 0;
+
+    padding: 1.25rem 1.5rem 1.5rem;
+    box-sizing: border-box;
+
+    background-color: #f8fafc;
+}
+
+.room-timeline-panel {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    width: 100%;
+    min-height: 0;
+
+    padding: 1.25rem 1.5rem;
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 0.65rem;
+
+    background-color: #ffffff;
+
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+/* ---------- Header ---------- */
+
+.room-timeline-header {
+    flex-shrink: 0;
+
+    margin-bottom: 1.25rem;
+}
+
+.room-timeline-title {
+    margin: 0 0 0.25rem;
+
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.room-timeline-subtitle {
+    margin: 0;
+
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+/* ---------- Timeline List ---------- */
+
+.room-timeline-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    width: 100%;
+    min-height: 0;
+
+    padding-right: 0.75rem;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.room-timeline-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.room-timeline-list::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.room-timeline-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background-color: #cbd5e1;
+}
+
+/* ---------- Timeline Event ---------- */
+
+.room-timeline-event {
+    position: relative;
+
+    display: grid;
+    flex-shrink: 0;
+
+    grid-template-columns: 70px 28px minmax(0, 1fr);
+    gap: 0.85rem;
+
+    min-height: 82px;
+}
+
+/* ---------- Date and Time ---------- */
+
+.room-timeline-event-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+
+    padding-top: 0;
+
+    white-space: nowrap;
+}
+
+.room-timeline-event-date {
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.room-timeline-event-clock {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ---------- Timeline Marker ---------- */
+
+.room-timeline-marker {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+}
+
+.room-timeline-marker::after {
+    position: absolute;
+
+    top: 16px;
+    bottom: -4px;
+
+    width: 2px;
+
+    background-color: #dbe3ee;
+
+    content: "";
+}
+
+.room-timeline-event:last-child .room-timeline-marker::after {
+    display: none;
+}
+
+.room-timeline-dot {
+    position: relative;
+    z-index: 1;
+
+    display: block;
+
+    width: 11px;
+    height: 11px;
+
+    margin-top: 3px;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    background-color: #64748b;
+
+    box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+/* ---------- Timeline Event Types ---------- */
+
+.room-timeline-dot-system {
+    background-color: #64748b;
+
+    box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+.room-timeline-dot-observation {
+    background-color: #3b82f6;
+
+    box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.room-timeline-dot-action {
+    background-color: #10b981;
+
+    box-shadow: 0 0 0 2px #a7f3d0;
+}
+
+.room-timeline-dot-finding {
+    background-color: #f59e0b;
+
+    box-shadow: 0 0 0 2px #fde68a;
+}
+
+.room-timeline-dot-ai_draft {
+    background-color: #8b5cf6;
+
+    box-shadow: 0 0 0 2px #ddd6fe;
+}
+
+/* ---------- Event Content ---------- */
+
+.room-timeline-event-content {
+    min-width: 0;
+
+    padding-bottom: 1.25rem;
+}
+
+.room-timeline-event-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+
+    margin-bottom: 0.3rem;
+}
+
+.room-timeline-event-content h3 {
+    margin: 0;
+
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.room-timeline-event-type {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.15rem 0.45rem;
+
+    border-radius: 999px;
+
+    font-size: 0.65rem;
+    font-weight: 700;
+
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+.room-timeline-event-type-system {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.room-timeline-event-type-observation {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.room-timeline-event-type-action {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.room-timeline-event-type-finding {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.room-timeline-event-type-ai_draft {
+    background-color: #f5f3ff;
+    color: #7c3aed;
+}
+
+.room-timeline-event-description {
+    max-width: 760px;
+
+    margin: 0;
+
+    color: #64748b;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.room-timeline-author {
+    display: block;
+
+    margin-top: 0.3rem;
+
+    color: #94a3b8;
+    font-size: 0.72rem;
+}
+
+/* ---------- Empty Timeline ---------- */
+
+.room-timeline-empty {
+    margin: auto;
+
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+/* ---------- Add Entry Form ---------- */
+
+.room-timeline-update-form {
+    display: grid;
+    flex-shrink: 0;
+
+    grid-template-columns:
+        160px
+        200px
+        minmax(200px, 1fr)
+        auto;
+
+    gap: 0.75rem;
+    align-items: end;
+
+    margin-top: 0.75rem;
+    padding-top: 0.85rem;
+
+    border-top: 1px solid #e2e8f0;
+}
+
+.room-timeline-form-field {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.room-timeline-form-field-update {
+    min-width: 0;
+}
+
+.room-timeline-update-label {
+    margin-bottom: 0.35rem;
+
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* ---------- Form Controls ---------- */
+
+.room-timeline-update-select,
+.room-timeline-update-title-input,
+.room-timeline-update-input {
+    width: 100%;
+    height: 38px;
+
+    padding: 0.5rem 0.7rem;
+    box-sizing: border-box;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 0.4rem;
+
+    background-color: #ffffff;
+    color: #0f172a;
+
+    font: inherit;
+    font-size: 0.75rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.room-timeline-update-select {
+    cursor: pointer;
+}
+
+.room-timeline-update-title-input::placeholder,
+.room-timeline-update-input::placeholder {
+    color: #94a3b8;
+}
+
+.room-timeline-update-input {
+    min-height: 38px;
+    max-height: 70px;
+
+    resize: vertical;
+}
+
+.room-timeline-update-select:hover,
+.room-timeline-update-title-input:hover,
+.room-timeline-update-input:hover {
+    border-color: #94a3b8;
+}
+
+.room-timeline-update-select:focus,
+.room-timeline-update-title-input:focus,
+.room-timeline-update-input:focus {
+    outline: none;
+
+    border-color: #6366f1;
+
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+/* ---------- Post Entry Button ---------- */
+
+.room-timeline-update-button {
+    min-width: 100px;
+    height: 38px;
+
+    padding: 0.55rem 0.85rem;
+
+    border: none;
+    border-radius: 0.4rem;
+
+    background-color: #4f46e5;
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.room-timeline-update-button:hover:not(:disabled) {
+    background-color: #4338ca;
+}
+
+.room-timeline-update-button:focus-visible {
+    outline: 3px solid rgba(79, 70, 229, 0.25);
+    outline-offset: 2px;
+}
+
+.room-timeline-update-button:disabled {
+    background-color: #94a3b8;
+
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1000px) {
+    .room-timeline-update-form {
+        grid-template-columns: 150px 1fr;
+    }
+
+    .room-timeline-form-field-update {
+        grid-column: 1 / -1;
+    }
+
+    .room-timeline-update-button {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 700px) {
+    .room-timeline {
+        padding: 1rem;
+    }
+
+    .room-timeline-panel {
+        padding: 1.25rem;
+    }
+
+    .room-timeline-event {
+        grid-template-columns: 58px 24px minmax(0, 1fr);
+
+        min-height: 82px;
+    }
+
+    .room-timeline-update-form {
+        grid-template-columns: 1fr;
+    }
+
+    .room-timeline-form-field-update {
+        grid-column: auto;
+    }
+
+    .room-timeline-update-button {
+        width: 100%;
+    }
+}
