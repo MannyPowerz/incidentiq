@@ -6,8 +6,8 @@ import react from '@vitejs/plugin-react'
 // The proxy exists so the browser sees one origin instead of two. Vite serves the app on :5173
 // -> and Express listens on :3000, which the browser treats as separate sites — every fetch would be
 // ->  blocked by CORS, and the refresh cookie (sameSite: 'strict') would never be sent at all. 
-// Rather than adding CORS headers server-side, the dev server forwards these paths so same-origin is
-// -> simply true. Dev only: a production deploy needs its own answer (see integration-plan.md §3.1).
+// Rather than adding CORS headers server-side, the dev server forwards these paths so same-origin is simply true.
+// Dev only: a production deploy needs its own answer (see integration-plan.md §3.1).
 
 export default defineConfig(({ mode }) => {
     // Third argument '' loads vars with no VITE_ prefix. SERVER_ORIGIN deliberately has none —
