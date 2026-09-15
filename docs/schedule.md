@@ -71,8 +71,8 @@ is to leave it.
 | Send account email | Send account email for `.mailmap` | Anthony | Sep 8 | 0.1 | — |
 | ~~Merge the queue~~ **DONE** | #19–#24 all merged Sep 4. `main` green at 94 tests, `tsc` clean | Manny | Sep 4 | 1.5 | — |
 | ~~Add path map keys~~ **DONE** | Added `client`, `server` keys to `SYSTEM_TO_PATHS` (commit 086602b, merged in #20) | Manny | Sep 4 | 0.5 | — |
-| Bring in room details page | Merge main into Gabriella's `feat/room-details-page` and PR it (verified conflict-free) | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
-| Add database indexes | Indexes migration `0005` | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
+| ~~Bring in room details page~~ **DONE** | Merged via PR #29, Sep 15 | Manny | Sep 13 | 0.5 | — |
+| ~~Add database indexes~~ **DONE** | Merged via PR #31, Sep 15. Verified on both the local test DB and the shared dev DB; full suite 94/94 | Manny | Sep 13 | 0.5 | — |
 | Settle draft endpoint shape | Confirm or counter-propose the `POST /incidents/:id/draft` shape | Anthony | Sep 9 | 0.5 | — |
 | AI delivery PR | Open AI delivery PR (draft route + confirm route) off `main` | Anthony | Sep 12 | 2 | Settle draft endpoint shape |
 | Reason generator PR | Open reason generator PR off `main` | Anthony | Sep 12 | 2 | — (unblocked, queue merged) |
@@ -135,15 +135,15 @@ is to leave it.
 **Description:** The agent maps ports to systems (`5173 → client`, `3000 → server`). Those keys must exist in `relevance/systemPaths.ts` or relevance scores nobody for agent-created incidents. Add them to PR #20 before it merges. `client: ['client/src']`, `server: ['server/src']`.
 **Done when:** Both keys present, `relevance.systemPaths.test.ts` updated and passing.
 
-### Bring in room details page
-**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+### Bring in room details page — DONE
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue · **Status:** merged via PR #29, Sep 15
 Moved from Sep 12 — no Manny capacity Sep 7–12 (6 days), resuming Sep 13. Still inside Week 2, no other date affected since nothing else was due in that window.
 **Description:** Gabriella's `feat/room-details-page` adds 1,959 lines across 29 files, including `RoomDetailsPage.tsx`, the timeline tab, `timelineEvents.ts`, and `formatDateTime.ts`. It was never PR'd. **`main` has no room details page at all** — only Dashboard, Rooms, and SignIn — so this is the only place the screen the demo runs on exists.
 It is 51 commits behind `main` but **merges clean, verified with `git merge-tree`: zero conflicts.** So this is `git merge main` on the branch, not a rebase, and not the 2-hour job it was first estimated at.
 **Done when:** Merged. `client/src/pages/RoomDetailsPage.tsx` exists on `main`.
 
-### Add database indexes
-**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+### Add database indexes — DONE
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue · **Status:** merged via PR #31, Sep 15 — verified on both the local test DB and the shared dev DB, full suite 94/94
 Moved from Sep 12, same reason as the task above.
 **Description:** No `CREATE INDEX` exists anywhere. `incidents.org_id` and `timeline_entries.incident_id` are the filter column on every read of their tables. `0005_indexes.sql` with two `CREATE INDEX` statements. Not in the demo path — do it because it's 30 minutes and it's an interview question.
 **Done when:** Migration applies cleanly on a fresh test DB; `schema.test.ts` still passes.
