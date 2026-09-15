@@ -354,7 +354,33 @@ port mapping. **Manny adds those two keys in PR #20 before it merges.**
 
 Two laptops or two browser profiles. Server, seed, agent, two clients.
 
+**The demo runs on the cloud database, not the local container, on purpose.**
+Both exist: `TEST_DATABASE_URL` points at local Docker, `DATABASE_URL` at
+Supabase. Local Postgres would remove the pause risk completely, but it would
+also give each laptop its own separate data, and two browsers watching the same
+incident update live is the entire point of steps 3 and 4 below. The shared
+database is load-bearing for the demo, so the pause risk gets a wake-up step
+rather than being dodged by switching.
+
 ```
+THE DAY BEFORE — wake the database
+  Supabase free-tier projects pause after about 7 days idle, and a paused one
+  fails as "tenant or user not found", which reads like a broken connection
+  string rather than a sleeping database. This already happened once, Sep 5.
+
+  1. Open the project in the Supabase dashboard, Restore it if paused
+  2. Prove it is awake, do not trust the dashboard alone:
+       cd server && npm run dev     → must print "listening on port 3000"
+  3. If it still fails, WAIT and retry before touching the connection string.
+     A restoring project returns the same "tenant or user not found" as a
+     deleted one or a wrong host — the error cannot tell you which. On Sep 5
+     this sent us hunting a stale ref for twenty minutes when the string was
+     correct and the project simply had not finished waking.
+  4. Only after several minutes of retries, compare the project ref and pooler
+     host in DATABASE_URL against Dashboard → Connect.
+
+  Two minutes the day before. Discovering it live costs the demo.
+
 SETUP (before the demo starts)
   server:  npm run migrate && npx tsx scripts/seed-demo.ts && npm run dev
   client:  npm run dev                                          → :5173

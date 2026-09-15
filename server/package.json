@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "tsx src/db/migrate.ts",
@@ -37,11 +37,6 @@
     "vitest": "^4.1.10"
   },
   "allowScripts": {
-    "bcrypt@6.0.0": true,
-    "nodemon": "^3.1.14",
-    "socket.io-client": "^4.8.3",
-    "tsx": "^4.16.0",
-    "typescript": "^5.5.0",
-    "vitest": "^4.1.10"
+    "bcrypt@6.0.0": true
   }
 }
