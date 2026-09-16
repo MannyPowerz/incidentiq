@@ -8,7 +8,7 @@
  * 
  * Notice on architecture.MD:
  * It states that collects() runs on each signature; we should be able to follow the flow of scanner collecting -> signature 
- * evaluating. Since collection is I/O, it should happen once per cycle. Splitting it is what makes evaluate() a pure founction
+ * evaluating. Since collection is I/O, it should happen once per cycle. Splitting it is what makes evaluate() a pure function
  * towards a single object, which in return makes it testable with fixtures.
  */
 
@@ -39,7 +39,7 @@ export interface EnvSnapShot {
 export interface Detection {
     signatureId: string; //matches Signature.id, e.g. 'VPN_LOOPBACK'
     tier: 1 | 2;
-    severity: 'infor' | 'warn' | 'critical';
+    severity: 'info' | 'warn' | 'critical';
 
     title: string; //this ends up server-side as the incident title
     explanation: string; //the card body and the ai response
@@ -55,7 +55,7 @@ export interface Detection {
 export interface Signature {
     id: string;
     tier: 1 | 2;
-    severity: 'infor' | 'warn' | 'critical';
+    severity: 'info' | 'warn' | 'critical';
 
     //two constraints - purity & no I/0. If either is violated
     evaluate(snapshot:EnvSnapShot): Detection | null
