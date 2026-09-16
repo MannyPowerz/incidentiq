@@ -71,8 +71,8 @@ is to leave it.
 | Send account email | Send account email for `.mailmap` | Anthony | Sep 8 | 0.1 | — |
 | ~~Merge the queue~~ **DONE** | #19–#24 all merged Sep 4. `main` green at 94 tests, `tsc` clean | Manny | Sep 4 | 1.5 | — |
 | ~~Add path map keys~~ **DONE** | Added `client`, `server` keys to `SYSTEM_TO_PATHS` (commit 086602b, merged in #20) | Manny | Sep 4 | 0.5 | — |
-| Bring in room details page | Merge main into Gabriella's `feat/room-details-page` and PR it (verified conflict-free) | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
-| Add database indexes | Indexes migration `0005` | Manny | Sep 13 | 0.5 | — (unblocked, queue merged) |
+| ~~Bring in room details page~~ **DONE** | Merged via PR #29, Sep 15 | Manny | Sep 13 | 0.5 | — |
+| ~~Add database indexes~~ **DONE** | Merged via PR #31, Sep 15. Verified on both the local test DB and the shared dev DB; full suite 94/94 | Manny | Sep 13 | 0.5 | — |
 | Settle draft endpoint shape | Confirm or counter-propose the `POST /incidents/:id/draft` shape | Anthony | Sep 9 | 0.5 | — |
 | AI delivery PR | Open AI delivery PR (draft route + confirm route) off `main` | Anthony | Sep 12 | 2 | Settle draft endpoint shape |
 | Reason generator PR | Open reason generator PR off `main` | Anthony | Sep 12 | 2 | — (unblocked, queue merged) |
@@ -108,6 +108,7 @@ is to leave it.
 | Dogfood week | Dogfood — use it daily, file bugs | Both | Oct 7 | 3 | End-to-end run |
 | Fix dogfood bugs | Fix whatever the dogfood week surfaced, severity order | Both | Oct 9 | 3 | Dogfood week |
 | Clean checkout README | README — run from clean checkout | Manny | Oct 8 | 1.5 | End-to-end run |
+| Add CONTRIBUTING.md | State the AI-assisted workflow plainly | Manny | Oct 8 | 0.5 | — |
 | Demo rehearsal | Demo runbook rehearsal ×2, timed | Both | Oct 9 | 2 | Fix dogfood bugs |
 
 ---
@@ -134,15 +135,15 @@ is to leave it.
 **Description:** The agent maps ports to systems (`5173 → client`, `3000 → server`). Those keys must exist in `relevance/systemPaths.ts` or relevance scores nobody for agent-created incidents. Add them to PR #20 before it merges. `client: ['client/src']`, `server: ['server/src']`.
 **Done when:** Both keys present, `relevance.systemPaths.test.ts` updated and passing.
 
-### Bring in room details page
-**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+### Bring in room details page — DONE
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue · **Status:** merged via PR #29, Sep 15
 Moved from Sep 12 — no Manny capacity Sep 7–12 (6 days), resuming Sep 13. Still inside Week 2, no other date affected since nothing else was due in that window.
 **Description:** Gabriella's `feat/room-details-page` adds 1,959 lines across 29 files, including `RoomDetailsPage.tsx`, the timeline tab, `timelineEvents.ts`, and `formatDateTime.ts`. It was never PR'd. **`main` has no room details page at all** — only Dashboard, Rooms, and SignIn — so this is the only place the screen the demo runs on exists.
 It is 51 commits behind `main` but **merges clean, verified with `git merge-tree`: zero conflicts.** So this is `git merge main` on the branch, not a rebase, and not the 2-hour job it was first estimated at.
 **Done when:** Merged. `client/src/pages/RoomDetailsPage.tsx` exists on `main`.
 
-### Add database indexes
-**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue
+### Add database indexes — DONE
+**Owner:** Manny · **Due:** Sun Sep 13 · **Est:** 30 min · **Blocked by:** Merge the queue · **Status:** merged via PR #31, Sep 15 — verified on both the local test DB and the shared dev DB, full suite 94/94
 Moved from Sep 12, same reason as the task above.
 **Description:** No `CREATE INDEX` exists anywhere. `incidents.org_id` and `timeline_entries.incident_id` are the filter column on every read of their tables. `0005_indexes.sql` with two `CREATE INDEX` statements. Not in the demo path — do it because it's 30 minutes and it's an interview question.
 **Done when:** Migration applies cleanly on a fresh test DB; `schema.test.ts` still passes.
@@ -352,6 +353,11 @@ Independent of the credentials work below — a query filter and agent-side logi
 **Owner:** Manny · **Due:** Thu Oct 8 · **Est:** 1.5h · **Blocked by:** End-to-end run
 **Description:** Clone → running demo in under ten minutes for someone who has never seen the repo. Postgres setup, `.env` from `.env.example` for server, client, and agent, `npm run migrate`, seed, three `npm run dev`s. Test it on a fresh clone yourself. This is what a reviewer or interviewer opens first.
 **Done when:** A fresh clone reaches the runbook's SETUP state following only the README.
+
+### Add CONTRIBUTING.md
+**Owner:** Manny · **Due:** Thu Oct 8 · **Est:** 30 min · **Blocked by:** —
+**Description:** State the actual workflow plainly rather than let a silent Contributors graph invite a guess: AI-assisted via Claude Code for planning, review, and test-writing; implementation and every architectural decision are mine, documented in `docs/Architecture_Decision_Records/`. Verified Sep 15 that Claude does not appear in GitHub's Contributors graph at all — that graph reads the git `Author` field only, which has always been the human on every commit in this repo — so this file isn't damage control, it's stating a real, defensible process before anyone has to ask.
+**Done when:** The file exists at the repo root and says how the project was actually built.
 
 ### Demo rehearsal
 **Owner:** Both · **Due:** Fri Oct 9 · **Est:** 2h · **Blocked by:** Fix dogfood bugs
