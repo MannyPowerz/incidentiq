@@ -1,13 +1,22 @@
 .rooms-layout {
   display: flex;
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
   background-color: #f8fafc;
 }
 
 .rooms-page {
   flex: 1;
   min-width: 0;
+  height: 100vh;
+
   padding: 2rem;
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @media (max-width: 1100px) {
@@ -25,9 +34,13 @@
 @media (max-width: 600px) {
   .rooms-layout {
     display: block;
+    height: auto;
+    overflow: visible;
   }
 
   .rooms-page {
+    height: auto;
     padding: 1rem;
+    overflow: visible;
   }
 }
