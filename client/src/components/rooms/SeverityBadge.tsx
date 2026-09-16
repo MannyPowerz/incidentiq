@@ -8,7 +8,7 @@ type SeverityBadgeProps = {
 
 export default function SeverityBadge({ severity, } : SeverityBadgeProps ) : JSX.Element {
     return (
-        <span className={`severity-badge severity-badge-${severity.toLocaleLowerCase()}`}>
+        <span className={`severity-badge severity-badge-${severity.toLowerCase()}`}>
             {severity}
         </span>
     )
