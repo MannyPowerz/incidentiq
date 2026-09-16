@@ -1,0 +1,67 @@
+.room-tabs {
+  padding: 0 28px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.room-tabs-list {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-top: 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.room-tabs-list::-webkit-scrollbar {
+    display: none;
+}
+
+.room-tab {
+  position: relative;
+  flex-shrink: 0;
+  padding: 12px 0 14px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.room-tab:hover {
+  color: #4f46e5;
+}
+
+.room-tab::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background-color: transparent;
+  content: "";
+}
+
+.room-tab-active {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.room-tab-active::after {
+  background-color: #5b45d6;
+}
+
+@media (max-width: 700px) {
+  .room-tabs {
+    padding: 0 18px;
+  }
+
+  .room-tabs-list {
+    gap: 22px;
+  }
+}

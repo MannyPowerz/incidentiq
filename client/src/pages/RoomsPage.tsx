@@ -48,8 +48,9 @@ export default function RoomsPage () : JSX.Element {
             title: newRoomData.title,
             description: newRoomData.description,
             severity: newRoomData.severity,
-            status: "Open",
+            status: "detected",
             assignee: newRoomData.assignee,
+            createdAt: new Date(),
             updatedAt: new Date()
         }
 
@@ -66,7 +67,7 @@ export default function RoomsPage () : JSX.Element {
             room.id === roomId 
             ? {
                 ...room,
-                status: "Resolved",
+                status: "resolved",
                 updatedAt: new Date(),
         } : room,),);
     }

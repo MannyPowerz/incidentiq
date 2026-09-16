@@ -129,6 +129,18 @@ nobody.
 The agent posts an approved detection. Data flow says step 5 → step 6 (AI
 draft) → step 7 (DB). The agent needs one endpoint that does 6 and 7.
 
+**Every call the agent makes uses `Authorization: AgentKey <key>`, not a
+Bearer JWT.** Decided in ADR 0016 — Dedicated Agent Credentials, not a
+password or a pasted token. `requireAgentKey` populates `req.user` in the
+same shape `requireAuth` does, so every route below needs no change to accept
+either.
+
+**Before creating an incident, the agent checks for one to reuse.** Decided
+in ADR 0017. `GET /incidents?affected_system=X` first; if an open one exists,
+post the draft onto it via the route below instead of creating a new
+incident. This only changes the agent's own client logic — `POST /incidents`
+itself is unchanged for human callers.
+
 **Proposed, in Anthony's delivery PR:**
 
 ```
@@ -342,7 +354,33 @@ port mapping. **Manny adds those two keys in PR #20 before it merges.**
 
 Two laptops or two browser profiles. Server, seed, agent, two clients.
 
+**The demo runs on the cloud database, not the local container, on purpose.**
+Both exist: `TEST_DATABASE_URL` points at local Docker, `DATABASE_URL` at
+Supabase. Local Postgres would remove the pause risk completely, but it would
+also give each laptop its own separate data, and two browsers watching the same
+incident update live is the entire point of steps 3 and 4 below. The shared
+database is load-bearing for the demo, so the pause risk gets a wake-up step
+rather than being dodged by switching.
+
 ```
+THE DAY BEFORE — wake the database
+  Supabase free-tier projects pause after about 7 days idle, and a paused one
+  fails as "tenant or user not found", which reads like a broken connection
+  string rather than a sleeping database. This already happened once, Sep 5.
+
+  1. Open the project in the Supabase dashboard, Restore it if paused
+  2. Prove it is awake, do not trust the dashboard alone:
+       cd server && npm run dev     → must print "listening on port 3000"
+  3. If it still fails, WAIT and retry before touching the connection string.
+     A restoring project returns the same "tenant or user not found" as a
+     deleted one or a wrong host — the error cannot tell you which. On Sep 5
+     this sent us hunting a stale ref for twenty minutes when the string was
+     correct and the project simply had not finished waking.
+  4. Only after several minutes of retries, compare the project ref and pooler
+     host in DATABASE_URL against Dashboard → Connect.
+
+  Two minutes the day before. Discovering it live costs the demo.
+
 SETUP (before the demo starts)
   server:  npm run migrate && npx tsx scripts/seed-demo.ts && npm run dev
   client:  npm run dev                                          → :5173
@@ -403,6 +441,8 @@ a demo of nothing. That is why it's first in Manny's schedule.
 - CORS / cookie / socket.io-client → Vite proxy (§3.1)
 - No route guard → folded into token-in-memory state (§3.2)
 - No draft endpoint → proposed shape (§4)
+- No agent auth mechanism → Dedicated Agent Credentials, ADR 0016 (§4)
+- Every detection created a new incident, no reuse → agent checks for an open one first, ADR 0017 (§4)
 - Step 8 unowned → Anthony, `scoreEntry`, three call sites (§5)
 - How scores reach the browser → attached to broadcast, recomputed on GET (§5.4–5.5)
 - Step 10 vs ADR 0001 ordering conflict → chronological + "relevant to you" section (§6)

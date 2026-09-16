@@ -1,32 +1,39 @@
 .severity-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-height: 1.65rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: fit-content;
+    min-height: 1.65rem;
+    padding: 0.25rem 0.65rem;
+
+    border-radius: 999px;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
 }
 
-.severity-badge-critical {
-  background-color: #fee2e2;
-  color: #b91c1c;
+/* P1 - Highest severity */
+.severity-badge-p1 {
+    background-color: #fee2e2;
+    color: #b91c1c;
 }
 
-.severity-badge-high {
-  background-color: #ffedd5;
-  color: #c2410c;
+/* P2 - High severity */
+.severity-badge-p2 {
+    background-color: #ffedd5;
+    color: #c2410c;
 }
 
-.severity-badge-medium {
-  background-color: #fef3c7;
-  color: #a16207;
+/* P3 - Medium severity */
+.severity-badge-p3 {
+    background-color: #fef3c7;
+    color: #a16207;
 }
 
-.severity-badge-low {
-  background-color: #dcfce7;
-  color: #15803d;
+/* P4 - Lowest severity */
+.severity-badge-p4 {
+    background-color: #dcfce7;
+    color: #15803d;
 }
