@@ -123,7 +123,7 @@ describe('connection Room', () => {
         //what the client sends to the server
         client.emit('sending-message', {
             incident_id: incidentId,
-            type: 'ai_draft',
+            type: 'action', //aligning with updated sending-message schema to only intake Client-producing types
             body: {
                 summary: 'hello',
                 why_it_matters: "idk",
@@ -132,7 +132,7 @@ describe('connection Room', () => {
         })
         const entry = await broadcast;
         expect(entry.incident_id).toBe(incidentId);
-        expect(entry.type).toBe('ai_draft');
+        expect(entry.type).toBe('action');
         expect(entry.body.summary).toBe('hello')
 
         //this assertion proves that both paths produce the same shape, and proves that the collapsing of the two event names still passes that

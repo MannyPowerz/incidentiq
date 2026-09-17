@@ -3,12 +3,16 @@
 // the five entry types the DB CHECK allows — define once, reuse for the type field
 export type TimelineEntryType = 'observation' | 'action' | 'finding' | 'system' | 'ai_draft';
 
+//a subset of what a client may post which will be implmented as a z.enum() runtime array
+export const ClientPostableTypes = ['observation', 'action', 'finding'] as const satisfies readonly TimelineEntryType[]
+export type PostingClientTypes = (typeof ClientPostableTypes)[number]
+
 export interface TimelineEntry {
     id: number; // SQL: BIGSERIAL — the ordering truth (sort by this)
 
     incident_id: number; // SQL: BIGINT
 
-    author_id: number | null; // SQL: BIGINT, NULLABLE — null for 'system' / 'ai_draft'
+    author_id: number | null; //author_id now means "Who is accountable for this" instead of "who wrote this"
 
     type: TimelineEntryType; // SQL: TEXT + CHECK
 

@@ -7,7 +7,7 @@ import {insertTimelineEntry} from '../queries.js'
 import { findIncidentById } from '../../incidents/queries.js';
 import { io } from '../../socketServer.js';
 import {formatRoomName} from '../../Socket/socketHandlers/formatJoin.js'
-import { AiDraftProviderError, aiDraftSchema } from '../../ai/types.js';
+import { AiDraftProviderError, aiDraftSchema, AiDraftValidationError } from '../../ai/types.js';
 import { resolveAuthorId } from '../resolveAuthorId.js';
 
 
@@ -28,33 +28,42 @@ export async function handleCreateTimelineEntry(req: Request, res: Response) {
 
         if(!checked.success) {
             //leaked checked.error.issues in {cause} to provide a human readable error and metadata of the issue
-            new AiDraftProviderError(`Ai response did not match aiDraftSchema for incident ${incidentId}`, {cause: checked.error.issues})
+            const error = new AiDraftValidationError(`Ai response did not match aiDraftSchema for incident ${incidentId}`, {cause: checked.error.issues})
+            res.status(400).json({
+                error: error.name,
+                message: error.message
+            })
             return
         }
         body = checked.data
     }
-
-    // org gate: confirm the incident exists AND is yours before writing to it. Same 404 whether it's
-    //  -> missing or another org's, so a caller can't probe which ids exist — and it's what lets the
-    //  -> timeline queries trust incidentId (they carry no org filter of their own).
-    const incident = await findIncidentById(incidentId, orgId);
+    try {
+        // org gate: confirm the incident exists AND is yours before writing to it. Same 404 whether it's
+        //  -> missing or another org's, so a caller can't probe which ids exist — and it's what lets the
+        //  -> timeline queries trust incidentId (they carry no org filter of their own).
+        const incident = await findIncidentById(incidentId, orgId);
+        
+        if (!incident) {
+            res.status(404).json({
+                error: 'incident_not_found',
+                message: 'No incident with that id'
+            });
+            return;
+        }
     
-    if (!incident) {
-        res.status(404).json({
-            error: 'incident_not_found',
-            message: 'No incident with that id'
-        });
-
-        return;
+        const entry = await insertTimelineEntry(incidentId, user, type, body);
+    
+        // broadcast AFTER the write succeeds — DB-write-before-broadcast. Room name matches
+        // -> createRoom.ts's socket.join(String(incidentId)), so this reaches everyone already joined.
+        io.to(formatRoomName(incidentId)).emit('new-message', entry);
+    
+        res.status(201).json({ entry });
+    } catch(err) {
+        res.status(500).json({
+            error: 'Internal_server_error',
+            message: 'Server Error'
+        })
     }
-
-    const entry = await insertTimelineEntry(incidentId, user, type, body);
-
-    // broadcast AFTER the write succeeds — DB-write-before-broadcast. Room name matches
-    // -> createRoom.ts's socket.join(String(incidentId)), so this reaches everyone already joined.
-    io.to(formatRoomName(incidentId)).emit('new-message', entry);
-
-    res.status(201).json({ entry });
 }
 
 
