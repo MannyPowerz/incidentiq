@@ -39,10 +39,10 @@ flagged as at-risk unless something else slips too.
 |---|---|---|
 | Week 1 · Sep 5 – 11 | 3.5 | 0.6 |
 | Week 2 · Sep 12 – 18 | 17 | 10 |
-| Week 3 · Sep 19 – 25 | 18 | 21 |
+| Week 3 · Sep 19 – 25 | 21 | 21 |
 | Week 4 · Sep 26 – Oct 2 | 12.5 | 15 |
 | Week 5 · Oct 3 – 9 | 19.5 | 13.5 |
-| **Total** | **~70.5** | **~60** |
+| **Total** | **~73.5** | **~60** |
 
 **These are recomputed from the actual master list below, not hand-tracked** —
 the previous version of this table had drifted out of sync with the real due
@@ -54,6 +54,12 @@ signature (7h) = 21h in one week, and Manny's week 5 is 19.5h. Both need a real
 rebalancing pass — moving due dates, not just totals — which is separate work
 from today's ADRs and hasn't been done yet. Flagging it here rather than
 leaving a wrong-looking-fine number in the table.
+
+**Update Sep 20:** Auth module tests (3h, Sep 24) puts Manny's week 3 at 21h
+too, so that week is now overloaded on both sides. It was added anyway because
+the alternative is discovering the `apiFetch` retry is broken during Wire room
+details. The rebalancing pass above is now more overdue, not less — and these
+figures still assume a Sep 15 Wire sign-in that actually finished Sep 19.
 
 Manny is heavier because he absorbed the collector and all of the UI when
 Gabriella left. His agent share is one ADR. If that feels wrong, the swap is the
@@ -87,6 +93,7 @@ is to leave it.
 | Collector tests | Tests for `collectTouches`, mutation-verified | Manny | Sep 19 | 3 | Build the collector |
 | Merge the collector | Collector PR + merge | Manny | Sep 19 | 1 | Collector tests, review by Anthony |
 | Wire rooms list | Wire rooms list + create room + `affected_system` dropdown | Manny | Sep 19 | 5 | Wire sign-in |
+| Auth module tests | Tests for `client/src/auth` — logic only, no DOM, mutation-verified | Manny | Sep 24 | 3 | Wire sign-in |
 | Environment scanner | Scanner — `collect()` and `probePort()` with real-socket tests | Anthony | Sep 19 | 9 | Agent scaffold and contract |
 | Demo seed data | `seed-demo.ts` | Anthony | Sep 17 | 2 | Merge the queue |
 | CI on pull requests | CI workflow — test on PR with Postgres service | Anthony | Sep 16 | 2 | — |
@@ -206,6 +213,14 @@ Moved from Sep 12, same reason as the task above.
 Folded in from the "Application Layout" line item on the original board: a route guard wrapping every page except sign-in/register — no token in memory → redirect to `/sign-in`; has one → render. This isn't separable from the login work, since "does the redirect happen" and "does login populate the token" are tested together, and every later UI task assumes this exists.
 **Time this task honestly.** It's the one data point that converts the rest of the frontend estimate from a guess into arithmetic. If it takes 6h instead of 4.5, every UI task below scales by 1.3 and you know it on Sep 15, not Oct 1.
 **Done when:** Register → land on rooms page. Refresh browser → still signed in (refresh cookie works through proxy). Open `/rooms/5` in a private window with no session → redirected to sign-in, not a blank page or a crash. Write down the actual hours.
+
+### Auth module tests
+**Owner:** Manny · **Due:** Wed Sep 24 · **Est:** 3h · **Blocked by:** Wire sign-in
+**Description:** The client's first test suite, and deliberately the narrowest one: `client/src/auth/` only — `tokenStore`, `apiFetch`, `RequireAuth`. No component rendering, no DOM assertions. Vitest reuses the client's existing Vite config, so setup is small; the client currently has **zero** test tooling installed.
+**Scoped this way because a UI overhaul is planned.** These three files are logic, not markup — a redesign rewrites `AuthForm` and `SignInPage` but leaves the token store and the retry orchestration untouched, so this suite survives it. Anything that renders a component does not, which is why component and end-to-end tests are deferred (see *Client E2E smoke* under Post-MVP).
+**The branch that makes this worth 3h:** `ACCESS_TOKEN_TTL` is `15m`, so the `token_expired` → refresh → retry path in `apiFetch` is unreachable by clicking — you would have to idle fifteen minutes with a tab open. It was verified once, manually, with a forged token. Wire rooms list and Wire room details both route every call through `apiFetch`, so this lands before the third caller does.
+**Cover:** the four `apiFetch` branches (happy path, `token_expired` → refresh → retry, refresh-fails, non-401 passthrough) and `RequireAuth`'s three states. Mutation-verify per ADR 0015 — that ADR currently scopes itself to `server/tests`; extend its scope line rather than holding client tests to a quieter bar.
+**Done when:** The four branches and three states are covered, a deliberate mutation to the retry condition fails a test, and `npm test` runs in the client without a database.
 
 ### Wire rooms list
 **Owner:** Manny · **Due:** Sat Sep 19 · **Est:** 5h · **Blocked by:** Wire sign-in
@@ -383,6 +398,10 @@ UI split after Gabriella left. Not doing these now is a decision, not an
 oversight; if you're reading this in Notion and wondering where they went,
 they're here.
 
+*Client E2E smoke* is the exception: it was never in the original scope. It was
+identified while wiring sign-in and deferred on the same terms, so it lives here
+rather than in a second list.
+
 ### Dashboard wiring
 **Owner:** unassigned · **Trigger to revisit:** the Sep 26 checkpoint passes with slack left in week 4
 **Description:** `DashboardPage` and its components (stats grid, recent incidents, quick actions) exist from Gabriella's work and are not in `build-plan.md`'s Minimum demo definition — the runbook never visits it, `RoomsPage` already serves as the post-login landing page. Cutting it is borrowing time from a feature above Minimum, per `build-plan.md` line 71.
@@ -397,3 +416,10 @@ they're here.
 **Owner:** unassigned · **Trigger to revisit:** client-side work finishes early, or `signatures_detected` is being written to for another reason
 **Description:** The agent is CLI-only for the MVP — the private card is a terminal prompt (`agent-architecture.md` §6.5), not a browser page. A browser-based scanner status view was implied by the original "Scanner + React" grouping but was never designed, and building it now means a new server endpoint plus new client wiring for something the demo runbook doesn't show. The terminal card is arguably the stronger demo beat — detection happening before a browser is even involved.
 **When it's picked up:** a read-only page listing recent rows from `signatures_detected`, once the agent is writing to that table (it isn't yet — see `technical-audit.md` §4.5, item 5).
+
+### Client E2E smoke
+**Owner:** Manny · **Trigger to revisit:** the UI overhaul starts
+**Description:** Playwright against a real browser, proving the three things `Wire sign-in` defines as done but that nothing automated checks: register lands on the rooms page, a hard refresh keeps you signed in, and `/rooms/5` in a fresh browser context redirects to sign-in. Only a real browser can prove these — jsdom has no httpOnly cookie jar and no real navigation, which is exactly why *Auth module tests* deliberately stops short of them.
+**Deferred rather than written now** for the same reason the UI polish pass is last: Playwright drives the DOM by selector, so an overhaul invalidates the whole suite. Writing it against screens that are about to be redesigned is work thrown away. There is also no room before the demo — UI polish pass is Oct 8 and the demo is Oct 9.
+**Paired with the overhaul on purpose:** a redesign is the highest-risk moment for silent regressions in flows nobody re-clicks, and selectors written against the new screens are the ones that survive. Prefer role- and label-based selectors so a later restyle doesn't break it again.
+**When it's picked up:** it doubles as an executable version of `build-plan.md`'s Minimum demo runbook. Note the cost this adds to CI, which does not exist yet: browser binaries, both dev servers, and a seeded database on top of the Postgres service container ADR 0015 already says the server suite needs.
