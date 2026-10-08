@@ -1,0 +1,39 @@
+.ui-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem var(--space-2);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    white-space: nowrap;
+    /* --badge-fg / --badge-bg are set per value below; unknown values fall back to neutral */
+    color: var(--badge-fg, var(--color-text-2));
+    background-color: var(--badge-bg, var(--color-surface-2));
+}
+
+.ui-badge--neutral {
+    --badge-fg: var(--color-text-2);
+    --badge-bg: var(--color-surface-2);
+}
+
+/* severity — mirrors incidents.severity CHECK */
+.ui-badge--severity-p1 { --badge-fg: var(--sev-p1); --badge-bg: var(--sev-p1-soft); }
+.ui-badge--severity-p2 { --badge-fg: var(--sev-p2); --badge-bg: var(--sev-p2-soft); }
+.ui-badge--severity-p3 { --badge-fg: var(--sev-p3); --badge-bg: var(--sev-p3-soft); }
+.ui-badge--severity-p4 { --badge-fg: var(--sev-p4); --badge-bg: var(--sev-p4-soft); }
+
+/* status — mirrors incidents.status CHECK; soft backgrounds reuse the matching ramp */
+.ui-badge--status-detected { --badge-fg: var(--status-detected); --badge-bg: var(--red-100); }
+.ui-badge--status-investigating { --badge-fg: var(--status-investigating); --badge-bg: var(--amber-100); }
+.ui-badge--status-mitigated { --badge-fg: var(--status-mitigated); --badge-bg: var(--teal-100); }
+.ui-badge--status-resolved { --badge-fg: var(--status-resolved); --badge-bg: var(--green-100); }
+.ui-badge--status-postmortem { --badge-fg: var(--status-postmortem); --badge-bg: var(--slate-100); }
+
+/* entry type — mirrors timeline_entries.type CHECK */
+.ui-badge--entry-observation { --badge-fg: var(--entry-observation); --badge-bg: var(--slate-100); }
+.ui-badge--entry-action { --badge-fg: var(--entry-action); --badge-bg: var(--teal-100); }
+.ui-badge--entry-finding { --badge-fg: var(--entry-finding); --badge-bg: var(--amber-100); }
+.ui-badge--entry-system { --badge-fg: var(--color-text-3); --badge-bg: var(--color-surface-2); }
+.ui-badge--entry-ai_draft { --badge-fg: var(--color-primary-strong); --badge-bg: var(--color-primary-soft); }

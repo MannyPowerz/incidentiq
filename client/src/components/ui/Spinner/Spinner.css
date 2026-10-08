@@ -1,0 +1,38 @@
+.ui-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ui-spinner__ring {
+    display: block;
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    animation: ui-spin 800ms linear infinite;
+}
+
+.ui-spinner--sm .ui-spinner__ring {
+    width: var(--space-4);
+    height: var(--space-4);
+}
+
+.ui-spinner--md .ui-spinner__ring {
+    width: var(--space-8);
+    height: var(--space-8);
+    border-width: 3px;
+}
+
+/* the ring stops spinning but stays visible, so "loading" is still communicated without motion */
+@media (prefers-reduced-motion: reduce) {
+    .ui-spinner__ring {
+        animation: none;
+        border-top-color: var(--color-primary-strong);
+    }
+}
+
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
