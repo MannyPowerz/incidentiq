@@ -1,4 +1,4 @@
-/* Phone first: brand lockup stacked above the form. Desktop: two columns, brand panel on the left. */
+/* Phone first: brand lockup over the mesh, form below. Desktop: two columns, the mesh panel on the left. */
 
 .sign-in-page {
     display: flex;
@@ -8,12 +8,70 @@
 }
 
 .sign-in-brand {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-8) var(--page-gutter) var(--space-4);
+    padding: var(--space-8) var(--page-gutter) var(--space-6);
     text-align: center;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* --- the mesh: three blurred blobs drifting over the page color; everything above it is z 1 --- */
+.sign-in-brand__mesh {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background:
+        radial-gradient(60% 50% at 20% 80%, color-mix(in srgb, var(--mesh-1) 55%, transparent) 0%, transparent 70%),
+        radial-gradient(50% 45% at 80% 20%, color-mix(in srgb, var(--mesh-2) 40%, transparent) 0%, transparent 70%),
+        var(--color-bg);
+}
+
+.sign-in-brand__blob {
+    position: absolute;
+    display: block;
+    border-radius: var(--radius-pill);
+    filter: blur(56px);
+    opacity: 0.7;
+    animation: sign-in-drift 24s var(--ease) infinite alternate;
+}
+
+.sign-in-brand__blob--1 {
+    width: 60%;
+    aspect-ratio: 1;
+    left: -15%;
+    top: 10%;
+    background: var(--mesh-1);
+}
+
+.sign-in-brand__blob--2 {
+    width: 50%;
+    aspect-ratio: 1;
+    right: -10%;
+    top: -15%;
+    background: var(--mesh-2);
+    animation-duration: 30s;
+    animation-delay: -8s;
+}
+
+.sign-in-brand__blob--3 {
+    width: 40%;
+    aspect-ratio: 1;
+    left: 35%;
+    bottom: -20%;
+    background: var(--mesh-3);
+    opacity: 0.45;
+    animation-duration: 36s;
+    animation-delay: -16s;
+}
+
+@keyframes sign-in-drift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(8%, -6%, 0) scale(1.15); }
 }
 
 .sign-in-brand__lockup {
@@ -22,14 +80,14 @@
     gap: var(--space-3);
 }
 
-/* the mark: a soft rounded square in brand orange — the same shape the 3D hero will render */
+/* the mark: the same rounded-box silhouette the hero and the 3D shape use */
 .sign-in-brand__mark {
     display: block;
     width: var(--space-8);
     height: var(--space-8);
     border-radius: var(--radius-md);
     background-color: var(--color-primary);
-    box-shadow: var(--shadow-1);
+    box-shadow: var(--shadow-glow);
 }
 
 .sign-in-brand__name {
@@ -43,7 +101,7 @@
 .sign-in-brand__tagline {
     margin: 0;
     font-size: var(--text-sm);
-    color: var(--color-text-3);
+    color: var(--color-text-2);
 }
 
 /* hero and pitch are desktop-only: on a phone the form is the whole job */
@@ -57,7 +115,7 @@
     flex: 1;
     align-items: flex-start;
     justify-content: center;
-    padding: var(--space-4) var(--page-gutter) var(--space-12);
+    padding: var(--space-6) var(--page-gutter) var(--space-12);
 }
 
 @media (min-width: 1024px) {
@@ -75,13 +133,17 @@
         gap: var(--space-4);
         padding: var(--space-16) var(--space-8);
         text-align: left;
-        background-color: var(--color-surface-2);
-        border-right: var(--border);
+        border-right: 1px solid var(--glass-border);
     }
 
     .sign-in-brand > * {
         width: 100%;
         max-width: 26rem;
+    }
+
+    .sign-in-brand__mesh {
+        width: 100%;
+        max-width: none;
     }
 
     .sign-in-brand__hero {
@@ -91,18 +153,25 @@
         aspect-ratio: 1;
         max-height: 22rem;
         margin: var(--space-8) 0;
+        /* depth for the tilt; the panel is the stage, the shape is the actor */
+        perspective: 900px;
     }
 
-    /* static stand-in for the 3D hero: same color, same rounded-box silhouette, tilted to read as an object */
+    /* the hero shape: orange rounded box, lit from the top-left, tilting toward the pointer */
     .sign-in-brand__shape {
         display: block;
         width: 55%;
         aspect-ratio: 1;
         border-radius: var(--radius-lg);
         background:
-            linear-gradient(155deg, var(--color-primary-soft) -40%, var(--color-primary) 45%, var(--color-primary-strong) 120%);
-        box-shadow: var(--shadow-3);
-        transform: rotate(-12deg);
+            linear-gradient(155deg, var(--color-primary-strong) -20%, var(--color-primary) 45%, var(--orange-600) 120%);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.25),
+            var(--shadow-glow),
+            var(--shadow-3);
+        transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) rotateZ(-12deg);
+        transition: transform var(--dur-base) var(--ease);
+        will-change: transform;
     }
 
     .sign-in-brand__pitch {
@@ -118,5 +187,16 @@
         flex: 1;
         align-items: center;
         padding: var(--space-16) var(--space-8);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sign-in-brand__blob {
+        animation: none;
+    }
+
+    .sign-in-brand__shape {
+        transition: none;
+        transform: rotateZ(-12deg);
     }
 }
