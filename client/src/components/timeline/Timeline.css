@@ -1,0 +1,91 @@
+.timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* each entry type is a left rule only (design-system.md §2.1); the rule color is the one variable that changes */
+.timeline__entry {
+    --entry-rule: var(--entry-observation);
+    padding: var(--space-3) var(--space-4);
+    border: var(--border);
+    border-left: 3px solid var(--entry-rule);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+}
+
+.timeline__entry--action { --entry-rule: var(--entry-action); }
+.timeline__entry--finding { --entry-rule: var(--entry-finding); }
+.timeline__entry--system { --entry-rule: var(--entry-system); }
+
+/* an unconfirmed AI draft is the one entry waiting on a human, so it is the one that glows */
+.timeline__entry--ai_draft {
+    --entry-rule: var(--entry-ai-draft);
+    background:
+        linear-gradient(90deg, var(--color-primary-soft), transparent 60%),
+        var(--color-surface);
+}
+
+.timeline__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    font-size: var(--text-xs);
+}
+
+.timeline__author {
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+}
+
+.timeline__time {
+    color: var(--color-text-3);
+}
+
+.timeline__body {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--color-text);
+}
+
+.timeline__body--raw {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-2);
+}
+
+.timeline__draft {
+    display: grid;
+    gap: var(--space-1) var(--space-4);
+    margin: 0;
+}
+
+.timeline__draft dt {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-3);
+}
+
+.timeline__draft dd {
+    margin: 0 0 var(--space-2);
+    color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+    .timeline__draft {
+        grid-template-columns: 9rem 1fr;
+    }
+
+    .timeline__draft dd {
+        margin-bottom: 0;
+    }
+}

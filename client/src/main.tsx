@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
+import { ToastProvider } from './components/ui'
 // order matters: tokens define the variables reset reads
 import './styles/tokens.css'
 // Item 1: the first item allowed to change the look — sets body font and background app-wide
@@ -14,7 +15,9 @@ if (root) {
   createRoot(root).render(
     <StrictMode>
       <BrowserRouter>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </BrowserRouter>
     </StrictMode>
   )
