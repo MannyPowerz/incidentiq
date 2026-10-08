@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apiFetch, refresh, login, register, ApiError } from './api';
+import { apiFetch, refresh, login, logout, register, ApiError } from './api';
 import { getAccessToken, setAccessToken } from './tokenStore';
 
 // Response.json() is one-shot, so each call needs its own object — a shared one fails the second read.
@@ -246,5 +246,27 @@ describe('login and register', () => {
             status: 502,
             code: 'unknown'
         });
+    });
+});
+
+describe('logout', () => {
+    it('posts to /auth/logout and drops the in-memory token', async () => {
+        setAccessToken('live-token');
+        fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+        await logout();
+
+        expect(fetchMock.mock.calls[0]?.[0]).toBe('/auth/logout');
+        expect((fetchMock.mock.calls[0]?.[1] as RequestInit).method).toBe('POST');
+        expect(getAccessToken()).toBeNull();
+    });
+
+    // signing out must work offline: the tab forgets the token even if the server never hears about it
+    it('still clears the token when the server is unreachable', async () => {
+        setAccessToken('live-token');
+        fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+        await expect(logout()).resolves.toBeUndefined();
+        expect(getAccessToken()).toBeNull();
     });
 });

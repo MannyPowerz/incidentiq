@@ -106,3 +106,13 @@ export function login(email: string, password: string): Promise<string> {
 export function register(email: string, password: string): Promise<string> {
     return postCredentials('/auth/register', email, password);
 }
+
+/**
+ * Ends the session on both sides: the server revokes the refresh token and clears the cookie
+ * (logout.ts), and the in-memory access token is dropped here. Never throws — if the server is
+ * unreachable the local token still goes, so the user is signed out of this tab regardless.
+ */
+export async function logout(): Promise<void> {
+    await fetch('/auth/logout', { method: 'POST' }).catch(() => null);
+    setAccessToken(null);
+}
