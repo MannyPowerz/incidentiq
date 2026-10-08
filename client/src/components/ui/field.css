@@ -55,6 +55,24 @@
     font-size: var(--text-sm);
 }
 
+.ui-field__wrap {
+    position: relative;
+}
+
+/* reserve room on the right so typed text never runs under the trailing control */
+.ui-field__wrap--trailing .ui-field__control {
+    padding-right: 4.5rem;
+}
+
+.ui-field__trailing {
+    position: absolute;
+    top: 50%;
+    right: var(--space-2);
+    display: flex;
+    align-items: center;
+    transform: translateY(-50%);
+}
+
 .ui-field__hint {
     margin: 0;
     font-size: var(--text-xs);

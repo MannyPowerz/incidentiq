@@ -2,30 +2,32 @@ import type { JSX } from "react";
 import AuthForm from "../components/auth/AuthForm";
 import "./SignInPage.css"
 
+/**
+ * SignInPage — brand panel beside the form at desktop, brand above the form on phones.
+ * The brand panel's shape is a static stand-in: Item 10 swaps it for the lazy-loaded 3D hero and
+ * keeps this exact shape as that component's reduced-motion fallback.
+ */
 export default function SignInPage() : JSX.Element {
-    // Display reusable authentication form
     return (
         <main className="sign-in-page">
-            <div className="background-glow background-glow-left" />
-            <div className="background-glow background-glow-right"/>
+            <section className="sign-in-brand" aria-label="IncidentIQ">
+                <div className="sign-in-brand__lockup">
+                    <span className="sign-in-brand__mark" aria-hidden="true" />
+                    <p className="sign-in-brand__name">IncidentIQ</p>
+                </div>
 
-            <section className="sign-in-content">
-                {/* Display logo at the top */}
-                <header className="sign-in-brand">
-                    <div className="logo" aria-hidden="true">
-                        <span className="logo-center" />
-                    </div>
+                <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>
 
-                    <div className="logo-text">
-                        <p className="logo-name">
-                            Incident<span>IQ</span>
-                        </p>
-                        <p className="logo-tagline">
-                            Detect. Collaborate. Resolve.
-                        </p>
-                    </div>
-                </header>
+                <div className="sign-in-brand__hero" aria-hidden="true">
+                    <span className="sign-in-brand__shape" />
+                </div>
 
+                <p className="sign-in-brand__pitch">
+                    One room per incident. Every observation, action, and AI draft in order — and the teammate who knows the code, flagged.
+                </p>
+            </section>
+
+            <section className="sign-in-form">
                 <AuthForm />
             </section>
         </main>

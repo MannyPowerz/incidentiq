@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import type * as React from "react"
 import { useNavigate } from "react-router-dom";
 import { login, register, ApiError } from "../../auth/api";
+import { Button, Input } from "../ui";
 import "./AuthForm.css"
 
 type AuthFormData = {
@@ -119,113 +120,83 @@ export default function AuthForm() : JSX.Element {
         setSubmitError(null)
     }
 
-    // Authentication form structure
+    // Authentication form structure — markup rebuilt on the ui primitives; every handler above is unchanged from #34
     return (
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            {/* Show title and instructions for the form */}
-            <div className="auth-heading">
-                <h1>{mode === "signin" ? "Welcome back!" : "Create your account"}</h1>
-                <p>{mode === "signin" ? "Sign in to your account" : "You'll join the Demo Team for now"}</p>
+            <div className="auth-form__heading">
+                <h1>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+                <p>{mode === "signin" ? "Sign in to your war room." : "You'll join the Demo Team for now."}</p>
             </div>
 
-            {/* Get the user's email */}
-            <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.email)}
-                />
+            <Input
+                label="Email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+            />
 
-                {/* Display error */}
-                {errors.email && (
-                    <p className="form-error" role="alert">
-                        {errors.email}
-                    </p>
-                )}
-            </div>
-
-            {/* Get the user's password */}
-            <div className="form-group">
-                <label htmlFor="password">Password</label>
-
-                <div className="password-input-wrapper">
-                    <input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        aria-invalid={Boolean(errors.password)}
-                    />
-
-                    {/* Button to allow to show or hide password */}
-                    <button
-                        className="password-toggle"
-                        type="button"
+            {/* new-password on register so password managers offer to generate one instead of autofilling */}
+            <Input
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                placeholder={mode === "signin" ? "Your password" : `At least ${PASSWORD_MIN_LENGTH} characters`}
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                trailing={
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowPassword((currentValue) => !currentValue)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-pressed={showPassword}
                     >
                         {showPassword ? "Hide" : "Show"}
-                    </button>
-                </div>
+                    </Button>
+                }
+            />
 
-                {/* Display error */}
-                {errors.password && (
-                    <p className="form-error" role="alert">
-                        {errors.password}
-                    </p>
-                )}
-
-            </div>
-
-            {/* Additional options */}
             {/* TODO: decision — rememberMe is sent nowhere. The refresh cookie already keeps you signed in across
                 reloads (REFRESH_TOKEN_TTL_MS, server), so this either drives a shorter/longer cookie TTL server-side
-                or gets removed. Left in place for the redesign to settle. */}
-            <div className="form-options">
-                <label className="remember-me">
-                    <input 
-                        name="rememberMe" 
-                        type="checkbox" 
+                or gets removed. "Forgot password?" has no handler and no endpoint behind it either.
+                Both kept so this item changes the look only, not behavior. */}
+            <div className="auth-form__options">
+                <label className="auth-form__remember">
+                    <input
+                        name="rememberMe"
+                        type="checkbox"
                         checked={formData.rememberMe}
                         onChange={handleChange}
                     />
                     <span>Remember me</span>
                 </label>
 
-                <button className="forgot-password" type="button">
+                <button className="auth-form__link" type="button">
                     Forgot password?
                 </button>
             </div>
 
             {/* Whole-submission error: wrong password, taken email, server unreachable */}
             {submitError && (
-                <p className="form-error" role="alert">
+                <p className="auth-form__error" role="alert">
                     {submitError}
                 </p>
             )}
 
-            {/* Submit form */}
-            <button
-                className="sign-in-button"
-                type="submit"
-                disabled={isLoading}
-            >
-                {isLoading
-                    ? (mode === "signin" ? "Signing in..." : "Creating account...")
-                    : (mode === "signin" ? "Sign in" : "Create account")}
-            </button>
+            <Button type="submit" loading={isLoading} className="auth-form__submit">
+                {mode === "signin" ? "Sign in" : "Create account"}
+            </Button>
 
             {/* Flip between the two endpoints without leaving the page */}
-            <p className="admin-message">
+            <p className="auth-form__switch">
                 {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
-                <button type="button" onClick={toggleMode}>
+                <button className="auth-form__link" type="button" onClick={toggleMode}>
                     {mode === "signin" ? "Create one" : "Sign in"}
                 </button>
             </p>
