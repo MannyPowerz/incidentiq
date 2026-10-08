@@ -16,6 +16,7 @@
     gap: var(--space-2);
 }
 
+/* a toast floats above everything, so it is a glass layer; the accent rule carries the tone */
 .ui-toast {
     display: flex;
     align-items: flex-start;
@@ -23,9 +24,7 @@
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
-    border-left: 4px solid var(--toast-accent, var(--color-text-3));
-    background-color: var(--color-surface);
-    box-shadow: var(--shadow-2);
+    border-left: 3px solid var(--toast-accent, var(--color-text-3));
     font-family: var(--font-sans);
     font-size: var(--text-sm);
     color: var(--color-text);
@@ -45,7 +44,7 @@
     flex-shrink: 0;
     border: 0;
     background: transparent;
-    color: var(--color-text-3);
+    color: var(--color-text-2);
     font-size: var(--text-lg);
     line-height: 1;
     cursor: pointer;
