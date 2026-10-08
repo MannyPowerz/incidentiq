@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import type { InputHTMLAttributes, JSX } from 'react';
+import type { InputHTMLAttributes, JSX, ReactNode } from 'react';
 import '../field.css';
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
@@ -8,9 +8,11 @@ export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
     error?: string;
     hint?: string;
     mono?: boolean;
+    // a control drawn inside the field's right edge, e.g. a password show/hide button
+    trailing?: ReactNode;
 };
 
-export default function Input({ label, error, hint, mono = false, className, ...rest }: InputProps): JSX.Element {
+export default function Input({ label, error, hint, mono = false, trailing, className, ...rest }: InputProps): JSX.Element {
     const id = useId();
     const hintId = hint ? `${id}-hint` : undefined;
     const errorId = error ? `${id}-error` : undefined;
@@ -21,13 +23,16 @@ export default function Input({ label, error, hint, mono = false, className, ...
             <label className="ui-field__label" htmlFor={id}>
                 {label}
             </label>
-            <input
-                id={id}
-                className={`ui-field__control${mono ? ' ui-field__control--mono' : ''}`}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={describedBy}
-                {...rest}
-            />
+            <div className={trailing ? 'ui-field__wrap ui-field__wrap--trailing' : 'ui-field__wrap'}>
+                <input
+                    id={id}
+                    className={`ui-field__control${mono ? ' ui-field__control--mono' : ''}`}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={describedBy}
+                    {...rest}
+                />
+                {trailing && <div className="ui-field__trailing">{trailing}</div>}
+            </div>
             {hint && (
                 <p id={hintId} className="ui-field__hint">
                     {hint}
