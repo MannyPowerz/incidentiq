@@ -31,17 +31,21 @@ What exists on `main` today, screen by screen. "Exists" means a component render
 
 Main screens first; backend-dependent screens in the order their endpoints are ready. One item = one branch = one PR, merged before the next starts. Each item names the old files it deletes **in the same change**, so no route is ever dark.
 
-### Item 0 — Foundations (no visible change)
+### Item 0 — Foundations (no visible change) — **DONE 2026-10-08**
 
-**Scope:** `client/src/styles/tokens.css` + `reset.css` from `design-system.md` §2, imported in `main.tsx`. The primitives in §3 under `client/src/components/ui/`. The API layer skeleton from `api-layer.md`: `client/src/api/types.ts`, `client.ts`, one module per endpoint group, `fixtures/`. Fix the ESLint config so it matches `.ts/.tsx` (today it matches zero files — `npm run lint` is silent).
+**Scope:** `client/src/styles/tokens.css` (imported in `main.tsx`), `utilities.css` (class-only helpers, imported in `main.tsx`), `reset.css` (written, **not imported** — see below). Twelve primitives under `client/src/components/ui/` (the eleven in `design-system.md` §3 plus `Select`/`Textarea` split out from Input). The full API layer under `client/src/api/`.
 **Endpoint:** none.
 **Deletes:** nothing.
-**Done when:** `tsc` reports exactly the same 8 pre-existing errors and no new ones; every primitive has a test for its states (Vitest + Testing Library, same setup as `auth/`); `npm run lint` reports on real files; `npm test` green.
+**Done when:** ✅ `tsc` reports exactly the same 8 pre-existing errors and no new ones; ✅ every primitive has tests for its states; ✅ `npm test` green (106 tests); ✅ 14 deliberate mutations, 14 killed (ADR 0015).
+**Changed from the plan, and why:**
+- **ESLint fix dropped — blocked, not deferred.** ESLint cannot parse TypeScript without `typescript-eslint`, and `typescript-eslint` 8.71 supports TypeScript `>=4.8.4 <6.1.0`; the client is on TypeScript **7.0.2**. There is no compatible version to add. `tsc` + the test suite are the checks until `typescript-eslint` ships TS 7 support. `npm run lint` still only lints `.js`.
+- **`reset.css` not imported yet.** It sets body margin and font, which would visibly shift the old screens mid-rebuild. Item 1 imports it, when visual change starts on purpose. `src/index.css` (the old reset) is imported by nothing today.
+- **Socket contract corrected** — see `api-layer.md` §3, socket.ts. History arrives over the socket with a required ack, not over HTTP.
 **Why first:** every later item imports from here. Doing it inside Item 1 means Item 1 ships half a design system.
 
 ### Item 1 — Sign-in reskin
 
-**Scope:** restyle `SignInPage` and `AuthForm` on tokens and primitives. **Logic untouched** — `AuthForm.tsx` keeps its state, validation, and `login`/`register` calls exactly as merged in #34.
+**Scope:** import `styles/reset.css` in `main.tsx` (deferred from Item 0 — this is the first item allowed to change the look). Restyle `SignInPage` and `AuthForm` on tokens and primitives. **Logic untouched** — `AuthForm.tsx` keeps its state, validation, and `login`/`register` calls exactly as merged in #34.
 **Endpoint:** auth (real, already wired).
 **Deletes:** `pages/SignInPage.css`, `components/auth/AuthForm.css` contents replaced (files stay, raw values go).
 **Done when:** the 31 auth tests still pass unchanged; zero raw hex in the two CSS files; checked at 375 and 1440.
