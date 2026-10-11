@@ -3,7 +3,7 @@
  * entries the page loaded over HTTP.
  *
  * Receive-only. Posting stays on HTTP, whose route writes to Postgres and then broadcasts
- * new-message (timeline/routes/create.ts), so the socket never needs to write (ADR 0019, proposed).
+ * new-message (timeline/routes/create.ts), so the socket never needs to write (ADR 0018, proposed).
  *
  * The page owns the entries; this hook only hands it updates. Every update goes through mergeEntries
  * (dedupe + sort by id, ADR 0001), so an entry seen twice, once from the POST response and once as

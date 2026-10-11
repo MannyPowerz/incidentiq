@@ -91,7 +91,7 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 **Done when:** two browsers on the same room; post in one, appears in the other without refresh; kill and restore the server; the client catches up without duplicates.
 
 **As built:** `client/src/hooks/useRoomLive.ts`, used by `RoomDetailsPage`.
-- **Receive-only.** Posting stays on HTTP, whose route already writes and then broadcasts `new-message`, so the client never uses `sending-message` (see ADR 0019, proposed).
+- **Receive-only.** Posting stays on HTTP, whose route already writes and then broadcasts `new-message`, so the client never uses `sending-message` (see ADR 0018, proposed).
 - **Reconnect and gap fill.** Every socket.io `connect` (the first one and each reconnect) re-joins with the highest id held, so the server sends only the gap. Arrivals, history, and confirms go through `mergeEntries`; rejects remove by id.
 - **Expired token.** The server checks the token only at handshake, so a tab idle past 15 minutes gets its reconnect refused. The hook refreshes once and reconnects; a second refusal shows Disconnected rather than looping.
 - **UI.** A `LiveDot` in the room header shows Connecting / Live / Disconnected. One polite live region announces a teammate's entry, but never your own echo.
