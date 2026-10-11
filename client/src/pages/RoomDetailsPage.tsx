@@ -1,14 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError, getIncident, listTimeline, mergeEntries, resolveIncident } from '../api';
 import type { Incident, TimelineEntry } from '../api';
 import { getCurrentUserId } from '../auth/tokenStore';
-import { Badge, Button, Card, EmptyState, ErrorState, Spinner, useToast } from '../components/ui';
+import { Badge, Button, Card, EmptyState, ErrorState, LiveDot, Spinner, useToast } from '../components/ui';
+import type { LiveState } from '../components/ui';
+import { useRoomLive } from '../hooks/useRoomLive';
+import type { EntriesUpdate } from '../hooks/useRoomLive';
 import Timeline from '../components/timeline/Timeline';
 import EntryComposer from '../components/timeline/EntryComposer';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import './RoomDetailsPage.css';
+
+const LIVE_LABEL: Record<LiveState, string> = {
+    idle: 'Offline',
+    syncing: 'Connecting',
+    live: 'Live',
+    failing: 'Disconnected',
+};
 
 type LoadState =
     | { status: 'loading' }
@@ -18,8 +28,8 @@ type LoadState =
 
 /**
  * RoomDetailsPage — one incident: its header, its timeline (oldest first, by entry id — ADR 0001),
- * and the form to add to it. Every change shown here comes from a stored row the server returned;
- * Item 4 adds the socket, which merges into the same entries array through the same mergeEntries.
+ * and the form to add to it. Every change shown here comes from a stored row the server returned,
+ * whether from an HTTP response or a socket broadcast; both merge through mergeEntries.
  */
 export default function RoomDetailsPage(): JSX.Element {
     const { roomId } = useParams<{ roomId: string }>();
@@ -30,6 +40,20 @@ export default function RoomDetailsPage(): JSX.Element {
     const [attempt, setAttempt] = useState(0);
     const [resolving, setResolving] = useState(false);
     const toast = useToast();
+    const currentUserId = getCurrentUserId();
+
+    // hands socket arrivals to the same entries the HTTP load filled; a no-op until the room has loaded
+    const applyLive = useCallback((update: EntriesUpdate) => {
+        setState((s) => (s.status === 'ready' ? { ...s, entries: update(s.entries) } : s));
+    }, []);
+    const ready = state.status === 'ready';
+    const live = useRoomLive({
+        // joins only once the room is known to exist, so a 404 never opens a socket
+        incidentId: ready ? id : null,
+        lastSeenId: ready ? state.entries.at(-1)?.id ?? 0 : 0,
+        currentUserId,
+        apply: applyLive,
+    });
 
     useEffect(() => {
         if (!validId) return;
@@ -111,6 +135,7 @@ export default function RoomDetailsPage(): JSX.Element {
                         <Badge tone="severity" value={incident.severity} />
                         <Badge tone="status" value={incident.status} />
                         <span className="room-page__id">#{incident.id}</span>
+                        <LiveDot state={live.state} label={LIVE_LABEL[live.state]} />
                     </div>
                     <h1 className="room-page__title">{incident.title}</h1>
                     <dl className="room-page__facts">
@@ -149,7 +174,11 @@ export default function RoomDetailsPage(): JSX.Element {
                 <h2 id="timeline-heading" className="room-page__section-title">
                     Timeline
                 </h2>
-                <Timeline entries={entries} currentUserId={getCurrentUserId()} />
+                <Timeline entries={entries} currentUserId={currentUserId} />
+                {/* one polite region for arrivals: announced once each, never a focus steal (design-system.md §4.6) */}
+                <p className="ui-sr-only" aria-live="polite">
+                    {live.announcement}
+                </p>
             </section>
 
             <Card title="Add to the timeline">

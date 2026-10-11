@@ -4,13 +4,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '../components/ui';
 import RoomDetailsPage from './RoomDetailsPage';
-import { ApiError, getIncident, listTimeline, postTimelineEntry, resolveIncident } from '../api';
+import { ApiError, connectSocket, getIncident, listTimeline, postTimelineEntry, resolveIncident } from '../api';
 import type { Incident, TimelineEntry } from '../api';
 import { setAccessToken } from '../auth/tokenStore';
+import { fakeSocket } from '../test/fakeSocket';
 
 vi.mock('../api', async (importOriginal) => ({
     ...(await importOriginal<typeof import('../api')>()),
@@ -18,6 +19,7 @@ vi.mock('../api', async (importOriginal) => ({
     listTimeline: vi.fn(),
     postTimelineEntry: vi.fn(),
     resolveIncident: vi.fn(),
+    connectSocket: vi.fn(),
 }));
 
 // fireEvent, not user-event: no new dependency for what three helpers cover
@@ -68,8 +70,12 @@ const timelineTexts = () =>
         .getAllByRole('listitem')
         .map((li) => li.querySelector('.timeline__body')?.textContent);
 
+let socket: ReturnType<typeof fakeSocket>;
+
 beforeEach(() => {
     for (const fn of [getIncident, listTimeline, postTimelineEntry, resolveIncident]) vi.mocked(fn).mockReset();
+    socket = fakeSocket();
+    vi.mocked(connectSocket).mockReset().mockReturnValue(socket);
 });
 
 describe('RoomDetailsPage', () => {
@@ -166,5 +172,31 @@ describe('RoomDetailsPage', () => {
         expect(resolveIncident).toHaveBeenCalledWith(5);
         expect(await screen.findByText('Resolved', { selector: '.ui-badge' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Mark resolved' })).toBeNull();
+    });
+
+    it('goes live and shows a teammate entry broadcast into the room', async () => {
+        vi.mocked(getIncident).mockResolvedValue(incident());
+        vi.mocked(listTimeline).mockResolvedValue([entry(1)]);
+        renderRoom();
+
+        expect(await screen.findByText('Connecting')).toBeTruthy();
+        act(() => {
+            socket.serverEmit('connect');
+            socket.serverEmit('send-history', [], vi.fn());
+            socket.serverEmit('new-message', entry(2, { author_id: 4, body: { text: 'Seeing it on my machine too' } }));
+        });
+
+        expect(screen.getByText('Live')).toBeTruthy();
+        expect(timelineTexts()).toEqual(['entry 1', 'Seeing it on my machine too']);
+        expect(screen.getByText('New observation in the timeline')).toBeTruthy();
+    });
+
+    it('never opens a socket for a room that does not exist', async () => {
+        vi.mocked(getIncident).mockRejectedValue(new ApiError(404, 'not_found', 'Incident not found'));
+        vi.mocked(listTimeline).mockResolvedValue([]);
+        renderRoom();
+
+        await screen.findByText('Room not found');
+        expect(connectSocket).not.toHaveBeenCalled();
     });
 });
