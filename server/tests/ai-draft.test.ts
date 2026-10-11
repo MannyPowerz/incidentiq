@@ -9,9 +9,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // hoisted so the vi.mock factory below (which vitest lifts above the imports) can close over it
 const invokeMock = vi.hoisted(() => vi.fn());
+// records what the model was constructed with, so a test can assert on the options draftFromContext chose
+const constructedWith = vi.hoisted(() => vi.fn());
 
 vi.mock('@langchain/google-genai', () => ({
     ChatGoogleGenerativeAI: class {
+        constructor(params: unknown) {
+            constructedWith(params);
+        }
         withStructuredOutput() {
             return { invoke: invokeMock };
         }
@@ -31,7 +36,19 @@ const request: AiDraftRequest = {
 describe('draftFromContext', () => {
     beforeEach(() => {
         invokeMock.mockReset();
+        constructedWith.mockReset();
         vi.stubEnv('AI_MODEL_NAME', 'gemini-2.5-flash');
+    });
+
+    // ADR 0007: fail-fast, no retry. LangChain's own default is 6 retries with backoff, so a provider
+    // 503 would hold the request open for minutes before the route could answer 504. Found when a
+    // real Gemini call hung for 45s+ under "high demand".
+    it('turns off the provider SDK retries, so a provider failure surfaces at once', async () => {
+        invokeMock.mockResolvedValue({ summary: 's', why_it_matters: 'w', likely_fix: 'f' });
+
+        await draftFromContext(request);
+
+        expect(constructedWith).toHaveBeenCalledWith(expect.objectContaining({ maxRetries: 0 }));
     });
 
     it('returns the draft when the model answers with a valid one', async () => {
