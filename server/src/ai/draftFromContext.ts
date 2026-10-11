@@ -26,6 +26,9 @@ export async function draftFromContext(input: AiDraftRequest): Promise<AiDraft> 
     const model = new ChatGoogleGenerativeAI({
         model: modelName,
         apiKey: process.env.GOOGLE_API_KEY,
+        // ADR 0007 says no retry, but LangChain retries 6 times with backoff unless told otherwise, so a
+        // provider 503 held the request open for minutes. 0 makes it a fast AiDraftProviderError -> 504.
+        maxRetries: 0,
     });
 
     const structuredModel = model.withStructuredOutput(aiDraftSchema);
