@@ -1,96 +1,87 @@
 # 0018 - The body shape of human timeline entries
 
-> Numbered 0018 as the next free number across every branch. Status: **proposed, not decided.** It
-> needs Manny and Anthony to choose between the options below. The "Proposed decision" section is a
-> recommendation, not a record.
+> **Status: proposed.** Not accepted until Manny and Anthony both choose. Until then the Decision
+> section is a recommendation, and the code is unchanged. Numbered 0018 as the next free number
+> across every branch.
 
 ## Context
 
 `timeline_entries.body` is JSONB. Only one type has a designed shape: an `ai_draft` body is
-`{ summary, why_it_matters, likely_fix }`, validated by Zod (ADR 0006). For the three types a human can
-post (`observation`, `action`, `finding`), the server says in `server/src/timeline/types.ts` that bodies
-are "a generic object until their bodies are designed".
+`{ summary, why_it_matters, likely_fix }`, validated by Zod (ADR 0006). For the three types a human
+can post (`observation`, `action`, `finding`), `server/src/timeline/types.ts` says bodies are "a
+generic object until their bodies are designed".
 
-There are two write paths for human entries, and they validate the body differently:
+Two routes write human entries, and they validate the body differently:
 
-| Path | Body validation | Broadcast |
+| Route | Body validation | After the insert |
 |---|---|---|
-| `POST /incidents/:id/timeline` (`timeline/routes/create.ts`) | `z.record(z.string(), z.unknown())`, any object | emits `new-message` after the insert |
-| socket `sending-message` (`Socket/socketHandlers/emittingMessages.ts`) | must be `{ summary, why_it_matters, likely_fix }`, the AI-draft shape | emits `new-message` after the insert |
+| `POST /incidents/:id/timeline` (`timeline/routes/create.ts`) | `z.record(z.string(), z.unknown())`: any object | emits `new-message` |
+| socket `sending-message` (`Socket/socketHandlers/emittingMessages.ts`) | must be exactly `{ summary, why_it_matters, likely_fix }` | emits `new-message` |
 
-Both write to PostgreSQL before broadcasting, so both keep the invariant from ADR 0001. They disagree on
-what a human entry contains. Under the socket path, someone typing "VPN drops on office wifi" would have to
-fill a `why_it_matters` and a `likely_fix` field.
+Both insert into PostgreSQL before they broadcast, so the invariant from ADR 0001 holds on either
+path. What they disagree on is content. Someone logging "VPN drops on office wifi" over the socket
+would have to supply a `why_it_matters` and a `likely_fix`, because all three fields are required.
 
-The client rebuilt in PR #42 needed some shape to ship, so it posts `{ text: string }` over HTTP. It reads
-entries through a guard: `text` if it is a string, otherwise the raw JSON, so nothing is hidden. That shape
-is currently a client convention, not a contract.
+What is already true in the repo:
 
-This matters now because of what reads the body next:
+- **`{ text }` is already the de facto shape.** Every human entry posted by
+  `server/tests/timeline.smoke.test.ts` is `{ text: '...' }`, and the rebuilt client's room page
+  (not yet merged) does the same.
+- **`sending-message` has one consumer.** Nothing in `client/src` or `agent/src` emits it. The only
+  caller is the test "persists a message and broadcast it to the room" in
+  `server/tests/socket.test.ts`, which sends the AI-draft fields.
+- **Nothing reads human entry text.** `server/src/relevance/` scores teammates on files and
+  systems, and no AI request field carries entry text (ADR 0008 lists incident metadata and a
+  project-direction document, not entries).
 
-- **Live updates (UI Item 4).** If two clients post through different paths, a timeline can contain both
-  shapes.
-- **The AI service.** Human entries are likely future context for drafts (ADR 0008's expansion path), and a
-  stable field to read is simpler than guessing.
-- **Relevance.** Not today: `server/src/relevance/` scores teammates on files and systems, not entry text.
+The question is pressing because live updates (UI roadmap Item 4) are being built now. They only
+receive, so they do not force this decision, but a second write path that disagrees with the first
+is the kind of drift this ADR exists to stop before something depends on it.
 
-## Options
+## Decision
 
-### A. `{ text }` for all three human types, and retire or align the socket write path
+**Proposed: human entry bodies are `{ text: string }`, and HTTP is the only write path.**
 
-One free-text field. HTTP stays the only write path for human entries, which already broadcasts, so live
-updates need no socket write at all. The socket's `sending-message` is either removed or changed to
-validate `{ text }`.
+1. `postTimelineEntrySchema` narrows its body from `z.record` to `{ text }`, a non-empty trimmed
+   string. This matches what every existing caller already sends.
+2. Clients write over HTTP and receive over the socket (`join-room`, `new-message`,
+   `confirm-draft`, `reject-draft`). The HTTP route already writes and then broadcasts, so a
+   second write path adds nothing a client lacks.
+3. `sending-message` is removed, along with its schema and handler. Aligning it to `{ text }`
+   instead is the fallback if there is a reason to keep a socket write path (see Consequences).
 
-- Advantage: matches how people actually write during an incident (one sentence, now). It matches what the
-  client already sends, and it removes a second write path that can drift.
-- Cost: no structure to query. "Every action someone took" is a filter on `type`, but nothing inside the
-  body can be queried.
-
-### B. A designed shape per type
-
-For example, observation `{ text, source? }`, action `{ text, outcome? }`, finding `{ text, cause? }`,
-each validated by its own Zod schema on both paths.
-
-- Advantage: richer data for the AI context and for a later postmortem view.
-- Cost: more form fields during an incident, which is exactly when people won't fill them in. It also adds
-  schema work on both write paths, and it designs fields nobody has asked for yet.
-
-### C. Reuse the AI-draft shape for human entries
-
-This is what the socket path enforces today.
-
-- Advantage: one shape for every entry, so the renderer has one branch.
-- Cost: it forces a human to write a summary, an impact and a fix for a plain observation. It also blurs
-  the line ADR 0014 drew between what the AI wrote and what a human vouched for, since the two would look
-  identical.
-
-## Proposed decision
-
-**Option A**, pending agreement. Specifically:
-
-1. Human entry bodies are `{ text: string }`, non-empty and trimmed. The HTTP route narrows its body schema
-   from `z.record` to that, per type.
-2. HTTP is the single write path for human entries. Clients use the socket to receive (`join-room`,
-   `new-message`, `confirm-draft`, `reject-draft`), not to post.
-3. The socket `sending-message` event is removed. Aligning it to `{ text }` instead is the fallback if
-   Anthony has a reason to keep a socket write path (for example, latency, or the agent posting through
-   it).
-
-The reasoning in one line: the HTTP route already does write-then-broadcast, so a second write path adds a
-second place for validation to drift and gives the client nothing it lacks.
+The reasoning in one line: people write one sentence during an incident, and one validated write
+path cannot drift from itself.
 
 ## Alternatives rejected & why
 
-Pending the decision. Options B and C above become this section once one option is chosen.
+- **A designed shape per type** (for example observation `{ text, source? }`, action
+  `{ text, outcome? }`, finding `{ text, cause? }`). Rejected for now: it adds form fields during an
+  incident, which is when people will not fill them, and nothing reads the fields it would add.
+  Designing structure for a reader that does not exist is the speculative scope ADR 0007 defers.
+  Moving to this later is additive: optional fields alongside `text` do not break readers.
+- **Reuse the AI-draft shape for human entries** (what the socket enforces today). Rejected: it
+  forces a human to write a summary, an impact and a fix for a plain observation, and it makes a
+  human entry indistinguishable in shape from a machine one. ADR 0014 drew a deliberate line
+  between what the AI wrote and what a human vouched for; sharing one body shape blurs it.
+- **Leave both paths as they are.** Rejected: that is the current state, and it means the socket
+  write path cannot be used for real text at all, while still looking supported. A path that
+  works only for a shape nobody sends is worse than no path.
 
-## Consequences (if A is accepted)
+## Consequences
 
-- The client keeps posting `{ text }`. Its raw-JSON fallback stays, for old rows written under the permissive
-  schema.
-- Server: `postTimelineEntrySchema` narrows the body. That is a breaking change for any caller sending
-  other shapes. The only known caller is the client in PR #42.
-- Server: `sending-message`, its schema, and its handler are deleted (or aligned), along with any tests. This
-  is Anthony's code, so he should make or approve the change.
-- UI Item 4 becomes receive-only, which is simpler, and has no body-shape conflict left to resolve.
-- Moving to option B later is additive: new optional fields alongside `text` don't break readers.
+- The server's own tests already post `{ text }`, so narrowing the HTTP schema should not break
+  them. Anything that posts another shape (none known: no agent code posts timeline entries) now
+  gets a 400. Rows already stored under the permissive schema keep their old bodies, so readers
+  must still tolerate a non-`{ text }` body. The client already does, rendering it as raw JSON.
+- Removing `sending-message` deletes the one test that drives the socket's inbound path through
+  the Zod middleware. `join-room` still passes through the same middleware, so the middleware stays
+  covered, but the "persist then broadcast" proof for a socket write goes with the event. The HTTP
+  route's equivalent proof is `timeline.smoke.test.ts`.
+- The socket code is Anthony's, so he should make or approve the removal. If he wants to keep a
+  socket write path (lower latency, or a future agent that posts over its connection), the
+  alternative is to validate it against the same `{ text }` schema as HTTP and share one schema
+  object between them, so they cannot diverge again.
+- UI Item 4 stays receive-only either way, so it is not blocked on this.
+- Revisit if something starts reading entry text (an AI draft that summarizes the timeline, or a
+  postmortem view). That is the point at which structure per type earns its cost.
