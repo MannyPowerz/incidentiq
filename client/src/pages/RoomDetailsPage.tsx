@@ -8,6 +8,7 @@ import { Badge, Button, Card, EmptyState, ErrorState, LiveDot, Spinner, useToast
 import type { LiveState } from '../components/ui';
 import { useRoomLive } from '../hooks/useRoomLive';
 import type { EntriesUpdate } from '../hooks/useRoomLive';
+import { useRelevance } from '../hooks/useRelevance';
 import Timeline from '../components/timeline/Timeline';
 import EntryComposer from '../components/timeline/EntryComposer';
 import AiDraftComposer from '../components/timeline/AiDraftComposer';
@@ -58,6 +59,8 @@ export default function RoomDetailsPage(): JSX.Element {
         currentUserId,
         apply: applyLive,
     });
+    // fixture-backed until the relevance endpoint ships; only asks about entries it has not seen
+    const relevance = useRelevance(ready ? id : null, ready ? state.entries.map((e) => e.id) : []);
 
     useEffect(() => {
         if (!validId) return;
@@ -223,6 +226,7 @@ export default function RoomDetailsPage(): JSX.Element {
                     busyEntryId={busyEntryId}
                     onConfirmDraft={(entry) => handleDraftAction(entry, 'confirm')}
                     onRejectDraft={(entry) => handleDraftAction(entry, 'reject')}
+                    relevance={relevance}
                 />
                 {/* one polite region for arrivals: announced once each, never a focus steal (design-system.md §4.6) */}
                 <p className="ui-sr-only" aria-live="polite">
