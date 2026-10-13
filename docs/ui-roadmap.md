@@ -117,12 +117,21 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 
 **Checked:** 12 page tests, plus 12 mutations (11 caught first time, 1 gap found and closed). Two real browsers against the local database and the real provider: draft in A appears in B; B confirms and A flips with no click, `author_id` set in the DB; a rejected draft disappears from both and is deleted. 375 and 1440, no overflow.
 
-### Item 6 — "Relevant to you" *(schedule.md: "Relevant-to-you section")* — **FIXTURE-BACKED**
+### Item 6 — "Relevant to you" *(schedule.md: "Relevant-to-you section")* — **FIXTURE-BACKED** — **DONE 2026-10-13**
 
 **Scope:** under each timeline entry, one line: the most-relevant teammate and a plain-English reason (`build-plan.md` Minimum tier: "flag the one most-connected teammate per post with plain English reason"). Reads `getRelevance(incidentId, entryId)` from `api-layer.md` — which today returns a typed fixture because **no endpoint exists**: `server/src/relevance/` is tested scoring maths with no route, no collector, and `reason` was never written. The UI is built to the `TeammateScore` + reason shape in `server/src/relevance/types.ts` so the swap later is one function body.
 **Endpoint:** none yet. Target shape documented in `api-layer.md` §3.
 **Deletes:** nothing.
 **Done when:** every entry shows a relevance line from the fixture; the fixture file carries `// FIXTURE: replace when GET /incidents/:id/timeline returns relevance`; the zero-score case ("nobody has touched these files") renders a real sentence, not blank.
+
+**As built:** `hooks/useRelevance.ts` plus `RelevanceNote` in `Timeline.tsx`.
+- **Wording.** One line under each entry, written for the reader (`ReasonFor` in `server/src/relevance/types.ts`): "Ask User #2: …", "You're closest to this: …", or "Nobody on the team has touched these files yet."
+- **Tagged SAMPLE** while the data is a fixture, so a demo never presents an invented "ask User #2" as a real claim about a real teammate. Remove the tag with the fixture.
+- **Lookups.** The hook asks only about entry ids it hasn't seen, so a socket arrival gets its line without refetching the rest. A failed lookup shows no line and is retried on the next change. Switching rooms starts over and drops late answers for the old room.
+- **The swap.** When `GET /incidents/:id/timeline` returns relevance, `useRelevance` is the one place that changes, and `api/fixtures/relevance.ts` is deleted.
+- **A bug caught before it shipped.** The first draft cancelled lookups per effect run, so an entry arriving mid-flight threw away the earlier results and those entries never got a line. A test now pins that case.
+
+**Checked:** 6 hook tests, 4 wording tests, 1 page wiring test; 9 mutations, 9 caught (including that bug, re-introduced). 1280 and 375, no overflow.
 
 ### Item 7 — Fingerprint comparison *(schedule.md: "Fingerprint comparison")*
 
