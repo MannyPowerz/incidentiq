@@ -8,6 +8,10 @@ import './styles/tokens.css'
 // Item 1: the first item allowed to change the look — sets body font and background app-wide
 import './styles/reset.css'
 import './styles/utilities.css'
+import { installPointerField } from './motion/pointerField'
+
+// once, outside React: StrictMode's double mount would otherwise add two listeners
+installPointerField()
 
 const root = document.getElementById("root");
 
