@@ -43,13 +43,19 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 - **Socket contract corrected** — see `api-layer.md` §3, socket.ts. History arrives over the socket with a required ack, not over HTTP.
 **Why first:** every later item imports from here. Doing it inside Item 1 means Item 1 ships half a design system.
 
-### Item 1 — Sign-in reskin
+### Item 1 — Sign-in reskin — **DONE 2026-10-08**
 
 **Scope:** import `styles/reset.css` in `main.tsx` (deferred from Item 0 — this is the first item allowed to change the look). Restyle `SignInPage` and `AuthForm` on tokens and primitives. **Logic untouched** — `AuthForm.tsx` keeps its state, validation, and `login`/`register` calls exactly as merged in #34.
 **Endpoint:** auth (real, already wired).
 **Deletes:** `pages/SignInPage.css`, `components/auth/AuthForm.css` contents replaced (files stay, raw values go).
 **Done when:** the 31 auth tests still pass unchanged; zero raw hex in the two CSS files; checked at 375 and 1440.
 **Why here:** lowest risk, first screen anyone sees, proves the tokens on a real page before the bigger rebuilds.
+
+### Item 1b — Dark premium redesign — **DONE 2026-10-08**
+
+**Scope:** re-point the semantic tokens to a dark palette (design-system.md §5), add the `.ui-glass` floating-layer recipe (§2.7), restyle the primitives on it, add TopBar / LiveDot / Presence / Metric for the cockpit screens, and give sign-in its mesh-gradient backdrop and a pointer-tilt hero shape. `src/auth/` untouched.
+**Done when:** every test passes, tsc stays at the pre-existing room-file errors, `tokens.test.ts` holds every text pair at AA, and a deliberate mutation fails each new suite. Checked at 375 and 1440.
+**Why before Item 2:** Items 2–7 build on these tokens and primitives. Restyling after them would mean touching every screen twice.
 
 ### Item 2 — Rooms list + create room *(schedule.md: "Wire rooms list")*
 

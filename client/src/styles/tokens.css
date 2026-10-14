@@ -1,80 +1,113 @@
 /*
  * tokens.css — every design value the client uses, defined once (docs/design-system.md §2).
- * Raw palette first, semantic aliases second: components reference only the semantic names, so
- * re-theming means re-pointing an alias here, never editing a component.
- * Custom properties alone render nothing, which is why importing this file is invisible until a
- * component starts reading from it.
+ * Dark premium, single theme (decided 2026-10-08, reversing the light-first plan; see design-system.md §5).
+ * Raw palette first, semantic aliases second: components reference only the semantic names.
+ * src/styles/tokens.test.ts asserts the WCAG contrast of every text/background pair below — change a
+ * value here and the test tells you whether it still reads.
  */
 
 :root {
     /* --- raw palette --- */
-    --orange-500: #D97757;
-    --orange-600: #B4542F;
-    --orange-100: #F8E6DE;
+    --navy-950: #0B0F17;
+    --navy-900: #0E131D;
+    --navy-800: #121826;
+    --navy-700: #19202F;
+    --navy-600: #242D3D;
+    --navy-500: #5B6880;
 
-    --ink-900: #1A1A1A;
-    --ink-700: #3D3D3D;
-    --ink-500: #6B6B6B;
-    --ink-300: #C9C9C9;
-    --ink-100: #F2F2F0;
-    --ink-50: #FAFAF8;
+    --cloud-100: #EDF0F5;
+    --cloud-300: #B8C0CE;
+    --cloud-500: #8B95A7;
     --white: #FFFFFF;
+    --ink-900: #1A1A1A;
 
-    --red-600: #B42318;
-    --red-100: #FBE9E7;
-    --amber-600: #A15C07;
-    --amber-100: #FBF1DC;
-    --teal-600: #0E7C6B;
-    --teal-100: #DDF3EF;
-    --green-600: #2E7D32;
-    --green-100: #E3F2E4;
-    --slate-600: #556070;
-    --slate-100: #E9ECF0;
+    --orange-500: #D97757;
+    --orange-400: #E8906E;
+    --orange-600: #B4542F;
+
+    --red-400: #FF7A6B;
+    --amber-400: #F2B04F;
+    --teal-400: #3FCBB0;
+    --green-400: #5CCB7A;
+    --slate-300: #A3AEC2;
+
+    --indigo-700: #3730A3;
+    --blue-600: #2563EB;
 
     /* --- semantic color --- */
-    --color-bg: var(--ink-50);
-    --color-surface: var(--white);
-    --color-surface-2: var(--ink-100);
-    --color-border: var(--ink-300);
-    --color-text: var(--ink-900);
-    --color-text-2: var(--ink-700);
-    --color-text-3: var(--ink-500);
+    --color-bg: var(--navy-950);
+    --color-surface: var(--navy-800);
+    --color-surface-2: var(--navy-700);
+    --color-field-bg: var(--navy-900);
+    --color-border: var(--navy-600);
+    /* input and control edges: 3:1 against the surface, where a card edge only needs to be visible */
+    --color-border-strong: var(--navy-500);
+
+    --color-text: var(--cloud-100);
+    --color-text-2: var(--cloud-300);
+    --color-text-3: var(--cloud-500);
+    /* pure white is reserved for live data and metrics; body copy and labels never use it */
+    --color-data: var(--white);
 
     --color-primary: var(--orange-500);
-    --color-primary-strong: var(--orange-600);
-    --color-primary-soft: var(--orange-100);
-    /* near-black, not white: white on #D97757 is about 3.1:1 and fails AA for button text */
+    /* hover brightens on dark, the opposite of the light theme */
+    --color-primary-strong: var(--orange-400);
+    --color-primary-soft: rgba(217, 119, 87, 0.16);
+    /* near-black, not white: white on #D97757 is about 3.1:1 */
     --color-on-primary: var(--ink-900);
 
-    --color-danger: var(--red-600);
-    --color-danger-soft: var(--red-100);
-    --color-success: var(--green-600);
-    --color-success-soft: var(--green-100);
-    --color-focus: var(--orange-600);
+    --color-danger: var(--red-400);
+    --color-danger-soft: rgba(255, 122, 107, 0.16);
+    --color-success: var(--green-400);
+    --color-success-soft: rgba(92, 203, 122, 0.16);
+    --color-focus: var(--orange-500);
 
     /* severity — mirrors the incidents.severity CHECK; deliberately not the brand hue */
-    --sev-p1: var(--red-600);
-    --sev-p1-soft: var(--red-100);
-    --sev-p2: var(--amber-600);
-    --sev-p2-soft: var(--amber-100);
-    --sev-p3: var(--teal-600);
-    --sev-p3-soft: var(--teal-100);
-    --sev-p4: var(--slate-600);
-    --sev-p4-soft: var(--slate-100);
+    --sev-p1: var(--red-400);
+    --sev-p1-soft: rgba(255, 122, 107, 0.16);
+    --sev-p2: var(--amber-400);
+    --sev-p2-soft: rgba(242, 176, 79, 0.16);
+    --sev-p3: var(--teal-400);
+    --sev-p3-soft: rgba(63, 203, 176, 0.16);
+    --sev-p4: var(--slate-300);
+    --sev-p4-soft: rgba(163, 174, 194, 0.16);
 
     /* status — mirrors the incidents.status CHECK */
-    --status-detected: var(--red-600);
-    --status-investigating: var(--amber-600);
-    --status-mitigated: var(--teal-600);
-    --status-resolved: var(--green-600);
-    --status-postmortem: var(--slate-600);
+    --status-detected: var(--red-400);
+    --status-detected-soft: rgba(255, 122, 107, 0.16);
+    --status-investigating: var(--amber-400);
+    --status-investigating-soft: rgba(242, 176, 79, 0.16);
+    --status-mitigated: var(--teal-400);
+    --status-mitigated-soft: rgba(63, 203, 176, 0.16);
+    --status-resolved: var(--green-400);
+    --status-resolved-soft: rgba(92, 203, 122, 0.16);
+    --status-postmortem: var(--slate-300);
+    --status-postmortem-soft: rgba(163, 174, 194, 0.16);
 
     /* timeline entry type — a left rule only; ai_draft is the one brand-colored row because it is waiting on a human */
-    --entry-observation: var(--slate-600);
-    --entry-action: var(--teal-600);
-    --entry-finding: var(--amber-600);
-    --entry-system: var(--ink-300);
+    --entry-observation: var(--slate-300);
+    --entry-action: var(--teal-400);
+    --entry-finding: var(--amber-400);
+    --entry-system: var(--navy-500);
     --entry-ai-draft: var(--orange-500);
+
+    /* live state — LiveDot and anything that pulses */
+    --live-idle: var(--navy-500);
+    --live-on: var(--green-400);
+    --live-syncing: var(--amber-400);
+    --live-failing: var(--red-400);
+
+    /* --- glass: the floating layer only (top bar, sheets, toasts). Content never uses it. --- */
+    --glass-bg: rgba(18, 24, 38, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --glass-blur: 16px;
+    --glass-saturate: 140%;
+
+    /* --- mesh: the sign-in backdrop. The busiest background glass can sit on; tokens.test.ts checks against --mesh-2. --- */
+    --mesh-1: var(--indigo-700);
+    --mesh-2: var(--blue-600);
+    --mesh-3: var(--orange-600);
 
     /* --- type --- */
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -108,6 +141,7 @@
 
     --page-gutter: var(--space-4);
     --content-max: 72rem;
+    --topbar-height: 3.5rem;
 
     /* --- radius, shadow, border --- */
     --radius-sm: 0.25rem;
@@ -115,9 +149,11 @@
     --radius-lg: 0.75rem;
     --radius-pill: 999px;
 
-    --shadow-1: 0 1px 2px rgba(26, 26, 26, 0.06);
-    --shadow-2: 0 4px 12px rgba(26, 26, 26, 0.08);
-    --shadow-3: 0 16px 40px rgba(26, 26, 26, 0.16);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
+    --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.6);
+    /* the one colored shadow: primary actions and the hero shape */
+    --shadow-glow: 0 0 0 1px rgba(217, 119, 87, 0.35), 0 8px 32px rgba(217, 119, 87, 0.25);
 
     --border: 1px solid var(--color-border);
 
@@ -128,6 +164,7 @@
     --ease: cubic-bezier(0.2, 0, 0, 1);
 
     /* --- layers --- */
+    --z-topbar: 50;
     --z-modal: 100;
     --z-toast: 200;
 }

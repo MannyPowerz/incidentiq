@@ -1,0 +1,58 @@
+.ui-livedot {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-2);
+    --livedot-color: var(--live-idle);
+}
+
+.ui-livedot--live { --livedot-color: var(--live-on); }
+.ui-livedot--syncing { --livedot-color: var(--live-syncing); }
+.ui-livedot--failing { --livedot-color: var(--live-failing); }
+
+.ui-livedot__dot {
+    position: relative;
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--livedot-color);
+}
+
+/* the pulse is a second ring expanding out of the dot, so the dot itself never changes size */
+.ui-livedot--live .ui-livedot__dot::after,
+.ui-livedot--syncing .ui-livedot__dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--livedot-color);
+    animation: ui-livedot-pulse 1.8s var(--ease) infinite;
+}
+
+.ui-livedot--syncing .ui-livedot__dot::after {
+    animation-duration: 0.9s;
+}
+
+.ui-livedot--failing .ui-livedot__dot {
+    box-shadow: 0 0 0 3px var(--color-danger-soft);
+}
+
+.ui-livedot__label {
+    line-height: 1;
+}
+
+@keyframes ui-livedot-pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-livedot__dot::after {
+        animation: none;
+        display: none;
+    }
+}

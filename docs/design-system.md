@@ -41,84 +41,26 @@ Rules:
 
 ## 2. Tokens
 
-### 2.1 Color
+### 2.1 Color — dark premium, single theme
 
-Raw palette first, semantic aliases second. Screens use the aliases; the raw names exist so the aliases can be re-pointed in one place.
+`client/src/styles/tokens.css` is the source of truth; this section records the roles, not the hex values, so it cannot drift. Raw palette first (`--navy-*`, `--cloud-*`, `--orange-*`, state hues), semantic aliases second. Screens use the aliases only.
 
-```css
-:root {
-  /* --- raw --- */
-  --orange-500: #D97757;   /* brand. 3.1:1 on white — accent and large text only */
-  --orange-600: #B4542F;   /* 4.9:1 on white — the orange that may carry body-size text */
-  --orange-100: #F8E6DE;
+| Alias | Role |
+|---|---|
+| `--color-bg` / `--color-surface` / `--color-surface-2` / `--color-field-bg` | page, card, raised row/hover, input well — four navy steps |
+| `--color-border` / `--color-border-strong` | card edge (visible) / control edge (3:1, WCAG non-text) |
+| `--color-text` / `--color-text-2` / `--color-text-3` | body / secondary / muted — all ≥ 4.5:1 on every surface |
+| `--color-data` | pure white, reserved for live numbers and metrics so data is the brightest thing on screen |
+| `--color-primary` / `-strong` / `-soft` | brand orange `#D97757`; hover brightens on dark; 16% tint for focus halos |
+| `--color-on-primary` | near-black text on orange and danger fills — white on `#D97757` is ~3.1:1 |
+| `--sev-p1..p4`, `--status-*`, `--entry-*` | mirror the `incidents.severity`, `incidents.status`, `timeline_entries.type` CHECKs; each has a `-soft` 16% tint for badge fills. Deliberately not the brand hue, so an orange button never reads as "P2" |
+| `--live-idle/on/syncing/failing` | LiveDot states |
+| `--glass-*` | the floating-layer recipe (§2.7) |
+| `--mesh-1..3` | indigo / blue / orange, the sign-in backdrop only |
 
-  --ink-900: #1A1A1A;
-  --ink-700: #3D3D3D;
-  --ink-500: #6B6B6B;      /* 5.7:1 on white — lowest grey allowed for text */
-  --ink-300: #C9C9C9;      /* borders, dividers — not for text */
-  --ink-100: #F2F2F0;      /* panel background */
-  --ink-50:  #FAFAF8;      /* page background, warm white */
-  --white:   #FFFFFF;
+Only `ai_draft` is brand-colored in the timeline: it is the one entry waiting on a human decision.
 
-  --red-600:    #B42318;
-  --red-100:    #FBE9E7;
-  --amber-600:  #A15C07;
-  --amber-100:  #FBF1DC;
-  --teal-600:   #0E7C6B;
-  --teal-100:   #DDF3EF;
-  --green-600:  #2E7D32;
-  --green-100:  #E3F2E4;
-  --slate-600:  #556070;
-  --slate-100:  #E9ECF0;
-
-  /* --- semantic --- */
-  --color-bg:            var(--ink-50);
-  --color-surface:       var(--white);
-  --color-surface-2:     var(--ink-100);
-  --color-border:        var(--ink-300);
-  --color-text:          var(--ink-900);
-  --color-text-2:        var(--ink-700);
-  --color-text-3:        var(--ink-500);
-
-  --color-primary:       var(--orange-500);
-  --color-primary-strong:var(--orange-600);   /* links, text-on-light */
-  --color-primary-soft:  var(--orange-100);
-  --color-on-primary:    var(--ink-900);      /* text ON an orange button — NOT white, see §4 */
-
-  --color-danger:        var(--red-600);
-  --color-danger-soft:   var(--red-100);
-  --color-focus:         var(--orange-600);
-}
-```
-
-**Severity** — mirrors the `incidents.severity` CHECK (`P1`..`P4`, migration 0002). A separate hue ramp from the brand so an orange button never reads as "P2".
-
-```css
-  --sev-p1:      var(--red-600);   --sev-p1-soft:   var(--red-100);
-  --sev-p2:      var(--amber-600); --sev-p2-soft:   var(--amber-100);
-  --sev-p3:      var(--teal-600);  --sev-p3-soft:   var(--teal-100);
-  --sev-p4:      var(--slate-600); --sev-p4-soft:   var(--slate-100);
-```
-
-**Status** — mirrors the `incidents.status` CHECK (`detected`, `investigating`, `mitigated`, `resolved`, `postmortem`). Note the server only accepts a transition to `resolved` today (`PATCH /incidents/:id` returns `400 unsupported_status` for anything else — `server/src/incidents/routes/resolve.ts`), so only two of these are reachable from the UI; the other three still render because the agent or a seed can set them.
-
-```css
-  --status-detected:      var(--red-600);
-  --status-investigating: var(--amber-600);
-  --status-mitigated:     var(--teal-600);
-  --status-resolved:      var(--green-600);
-  --status-postmortem:    var(--slate-600);
-```
-
-**Timeline entry type** — the five values in `timeline_entries.type`. Only a left-rule color, no fill:
-
-```css
-  --entry-observation: var(--slate-600);
-  --entry-action:      var(--teal-600);
-  --entry-finding:     var(--amber-600);
-  --entry-system:      var(--ink-300);
-  --entry-ai-draft:    var(--orange-500);   /* the one thing in the timeline that is brand-colored: it is asking for a human decision */
-```
+**Contrast is tested, not asserted.** `src/styles/tokens.test.ts` resolves every alias to its hex and checks WCAG AA for each text/background pair, including text on glass composited over the brightest mesh color. Change a color freely; the test says whether it still reads.
 
 ### 2.2 Type
 
@@ -169,9 +111,10 @@ No webfont. The system stack costs zero bytes and zero layout shift; the brand m
   --radius-lg: 0.75rem;   /* 12 — modals, panels */
   --radius-pill: 999px;   /* status/severity badges */
 
-  --shadow-1: 0 1px 2px rgba(26, 26, 26, 0.06);
-  --shadow-2: 0 4px 12px rgba(26, 26, 26, 0.08);
-  --shadow-3: 0 16px 40px rgba(26, 26, 26, 0.16);   /* modal only */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.6);       /* modal, hero */
+  --shadow-glow: /* orange ring + bloom — primary hover and the hero shape only */
 
   --border: 1px solid var(--color-border);
 ```
@@ -202,6 +145,15 @@ Phone-first. Four widths, checked on every screen before it is called done:
 | desktop | 1024px | sidebar + content |
 | wide | 1440px | content max-width kicks in |
 
+### 2.7 Glass — the floating layer only
+
+From Apple's HIG on Liquid Glass: glass is for controls and navigation that float above content (top bar, sheets, toasts), never for the content itself. Cards, tables, and timeline rows stay solid.
+
+- One class, `.ui-glass` in `utilities.css`: translucent navy, 16px backdrop blur, hairline border, top highlight. Used today by `TopBar`, the `Modal` panel, and `Toast`.
+- At most two glass layers stacked (top bar + one sheet).
+- Contrast is checked against the busiest background glass can land on (`--mesh-2`), not a convenient one. Inside glass, muted text is promoted to `--color-text-2`, because the muted tone falls under 4.5:1 there.
+- Goes solid under `prefers-reduced-transparency: reduce` and in browsers without `backdrop-filter`.
+
 ## 3. Primitives
 
 Each lives in `client/src/components/ui/<Name>/`. Props are the public contract; a screen never reaches into a primitive's CSS.
@@ -221,27 +173,38 @@ Each lives in `client/src/components/ui/<Name>/`. Props are the public contract;
 | **EmptyState** | `title`, `body?`, `action?: ReactNode` | — | The "no rooms yet" / "no entries yet" / "nobody has published a fingerprint for this project" screen. |
 | **ErrorState** | `title`, `body`, `retry?: () => void` | — | Renders an `ApiError`'s `message`. Never renders a raw object (the `validateBody` 400 puts a ZodError object in `message`; `client/src/auth/api.ts` already normalises that to a string — reuse it). |
 
+Added with the dark redesign, for the real-time screens (tests: `cockpit.test.tsx`):
+
+| Primitive | Props | Notes |
+|---|---|---|
+| **TopBar** | `links: {to,label}[]`, `right?`, `brandTo?` | Sticky glass header. One indicator element slides under the active `NavLink`, measured in a layout effect, so a route change reads as motion. |
+| **LiveDot** | `state: 'idle' \| 'live' \| 'syncing' \| 'failing'`, `label`, `hideLabel?` | `role="status"`. Pulse ring while live/syncing, static under reduced motion. The label is always in the accessibility tree; the dot is never the only signal. |
+| **Presence** | `users: {id,label}[]`, `max?`, `size?` | Overlapping initial chips, stable hue per user id, `+N` overflow, full name list in `aria-label`. |
+| **Metric** | `label`, `value`, `detail?`, `tone?` | Stat tile. Value in mono `--color-data`; tone sets the left accent rule. |
+
 **Every data-bearing screen renders all four:** loading (Spinner), empty (EmptyState), error (ErrorState), populated. The roadmap's gap table tracks which of these the current screens are missing — the answer today is all of them, everywhere.
 
 ## 4. Accessibility rules
 
 These are checked, not aspired to.
 
-1. **Contrast.** Body text ≥ 4.5:1, large text and UI borders ≥ 3:1 (WCAG AA). Computed for the palette above [approximate, from relative luminance]: `--orange-500` on white ≈ **3.1:1** — accent, borders, large text only. `--ink-900` on `--orange-500` ≈ **6.0:1** — this is why `--color-on-primary` is near-black, not white. `--orange-600` on white ≈ **4.9:1** — the only orange allowed for body-size text and links. `--ink-500` on white ≈ **5.7:1**. Verify with a contrast checker before shipping the tokens; the figures here are hand-computed.
+1. **Contrast.** Body text ≥ 4.5:1, large text and UI borders ≥ 3:1 (WCAG AA), enforced by `tokens.test.ts` (§2.1). On the dark palette the brand orange itself clears 4.5:1 as link text, and near-black on orange stays the button pairing because white on `#D97757` is ~3.1:1.
 2. **Focus.** `:focus-visible` on every interactive element: 2px `--color-focus` outline, 2px offset. Never `outline: none` without a replacement.
 3. **Keyboard.** Every action reachable by Tab/Enter/Space. Modal traps focus and restores it. Tables with row click also expose a real link or button in the row.
 4. **Not color-only.** Severity and status are always a text label plus color, never a colored dot alone.
 5. **Forms.** Every input has a visible `<label>`. Errors are text, associated via `aria-describedby`, announced via `role="alert"`.
 6. **Live regions.** New timeline entries arriving over the socket are announced once via a polite live region, not per-entry focus steals.
-7. **Reduced motion.** Honoured globally (§2.5). The 3D hero renders a static image under it.
+7. **Reduced motion and transparency.** Motion honoured globally (§2.5): the sign-in mesh stops drifting and the hero stops tilting. Transparency honoured by `.ui-glass` (§2.7).
 8. **Target size.** Interactive targets ≥ 24×24 CSS px; primary actions ≥ 40px tall on phone.
 9. **Zoom.** Nothing breaks at 200% browser zoom; no `maximum-scale` in the viewport meta.
 
 ## 5. Dark mode
 
-**Decision: none for the MVP.** One theme, light, warm-white background.
+**Decision (2026-10-08): dark premium is the only theme.** This reverses the original "light only for the MVP" call.
 
-Reason: the demo runs on a projector in a lit room (schedule.md, "not embarrassed by them on a projector"), one theme halves the states to verify, and every token above is already structured as raw → semantic so a `[data-theme="dark"]` block that re-points only the semantic aliases can be added later without touching a component. That later block is the whole cost of dark mode under this system; doing it now buys nothing for Oct 9.
+Why it changed: the product is a real-time war room, the screen people keep open while something is broken, and the reference set the redesign was built from (a premium dark cockpit, HIG glass for the floating layer) only works on dark. Shipping one theme keeps the original reason intact: half the states to verify. The raw → semantic split did what it was built for. The switch was a re-point of the aliases in `tokens.css` plus one `color-scheme: dark` line, and no component logic changed.
+
+Cost accepted: the projector risk from the original decision. Mitigated by the contrast test, which holds every text pair at AA. A light theme later is the same move in reverse: a `[data-theme="light"]` block re-pointing the aliases.
 
 ## 6. What this replaces
 

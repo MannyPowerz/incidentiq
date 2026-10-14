@@ -1,8 +1,5 @@
 /*
- * utilities.css — global helper classes primitives depend on, loaded once from main.tsx.
- * Global rather than inside one primitive's CSS: a class defined in Spinner.css only exists on
- * pages that happen to render a Spinner, so a Table caption elsewhere would show up visibly.
- * Class-only, no element selectors, so it changes nothing on screens that don't use it.
+ * utilities.css — global helper classes, loaded once from main.tsx. Class-only, no element selectors.
  */
 
 .ui-sr-only {
@@ -15,4 +12,37 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/*
+ * .ui-glass — the single glass recipe. Glass is for the layer that floats above content: the top
+ * bar, sheets, toasts. Cards, tables, and body copy never opt in (design-system.md §2.7, from the HIG).
+ * Muted text is lifted to the brighter grey inside glass, because the busiest background a floating
+ * layer can land on (the sign-in mesh) pulls contrast under 4.5:1 for the muted tone — tokens.test.ts
+ * measures that exact case.
+ */
+.ui-glass {
+    --color-text-3: var(--color-text-2);
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+        inset 0 1px 0 var(--glass-highlight),
+        var(--shadow-2);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+/* no backdrop-filter support, or the user asked for less transparency: the layer goes solid */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .ui-glass {
+        background-color: var(--color-surface);
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .ui-glass {
+        background-color: var(--color-surface);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
 }

@@ -10,7 +10,7 @@
 .ui-field__label {
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
-    color: var(--color-text);
+    color: var(--color-text-2);
 }
 
 .ui-field__control {
@@ -18,9 +18,10 @@
     width: 100%;
     min-height: 2.5rem;
     padding: var(--space-2) var(--space-3);
-    border: var(--border);
+    /* the stronger border: a control's edge must hit 3:1, a card's only has to be visible */
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-sm);
-    background-color: var(--color-surface);
+    background-color: var(--color-field-bg);
     color: var(--color-text);
     font-family: inherit;
     font-size: var(--text-md);
@@ -37,7 +38,7 @@
 .ui-field__control:focus-visible {
     outline: none;
     border-color: var(--color-focus);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .ui-field__control:disabled {

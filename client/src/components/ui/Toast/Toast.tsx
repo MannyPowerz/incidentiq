@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
 
 function ToastView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number) => void }): JSX.Element {
     return (
-        <div className={`ui-toast ui-toast--${item.tone}`}>
+        <div className={`ui-toast ui-toast--${item.tone} ui-glass`}>
             <span className="ui-toast__message">{item.message}</span>
             <button type="button" className="ui-toast__dismiss" onClick={() => onDismiss(item.id)} aria-label="Dismiss notification">
                 ×
