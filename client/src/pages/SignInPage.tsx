@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import AuthForm from "../components/auth/AuthForm";
-import { ThemeToggle } from "../components/ui";
+import LiquidBackdrop from "../components/layout/LiquidBackdrop";
+import { BrandMark, ThemeToggle, Wordmark } from "../components/ui";
 import "./SignInPage.css"
 
 const TILT_MAX_DEG = 8;
@@ -22,9 +23,10 @@ function useTilt() {
             el.style.setProperty('--tilt-x', `${(-y * TILT_MAX_DEG).toFixed(2)}deg`);
             el.style.setProperty('--tilt-y', `${(x * TILT_MAX_DEG).toFixed(2)}deg`);
         };
+        // removed rather than zeroed, so the page-wide lean toward the cursor takes over again
         const onLeave = () => {
-            el.style.setProperty('--tilt-x', '0deg');
-            el.style.setProperty('--tilt-y', '0deg');
+            el.style.removeProperty('--tilt-x');
+            el.style.removeProperty('--tilt-y');
         };
         el.addEventListener('pointermove', onMove);
         el.addEventListener('pointerleave', onLeave);
@@ -46,16 +48,15 @@ export default function SignInPage() : JSX.Element {
 
     return (
         <main className="sign-in-page">
-            <section className="sign-in-brand" aria-label="IncidentIQ">
-                <div className="sign-in-brand__mesh" aria-hidden="true">
-                    <span className="sign-in-brand__blob sign-in-brand__blob--1" />
-                    <span className="sign-in-brand__blob sign-in-brand__blob--2" />
-                    <span className="sign-in-brand__blob sign-in-brand__blob--3" />
-                </div>
+            {/* one backdrop behind both halves, so the brand panel and the form read as one page */}
+            <LiquidBackdrop intensity="full" />
+            <section className="sign-in-brand" aria-label="IncidentIOQ">
 
-                <div className="sign-in-brand__lockup">
-                    <span className="sign-in-brand__mark" aria-hidden="true" />
-                    <p className="sign-in-brand__name">IncidentIQ</p>
+                <div className="sign-in-brand__lockup brand">
+                    <BrandMark size="md" />
+                    <p className="sign-in-brand__name">
+                        <Wordmark />
+                    </p>
                 </div>
 
                 <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>

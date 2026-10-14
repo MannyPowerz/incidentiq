@@ -6,32 +6,12 @@
     min-height: 100vh;
     isolation: isolate;
     overflow-x: clip;
-    background:
-        linear-gradient(160deg, var(--color-bg) 0%, color-mix(in srgb, var(--mesh-1) 18%, var(--color-bg)) 100%);
+    /* the LiquidBackdrop behind it paints the color; this is only the base for its fixed layer */
+    background-color: var(--color-bg);
     color: var(--color-text);
     scroll-behavior: smooth;
 }
 
-.landing__backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.landing__blob {
-    position: absolute;
-    display: block;
-    aspect-ratio: 1;
-    border-radius: var(--radius-pill);
-    filter: blur(90px);
-    opacity: 0.55;
-}
-
-.landing__blob--1 { width: 48vmax; left: -14vmax; top: -12vmax; background: var(--mesh-1); }
-.landing__blob--2 { width: 40vmax; right: -12vmax; top: 18vh; background: var(--mesh-2); }
-.landing__blob--3 { width: 34vmax; left: 30vw; bottom: -16vmax; background: var(--mesh-3); opacity: 0.4; }
 
 /* --- buttons: one solid, one glass, as the prompt pairs them --- */
 .landing-btn {
@@ -111,14 +91,6 @@
     text-decoration: none;
 }
 
-.landing-nav__mark {
-    display: block;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 0.3125rem;
-    background-color: var(--color-primary);
-}
-
 .landing-nav__links {
     display: flex;
     gap: var(--space-1);
@@ -184,6 +156,14 @@
     border-radius: 1.5rem;
     text-align: center;
     will-change: transform;
+}
+
+/* a turning cube reaches about 40% past its own box, so it gets that room above and below */
+.landing-hero__mark {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-4) 0;
+    margin-bottom: var(--space-8);
 }
 
 .landing-eyebrow {
@@ -274,7 +254,8 @@
     margin: calc(var(--space-4) * -1) 0 var(--space-6);
     font-size: var(--text-xs);
     text-align: center;
-    color: var(--color-text-3);
+    /* sits straight on the full backdrop, where muted text would fall under AA */
+    color: var(--color-text-2);
 }
 
 .landing-grid {
@@ -513,3 +494,16 @@
 @media (prefers-reduced-motion: reduce) {
     .landing { scroll-behavior: auto; }
 }
+
+/* how far down the page you are: a thin brand line under the navbar's glass */
+.landing-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: calc(var(--z-topbar) + 1);
+    height: 3px;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--mesh-1), var(--mesh-2), var(--color-primary));
+}
+
