@@ -154,7 +154,7 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 `/dashboard` currently renders the deferred `DashboardPage`, which `schedule.md` cut from Minimum. **Decision: redirect `/dashboard` → `/rooms`** and delete `pages/DashboardPage.*` + `components/dashboard/*` (DashboardHeader, DashboardSidebar, QuickActions, RecentIncidents, StatisticsCard, StatisticsGrid + CSS). A route that shows "Hello John" over mock stats on demo day is worse than no route. Deleting `DashboardSidebar.tsx` also removes one rename occurrence (Item 9). Can be folded into Item 2's PR since both touch `App.tsx`.
 **Done when:** `/dashboard` lands on `/rooms`; `components/dashboard/` is gone; nothing imports it.
 
-### Item 9 — Rename to IncidentIOQ *(own branch, not a UI item)*
+### Item 9 — Rename to IncidentIOQ *(own branch, not a UI item)* — **DONE 2026-10-14**
 
 Every tracked occurrence of the old name, from a case-insensitive scan of all tracked files on 2026-10-08. Two kinds: **display/package names** (rename) and **data values** (leave — see note).
 
@@ -178,6 +178,16 @@ Every tracked occurrence of the old name, from a case-insensitive scan of all tr
 **Not done by this item, listed for you:** GitHub repo `MannyPowerz/incidentiq` (rename in repo Settings; GitHub redirects the old URL; then `git remote set-url origin <new>`), the Docker container `incidentiq-test-db` (local only, named in `server/TESTING.md` and your run command), Supabase project name [uncertain: never seen in the repo].
 
 **Done when:** `git grep -i incidentiq` returns only the fixture data values and ADR titles listed as "leave"; all test suites green; `npm run dev` in each package starts under the new names.
+
+**As built:** renamed the display and package names: the brand in `TopBar` and sign-in, the three `package.json` names and their lockfiles (`incidentioq-server`, `incidentioq-agent`, `incidentioq-client`), the `README` and `CLAUDE.md` titles, five doc titles, the agent's terminal card, and prose ("IncidentIOQ login / account email").
+
+**Kept the old name on purpose:**
+- `project_id: 'incidentiq'`: data, and the agent's default `AGENT_PROJECT_ID`. Renaming it would orphan every published fingerprint.
+- `@incidentiq.dev` test emails, including `MANNY@IncidentIQ.DEV`, which tests case-insensitive matching.
+- The `incidentiq-test-db` container in `server/TESTING.md`: it's the name on your machine, and renaming the docs alone would break `docker start`.
+- The `/Document/projects/incidentiq` folder path, and ADR titles (a dated record).
+
+**Still yours to do:** rename the GitHub repo in Settings (GitHub redirects the old URL), then `git remote set-url origin <new url>`. Optionally rename the local folder and the Docker container together.
 
 ### Item 10 — 3D hero *(last; optional; isolated)*
 

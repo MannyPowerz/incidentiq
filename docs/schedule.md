@@ -1,4 +1,4 @@
-# IncidentIQ — Schedule to Demo
+# IncidentIOQ — Schedule to Demo
 
 **Team:** Manny, Anthony · both full-time students, part-time work
 **Coding starts:** Saturday **September 5, 2026**
@@ -129,7 +129,7 @@ is to leave it.
 
 ### Send account email
 **Owner:** Anthony · **Due:** Tue Sep 8 · **Est:** 5 min · **Blocked by:** —
-**Description:** Your git commits are authored as a GitHub noreply address. `.mailmap` at the repo root has a placeholder for you. Send Manny your incidentiq account email, or add the line yourself following the format at the top of the file. Until this is done you score zero on every file you've written and the relevance demo shows an empty ranking for you.
+**Description:** Your git commits are authored as a GitHub noreply address. `.mailmap` at the repo root has a placeholder for you. Send Manny your IncidentIOQ account email, or add the line yourself following the format at the top of the file. Until this is done you score zero on every file you've written and the relevance demo shows an empty ranking for you.
 **Done when:** `git check-mailmap "<your-noreply>"` prints your account email.
 
 ### Merge the queue — DONE
