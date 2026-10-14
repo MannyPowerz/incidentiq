@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { JSX } from "react";
 import type * as React from "react"
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { login, register, ApiError } from "../../auth/api";
 import { Button, Input } from "../ui";
 import "./AuthForm.css"
@@ -25,10 +25,15 @@ type AuthMode = "signin" | "register";
 const PASSWORD_MIN_LENGTH = 8;
 
 
+// what the landing page's sign-up box hands over in router state, so the visitor lands ready to register
+export type AuthHandoff = { email?: string; mode?: AuthMode };
+
 export default function AuthForm() : JSX.Element {
+    const handoff = (useLocation().state ?? null) as AuthHandoff | null;
+
     // Store values entered in the form
     const [ formData, setFormData ] = useState<AuthFormData>({
-        email: "",
+        email: handoff?.email ?? "",
         password: "",
         rememberMe: false,
     });
@@ -42,7 +47,7 @@ export default function AuthForm() : JSX.Element {
     // Track if sign in request is being loading
     const [ isLoading, setIsLoading ] = useState<boolean>(false)
 
-    const [ mode, setMode ] = useState<AuthMode>("signin")
+    const [ mode, setMode ] = useState<AuthMode>(handoff?.mode ?? "signin")
 
     // errors above are per-field; invalid_credentials / email_taken belong to the whole submission
     const [ submitError, setSubmitError ] = useState<string | null>(null)
