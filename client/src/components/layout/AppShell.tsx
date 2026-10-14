@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { logout } from '../../auth/api';
 import { Button, ThemeToggle, TopBar } from '../ui';
 import type { TopBarLink } from '../ui';
+import LiquidBackdrop from './LiquidBackdrop';
 import './AppShell.css';
 
 const LINKS: TopBarLink[] = [
@@ -27,12 +28,8 @@ export default function AppShell(): JSX.Element {
 
     return (
         <div className="app-shell">
-            {/* the sign-in mesh, carried faintly behind every signed-in page so the glass top bar has color to refract */}
-            <div className="app-shell__mesh" aria-hidden="true">
-                <span className="app-shell__blob app-shell__blob--1" />
-                <span className="app-shell__blob app-shell__blob--2" />
-                <span className="app-shell__blob app-shell__blob--3" />
-            </div>
+            {/* the liquid backdrop, subtle behind the app, so the glass top bar has color to refract */}
+            <LiquidBackdrop intensity="subtle" />
             <a className="app-shell__skip" href="#main">
                 Skip to content
             </a>

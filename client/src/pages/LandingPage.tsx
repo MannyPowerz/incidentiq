@@ -14,9 +14,10 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent, JSX, PointerEvent, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MotionConfig, motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { MotionConfig, motion, useMotionValue, useScroll, useSpring, useTransform } from 'motion/react';
 import type { AuthHandoff } from '../components/auth/AuthForm';
-import { ThemeToggle } from '../components/ui';
+import { BrandMark, ThemeToggle, Wordmark } from '../components/ui';
+import LiquidBackdrop from '../components/layout/LiquidBackdrop';
 import './LandingPage.css';
 
 const NAV = [
@@ -139,7 +140,8 @@ function Reveal({ children, id, className }: { children: ReactNode; id?: string;
             className={className}
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
+            // not once: sections animate in on the way down and again on the way back up
+            viewport={{ once: false, amount: 0.15 }}
             transition={{ duration: 0.6, ease: [0.2, 0, 0, 1] }}
         >
             {children}
@@ -153,6 +155,11 @@ export default function LandingPage(): JSX.Element {
     const [email, setEmail] = useState('');
     const navigate = useNavigate();
     const indicatorOn = hovered ?? active;
+    // scroll-linked motion: a progress bar, and the hero drifting up and fading as you leave it
+    const { scrollY, scrollYProgress } = useScroll();
+    const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });
+    const heroY = useTransform(scrollY, [0, 700], [0, -90]);
+    const heroFade = useTransform(scrollY, [0, 700], [1, 0.35]);
 
     function handleSignup(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -164,22 +171,14 @@ export default function LandingPage(): JSX.Element {
     return (
         <MotionConfig reducedMotion="user">
             <div className="landing">
-                <div className="landing__backdrop" aria-hidden="true">
-                    {[0, 1, 2].map((i) => (
-                        <motion.span
-                            key={i}
-                            className={`landing__blob landing__blob--${i + 1}`}
-                            animate={{ x: [0, 60 - i * 40, -30 + i * 20, 0], y: [0, -40 + i * 30, 30 - i * 10, 0], scale: [1, 1.15, 0.95, 1] }}
-                            transition={{ duration: 26 + i * 6, repeat: Infinity, ease: 'easeInOut' }}
-                        />
-                    ))}
-                </div>
+                <LiquidBackdrop intensity="full" />
+                <motion.div className="landing-progress" style={{ scaleX: progress }} aria-hidden="true" />
 
                 <header className="landing-nav ui-glass">
                     <div className="landing-nav__inner">
                         <a className="landing-nav__brand" href="#top">
-                            <span className="landing-nav__mark" aria-hidden="true" />
-                            IncidentIOQ
+                            <BrandMark size="sm" />
+                            <Wordmark />
                         </a>
                         <nav aria-label="Sections" className="landing-nav__links" onPointerLeave={() => setHovered(null)}>
                             {NAV.map((item) => (
@@ -208,8 +207,12 @@ export default function LandingPage(): JSX.Element {
                 </header>
 
                 <main id="top">
-                    <section className="landing-hero" aria-labelledby="hero-title">
+                    <motion.section className="landing-hero" aria-labelledby="hero-title" style={{ y: heroY, opacity: heroFade }}>
                         <TiltCard>
+                            {/* the logo, in 3D: turns on its own, follows the cursor, spins when clicked */}
+                            <div className="landing-hero__mark">
+                                <BrandMark size="lg" interactive />
+                            </div>
                             <p className="landing-eyebrow">For teams who ship software</p>
                             <h1 id="hero-title" className="landing-hero__title">
                                 Catch the bug that never throws.
@@ -241,7 +244,7 @@ export default function LandingPage(): JSX.Element {
                                 </div>
                             ))}
                         </motion.dl>
-                    </section>
+                    </motion.section>
 
                     <Reveal id="features" className="landing-section">
                         <h2 className="landing-section__title">Built for the failures nobody logs</h2>
@@ -252,7 +255,7 @@ export default function LandingPage(): JSX.Element {
                                     className="landing-card ui-glass"
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true, amount: 0.3 }}
+                                    viewport={{ once: false, amount: 0.3 }}
                                     transition={{ duration: 0.5, delay: i * 0.08 }}
                                     whileHover={{ y: -4 }}
                                 >
@@ -331,9 +334,9 @@ export default function LandingPage(): JSX.Element {
 
                 <footer className="landing-footer ui-glass">
                     <div className="landing-footer__inner">
-                        <span className="landing-footer__brand">
-                            <span className="landing-nav__mark" aria-hidden="true" />
-                            IncidentIOQ
+                        <span className="landing-footer__brand brand">
+                            <BrandMark size="sm" />
+                            <Wordmark />
                         </span>
                         <nav aria-label="Footer" className="landing-footer__links">
                             {NAV.map((n) => (

@@ -122,6 +122,20 @@
        tokens.test.ts composites each mesh color at this opacity and holds muted text at AA over it. */
     --ambient-opacity: 0.2;
 
+    /* --- liquid glass backdrop (components/layout/LiquidBackdrop) ---
+       A droplet is the tint over the mesh, then the glossy highlight over that. tokens.test.ts
+       composites exactly that stack at the backdrop's opacity and checks the text that sits on it. */
+    --liquid-tint: rgba(255, 255, 255, 0.06);
+    --liquid-tint-2: rgba(255, 255, 255, 0.01);
+    --liquid-highlight: rgba(255, 255, 255, 0.18);
+    --liquid-rim: rgba(255, 255, 255, 0.16);
+    --liquid-shade: rgba(0, 0, 0, 0.25);
+    --liquid-blur: 14px;
+    /* the bold version, behind the landing page and the sign-in panel. Text placed straight on it
+       must be --color-text-2 or stronger; the subtle version uses --ambient-opacity and allows text-3 */
+    --backdrop-full-opacity: 0.45;
+    --grain-opacity: 0.05;
+
     /* --- type --- */
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -258,6 +272,14 @@
     --mesh-2: #93C5FD;
     --mesh-3: #FBD5B5;
     --ambient-opacity: 0.4;
+
+    --liquid-tint: rgba(255, 255, 255, 0.5);
+    --liquid-tint-2: rgba(255, 255, 255, 0.12);
+    --liquid-highlight: rgba(255, 255, 255, 0.85);
+    --liquid-rim: rgba(255, 255, 255, 0.75);
+    --liquid-shade: rgba(15, 23, 42, 0.08);
+    --backdrop-full-opacity: 0.8;
+    --grain-opacity: 0.035;
 
     --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.06);
     --shadow-2: 0 6px 20px rgba(15, 23, 42, 0.08);

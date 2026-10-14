@@ -6,61 +6,7 @@
     background-color: var(--color-bg);
 }
 
-/* fixed, so it stays put while content scrolls and the glass top bar always has color under it */
-.app-shell__mesh {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-    opacity: var(--ambient-opacity);
-}
 
-.app-shell__blob {
-    position: absolute;
-    display: block;
-    aspect-ratio: 1;
-    border-radius: var(--radius-pill);
-    filter: blur(80px);
-    animation: app-shell-drift 32s var(--ease) infinite alternate;
-}
-
-.app-shell__blob--1 {
-    width: 55vmax;
-    left: -18vmax;
-    top: -22vmax;
-    background: var(--mesh-1);
-}
-
-.app-shell__blob--2 {
-    width: 45vmax;
-    right: -16vmax;
-    top: 10vh;
-    background: var(--mesh-2);
-    animation-duration: 40s;
-    animation-delay: -12s;
-}
-
-.app-shell__blob--3 {
-    width: 35vmax;
-    left: 30vw;
-    bottom: -20vmax;
-    background: var(--mesh-3);
-    animation-duration: 48s;
-    animation-delay: -24s;
-}
-
-/* transform only, so the drift runs on the compositor and never triggers layout */
-@keyframes app-shell-drift {
-    from { transform: translate3d(0, 0, 0) scale(1); }
-    to { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .app-shell__blob {
-        animation: none;
-    }
-}
 
 .app-shell__main {
     max-width: var(--content-max);
