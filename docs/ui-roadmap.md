@@ -133,13 +133,21 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 
 **Checked:** 6 hook tests, 4 wording tests, 1 page wiring test; 9 mutations, 9 caught (including that bug, re-introduced). 1280 and 375, no overflow.
 
-### Item 7 — Fingerprint comparison *(schedule.md: "Fingerprint comparison")*
+### Item 7 — Fingerprint comparison *(schedule.md: "Fingerprint comparison")* — **DONE 2026-10-14**
 
 **Scope:** a page listing every fingerprint for a project side by side: `published_by`, `node_version`, `os_arch`, `lockfile_hash` (mono, truncated with full value on hover/focus), `applied_migrations` (mono list). Cells that differ from the first row are highlighted — the "works on my machine" diff is the demo closer (`build-plan.md`). Project selector defaults to `incidentiq` [uncertain: the only value present in the repo is the test fixture; the agent's `.env.example` uses `AGENT_PROJECT_ID`]. Loading, empty ("Nobody has published for this project yet"), error.
 **Endpoint:** `GET /fingerprints?project=` → `{ fingerprints }`. `PUT` is the agent's job; the UI does not call it.
 **Deletes:** nothing.
 **Route:** adds `/fingerprints` to `App.tsx` inside `RequireAuth` — **approved 2026-10-08**. Also needs a nav link; today there is no shared navigation outside the deferred Dashboard sidebar, so a minimal top bar (Rooms · Fingerprints · Sign out) is part of this item.
 **Done when:** two users' fingerprints render side by side with differing cells highlighted; 375 (stacked) + 1440.
+
+**As built:** `pages/FingerprintsPage.tsx` at **`/machines`**, not `/fingerprints` as approved. The nav label stays "Fingerprints".
+- **Why the route moved.** The API mounts `/fingerprints` with no `/api` prefix (ADR 0010), and the dev proxy forwards every path starting with it to the server. A page at `/fingerprints` worked from the nav link and returned the API's JSON on reload or from a shared link. Found in a real browser, not by unit tests. `src/routes.test.ts` now reads `App.tsx` and `vite.config.ts` and fails if any page route starts with a proxied API path.
+- **Layout.** Rows are fields and columns are machines, so a difference reads across one row. On a phone each field becomes a card listing every machine. Values that differ from the first machine (the baseline) are highlighted.
+- **Comparison rules.** Migrations are compared as a set, so order alone is not a difference, and the cell names which migrations are missing or extra. A null counts as a difference and reads "not reported". The lockfile hash shows 12 characters, with the full value on hover, on keyboard focus, and always to screen readers.
+- **The project** comes from `?project=` in the URL, so a comparison can be linked. It defaults to `incidentiq` (`AGENT_PROJECT_ID` in `agent/.env.example`).
+
+**Checked:** 10 page tests and the route guard; 8 mutations caught, and putting the page back on `/fingerprints` fails the guard. Real run: two teammates PUT different fingerprints through the API, and the page, opened by direct URL, flags exactly the 3 differing fields. 1440 and 375, no overflow.
 
 ### Item 8 — Dashboard route: redirect and delete (**approved 2026-10-08**) — **DONE 2026-10-08**
 
