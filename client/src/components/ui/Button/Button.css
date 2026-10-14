@@ -101,3 +101,27 @@
     opacity: 1;
     cursor: progress;
 }
+
+/* a sheen of light sweeps across a primary button on hover, the glossy finish from the redesign prompts */
+.ui-btn--primary {
+    overflow: hidden;
+}
+
+.ui-btn--primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.38) 50%, transparent 70%);
+    transform: translateX(-120%);
+}
+
+.ui-btn--primary:hover:not(:disabled)::after {
+    transform: translateX(120%);
+    transition: transform 750ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-btn--primary:hover:not(:disabled)::after { transform: translateX(-120%); }
+}
+

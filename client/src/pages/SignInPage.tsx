@@ -53,7 +53,7 @@ export default function SignInPage() : JSX.Element {
             <LiquidBackdrop intensity="full" />
             <section className="sign-in-brand" aria-label="IncidentIOQ">
 
-                <div className="sign-in-brand__lockup brand">
+                <div className="sign-in-brand__lockup brand" data-magnetic>
                     <BrandMark size="md" />
                     <p className="sign-in-brand__name">
                         <Wordmark />

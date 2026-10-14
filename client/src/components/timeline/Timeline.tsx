@@ -77,7 +77,7 @@ export default function Timeline({
                     incoming && 'timeline__entry--incoming',
                 ].filter(Boolean).join(' ');
                 return (
-                <li key={entry.id} className={classes}>
+                <li key={entry.id} className={classes} data-spotlight>
                     <header className="timeline__meta">
                         <Badge tone="entry" value={entry.type} />
                         <span className="timeline__author">{authorLabel(entry, currentUserId)}</span>
