@@ -1,8 +1,6 @@
 /*
- * reset.css — the global baseline the new screens assume.
- * Not imported yet: it changes body margin and font, which would visibly shift the old screens
- * mid-rebuild. Item 1 (sign-in reskin) imports it in main.tsx, when visual change starts on purpose.
- * Replaces src/index.css, which nothing imports today.
+ * reset.css — the global baseline every screen assumes.
+ * Imported in main.tsx after tokens.css, since it reads the variables tokens defines.
  */
 
 *,
@@ -24,6 +22,9 @@ body {
     line-height: var(--leading-body);
     color: var(--color-text);
     background-color: var(--color-bg);
+    /* tells the browser the page is dark, so native selects, scrollbars, and checkboxes render dark too */
+    color-scheme: dark;
+    accent-color: var(--color-primary);
     -webkit-font-smoothing: antialiased;
 }
 

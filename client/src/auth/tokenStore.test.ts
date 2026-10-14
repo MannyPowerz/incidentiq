@@ -6,7 +6,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAccessToken, setAccessToken } from './tokenStore';
+import { getAccessToken, getCurrentUserId, setAccessToken } from './tokenStore';
+
+// a JWT-shaped string with the given payload; signature is junk because nothing here verifies it
+const tokenWith = (payload: object) =>
+    `h.${btoa(JSON.stringify(payload)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')}.sig`;
 
 describe('tokenStore', () => {
     it('starts empty, which is what makes a reload log you out', () => {
@@ -33,5 +37,25 @@ describe('tokenStore', () => {
         const reimported = await import('./tokenStore');
 
         expect(reimported.getAccessToken()).toBe('shared-token');
+    });
+});
+
+describe('getCurrentUserId', () => {
+    it('reads sub, which the server signs as a string, back as a number', () => {
+        setAccessToken(tokenWith({ sub: '42', org_id: 7 }));
+
+        expect(getCurrentUserId()).toBe(42);
+    });
+
+    it('is null with no token, so "You" never shows for a signed-out tab', () => {
+        expect(getCurrentUserId()).toBeNull();
+    });
+
+    it('is null for a token that does not parse, rather than throwing into a render', () => {
+        setAccessToken('not-a-jwt');
+        expect(getCurrentUserId()).toBeNull();
+
+        setAccessToken('h.%%%.sig');
+        expect(getCurrentUserId()).toBeNull();
     });
 });

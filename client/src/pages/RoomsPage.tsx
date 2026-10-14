@@ -1,196 +1,143 @@
-import { useMemo, useState, useEffect } from "react"
-import { rooms as initialRooms} from "../data/rooms"
-import type { JSX } from "react"
-import type { SortOption } from "../components/rooms/RoomsFilters"
-import type { NewRoom, RoomSeverity, RoomsStatus, Room } from "../types/room"
-import DashboardSidebar from "../components/dashboard/DashboardSidebar"
-import RoomsCard from "../components/rooms/RoomsCard"
-import RoomsFilters from "../components/rooms/RoomsFilters"
-import RoomsFooter from "../components/rooms/RoomsFooter"
-import RoomsHeader from "../components/rooms/RoomsHeader"
-import RoomsTable from "../components/rooms/RoomsTable"
-import RoomsEmptyState from "../components/rooms/RoomsEmptyState"
-import ViewRoomModal from "../components/rooms/ViewRoomModal"
-import "./RoomsPage.css"
+import { useEffect, useState } from 'react';
+import type { JSX } from 'react';
+import { Link } from 'react-router-dom';
+import { ApiError, listIncidents } from '../api';
+import type { Incident } from '../api';
+import { Badge, Button, EmptyState, ErrorState, Metric, Spinner, Table, useToast } from '../components/ui';
+import type { TableColumn } from '../components/ui';
+import CreateRoomModal from '../components/rooms/CreateRoomModal';
+import { formatRelativeTime } from '../utils/formatRelativeTime';
+import './RoomsPage.css';
 
+type LoadState =
+    | { status: 'loading' }
+    | { status: 'error'; message: string }
+    | { status: 'ready'; incidents: Incident[] };
 
-export default function RoomsPage () : JSX.Element {
+// resolved and postmortem rooms are finished; everything else still needs someone
+const isOpen = (incident: Incident) => incident.status !== 'resolved' && incident.status !== 'postmortem';
 
-    const [ roomList, setRoomList ] = useState<Room[]>(initialRooms)
+const COLUMNS: TableColumn<Incident>[] = [
+    {
+        key: 'title',
+        header: 'Room',
+        // a real link, not a clickable row: rows are not keyboard-reachable (Table.tsx)
+        render: (incident) => (
+            <Link className="rooms-page__room" to={`/rooms/${incident.id}`}>
+                <span className="rooms-page__room-title">{incident.title}</span>
+                <span className="rooms-page__room-id">#{incident.id}</span>
+            </Link>
+        ),
+    },
+    { key: 'severity', header: 'Severity', width: '7rem', render: (i) => <Badge tone="severity" value={i.severity} /> },
+    { key: 'status', header: 'Status', width: '9rem', render: (i) => <Badge tone="status" value={i.status} /> },
+    {
+        key: 'system',
+        header: 'System',
+        width: '9rem',
+        render: (i) => <span className="rooms-page__mono">{i.affected_system ?? '—'}</span>,
+    },
+    {
+        key: 'opened',
+        header: 'Opened',
+        width: '9rem',
+        render: (i) => (
+            <time className="rooms-page__muted" dateTime={i.created_at} title={new Date(i.created_at).toLocaleString()}>
+                {formatRelativeTime(i.created_at)}
+            </time>
+        ),
+    },
+];
 
-    const [ searchTerm, setSearchTerm ] = useState<string>("")
+/**
+ * RoomsPage — every incident in the caller's org, newest first (the server orders by id DESC).
+ * A created room is prepended locally from the POST response rather than refetched: the response is
+ * the stored row, so the list never shows data the database doesn't have.
+ */
+export default function RoomsPage(): JSX.Element {
+    const [state, setState] = useState<LoadState>({ status: 'loading' });
+    const [attempt, setAttempt] = useState(0);
+    const [creating, setCreating] = useState(false);
+    const toast = useToast();
 
-    const [ statusFilter, setStatusFilter ] = useState<"All" | RoomsStatus>("All")
-
-    const [ severityFilter, setSeverityFilter ] = useState<"All" | RoomSeverity>("All")
-
-    const [ sortOption, setSortOption ] = useState<SortOption>("Newest First")
-
-    const [ currentPage, setCurrentPage ] = useState<number>(1)
-
-    const [ roomToEdit, setRoomToEdit ] = useState<Room | null>(null)
-
-    const [ roomToView, setRoomToView ] = useState<Room | null>(null)
-
-    const roomsPerPage = 6
-
-    function handleCreateRooms(newRoomData: NewRoom): void {
-        const nextRoomNumber = roomList.reduce((highestNumber, room) => {
-            const roomNumber = Number(room.id.replace("ROOM-", ""))
-
-            return Number.isNaN(roomNumber) 
-                ? highestNumber
-                : Math.max(highestNumber, roomNumber)
-        }, 0) + 1
-
-        const createdRoom: Room = {
-            id: `ROOM-${String(nextRoomNumber).padStart(4, "0")}`,
-            title: newRoomData.title,
-            description: newRoomData.description,
-            severity: newRoomData.severity,
-            status: "detected",
-            assignee: newRoomData.assignee,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        }
-
-        setRoomList((currentRooms) => [
-            createdRoom,
-            ...currentRooms
-        ])
-
-        setCurrentPage(1)
-    }
-
-    function handleResolveRoom(roomId: string): void {
-        setRoomList((currentRooms) => currentRooms.map((room) => 
-            room.id === roomId 
-            ? {
-                ...room,
-                status: "resolved",
-                updatedAt: new Date(),
-        } : room,),);
-    }
-
-    function handleEditRoom(room: Room): void {
-        setRoomToEdit(room)
-    }
-
-    function handleUpdateRoom(updatedRoom: Room) : void {
-        setRoomList((currentRooms) => 
-            currentRooms.map((room) => 
-                room.id === updatedRoom.id ? updatedRoom : room,
-            ),
+    useEffect(() => {
+        // a retry or unmount mid-request must not let the older response overwrite the newer state
+        let cancelled = false;
+        listIncidents().then(
+            (incidents) => !cancelled && setState({ status: 'ready', incidents }),
+            (error) =>
+                !cancelled &&
+                setState({ status: 'error', message: error instanceof ApiError ? error.message : 'Something went wrong.' }),
         );
-        setRoomToEdit(null)
+        return () => {
+            cancelled = true;
+        };
+    }, [attempt]);
+
+    function retry() {
+        setState({ status: 'loading' });
+        setAttempt((n) => n + 1);
     }
 
-    function handleClearEditRoom() : void {
-        setRoomToEdit(null)
+    function handleCreated(incident: Incident) {
+        setState((current) =>
+            current.status === 'ready' ? { status: 'ready', incidents: [incident, ...current.incidents] } : current,
+        );
+        setCreating(false);
+        toast.show('success', `Room "${incident.title}" created`);
     }
 
-    function handleViewRoom(room: Room) : void {
-        setRoomToView(room)
-    }
-
-    function handleCloseViewRoom() : void {
-        setRoomToView(null)
-    }
-
-    const filteredRooms = useMemo(() => {
-        const normalizedSearch = searchTerm.trim().toLowerCase()
-
-        return roomList
-            .filter((room) => {
-                const matchesSearch = normalizedSearch === "" ||
-                                      room.id.toLowerCase().includes(normalizedSearch) ||
-                                      room.title.toLowerCase().includes(normalizedSearch) ||
-                                      room.assignee.toLowerCase().includes(normalizedSearch)
-
-                const matchesStatus = statusFilter === "All" || room.status === statusFilter
-
-                const matchesSeverity = severityFilter === "All" || room.severity === severityFilter
-
-                return matchesSearch && matchesStatus && matchesSeverity
-            })
-
-            .sort(( firstRoom, secondRoom) => {
-                const firstDate = firstRoom.updatedAt.getTime()
-                const secondDate = secondRoom.updatedAt.getTime()
-
-                return sortOption === "Newest First"
-                 ? secondDate - firstDate
-                 : firstDate - secondDate
-            })
-    }, [ searchTerm, statusFilter, severityFilter, sortOption, roomList ])
-
-    const totalPages = Math.ceil(
-        filteredRooms.length / roomsPerPage
-    )
-
-    const paginatedRooms = useMemo( () => {
-        const firstRoomIndex = (currentPage - 1) * roomsPerPage
-        const lastRoomIndex = firstRoomIndex + roomsPerPage
-
-        return filteredRooms.slice(firstRoomIndex, lastRoomIndex)
-    }, [ filteredRooms, currentPage])
-
-    useEffect( () => {
-        setCurrentPage(1)
-    }, [ searchTerm, statusFilter, severityFilter, sortOption ])
-
-    const startIndex = filteredRooms.length === 0 ? 0 : (currentPage - 1) * roomsPerPage + 1
-
-    const endIndex = Math.min(currentPage * roomsPerPage, filteredRooms.length,)
+    const incidents = state.status === 'ready' ? state.incidents : [];
+    const open = incidents.filter(isOpen);
 
     return (
+        <div className="rooms-page">
+            <header className="rooms-page__header">
+                <div>
+                    <p className="rooms-page__eyebrow">War room</p>
+                    <h1 className="rooms-page__title">Rooms</h1>
+                    <p className="rooms-page__subtitle">One room per incident. Newest first.</p>
+                </div>
+                <Button onClick={() => setCreating(true)}>New room</Button>
+            </header>
 
-        <div className="rooms-layout">
-            <DashboardSidebar activePage="Rooms"/>
-            <main className="rooms-page">
-                <RoomsHeader 
-                    onCreateRoom={handleCreateRooms} 
-                    roomToEdit={roomToEdit}
-                    onUpdateRoom={handleUpdateRoom}
-                    onClearEditRoom={handleClearEditRoom}
-                />
-                <RoomsCard>
-                    <RoomsFilters
-                        searchTerm={searchTerm}
-                        statusFilter={statusFilter}
-                        severityFilter={severityFilter}
-                        sortOption={sortOption}
-                        onSearchChange={setSearchTerm}
-                        onStatusChange={setStatusFilter}
-                        onSeverityChange={setSeverityFilter}
-                        onSortChange={setSortOption}
+            {state.status === 'ready' && incidents.length > 0 && (
+                <section className="rooms-page__metrics" aria-label="Summary">
+                    <Metric label="Open" value={open.length} tone={open.length > 0 ? 'warning' : 'success'} />
+                    <Metric
+                        label="P1 open"
+                        value={open.filter((i) => i.severity === 'P1').length}
+                        tone={open.some((i) => i.severity === 'P1') ? 'danger' : 'neutral'}
                     />
-                    
-                    {filteredRooms.length > 0 ? (
-                        <RoomsTable 
-                            rooms={paginatedRooms} 
-                            onEditRoom={handleEditRoom}
-                            onResolveRoom={handleResolveRoom}
-                            onViewRoom={handleViewRoom}
+                    <Metric label="Resolved" value={incidents.length - open.length} tone="success" />
+                </section>
+            )}
+
+            {state.status === 'loading' && (
+                <div className="rooms-page__loading">
+                    <Spinner label="Loading rooms" />
+                </div>
+            )}
+
+            {state.status === 'error' && <ErrorState title="Couldn't load rooms" body={state.message} retry={retry} />}
+
+            {state.status === 'ready' && (
+                <Table
+                    caption="Rooms"
+                    columns={COLUMNS}
+                    rows={incidents}
+                    rowKey={(i) => i.id}
+                    empty={
+                        <EmptyState
+                            title="No rooms yet"
+                            body="Open a room when something breaks, so everyone works from the same timeline."
+                            action={<Button onClick={() => setCreating(true)}>Create a room</Button>}
                         />
-                    ) : (
-                        <RoomsEmptyState />
-                    )}
+                    }
+                />
+            )}
 
-                    <RoomsFooter 
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        startIndex={startIndex}
-                        endIndex={endIndex}
-                        totalRooms={filteredRooms.length}
-                        onPageChange={setCurrentPage}
-                    />
-                </RoomsCard>
-            </main>
-            <ViewRoomModal
-                room={roomToView}
-                onClose={handleCloseViewRoom}
-            />
+            <CreateRoomModal open={creating} onClose={() => setCreating(false)} onCreated={handleCreated} />
         </div>
-    )
+    );
 }

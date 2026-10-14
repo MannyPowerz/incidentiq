@@ -43,7 +43,7 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 - **Socket contract corrected** — see `api-layer.md` §3, socket.ts. History arrives over the socket with a required ack, not over HTTP.
 **Why first:** every later item imports from here. Doing it inside Item 1 means Item 1 ships half a design system.
 
-### Item 1 — Sign-in reskin
+### Item 1 — Sign-in reskin — **DONE 2026-10-08**
 
 **Scope:** import `styles/reset.css` in `main.tsx` (deferred from Item 0 — this is the first item allowed to change the look). Restyle `SignInPage` and `AuthForm` on tokens and primitives. **Logic untouched** — `AuthForm.tsx` keeps its state, validation, and `login`/`register` calls exactly as merged in #34.
 **Endpoint:** auth (real, already wired).
@@ -51,7 +51,13 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 **Done when:** the 31 auth tests still pass unchanged; zero raw hex in the two CSS files; checked at 375 and 1440.
 **Why here:** lowest risk, first screen anyone sees, proves the tokens on a real page before the bigger rebuilds.
 
-### Item 2 — Rooms list + create room *(schedule.md: "Wire rooms list")*
+### Item 1b — Dark premium redesign — **DONE 2026-10-08**
+
+**Scope:** re-point the semantic tokens to a dark palette (design-system.md §5), add the `.ui-glass` floating-layer recipe (§2.7), restyle the primitives on it, add TopBar / LiveDot / Presence / Metric for the cockpit screens, and give sign-in its mesh-gradient backdrop and a pointer-tilt hero shape. `src/auth/` untouched.
+**Done when:** every test passes, tsc stays at the pre-existing room-file errors, `tokens.test.ts` holds every text pair at AA, and a deliberate mutation fails each new suite. Checked at 375 and 1440.
+**Why before Item 2:** Items 2–7 build on these tokens and primitives. Restyling after them would mean touching every screen twice.
+
+### Item 2 — Rooms list + create room *(schedule.md: "Wire rooms list")* — **DONE 2026-10-08**
 
 **Scope:** new `pages/RoomsPage.tsx` reading `listIncidents()`; a list of rooms as a `Table` (cards on phone) showing title, severity `Badge`, status `Badge`, `affected_system`, `created_at` (via the existing `utils/formatRelativeTime.ts`); a `CreateRoomModal` posting `createIncident()` with fields **title, severity (Select P1–P4), affected_system (Select)**. The `affected_system` options are the keys of `SYSTEM_TO_PATHS` in `server/src/relevance/systemPaths.ts` — `auth, timeline, incidents, fingerprints, relevance, sockets, postgres, database, client, server` — copied into the client as a constant with a comment pointing at the source. Free text is what makes relevance score nobody. Loading, empty ("No rooms yet — create one"), error states. New room appears in the list without a refresh.
 **Not in scope** (schedule.md scope cut): filters, search, the "view room" modal. Filters that exist today are mock-only and are deleted, not ported.
@@ -60,7 +66,7 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 **tsc:** removes 4 of the 8 errors (`CreateRoomModal.tsx` ×2, `RoomActions.tsx` ×2) by deleting the files.
 **Done when:** create a room in the UI → it is in `GET /incidents` → it is in the list without refresh; all four states render; 375 + 1440.
 
-### Item 3 — Room details: header + timeline *(schedule.md: "Wire room details")*
+### Item 3 — Room details: header + timeline *(schedule.md: "Wire room details")* — **DONE 2026-10-08**
 
 **Scope:** new `pages/RoomDetailsPage.tsx` reading `getIncident(id)` and `listTimeline(id)`. Header: title, severity, status, affected_system, created_at, and a **Resolve** button calling `resolveIncident(id)` (the only transition the server accepts today — `resolve.ts` returns `400 unsupported_status` for any other status). Timeline: entries oldest-first **sorted by `entry.id` ascending** (ADR 0001 — never by arrival time), each with its type colour rule, author (see note), relative time, and `body` rendered per type. Post-entry form: `Select` type (observation / action / finding — `ClientPostableTypes`), `Textarea` body. Loading, empty ("No entries yet"), error.
 **Author display note:** entries carry `author_id: number | null`, and there is no `GET /users` endpoint. Render `author_id === null` as "System" / "AI draft" by type, and a human author as "You" when `author_id` matches the token's `sub`, else `User #<id>`. A name lookup is a backend item, not a UI one — recorded here so it is not forgotten. [uncertain: whether `GET /incidents/:id` could be extended to include a `members` list; that is a server question.]
@@ -69,12 +75,29 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 **tsc:** removes the last 4 errors (`RoomOverview.tsx` ×4). After this item `tsc` is clean for the first time.
 **Done when:** open a room → see its timeline → post an entry → it appears → refresh → same order; resolve works; all four states; 375 + 1440.
 
-### Item 4 — Live updates *(schedule.md: "Wire live updates")*
+**Items 2, 3 and 8 shipped together, and why.** The old room-details page imported `DashboardSidebar` and `data/rooms.ts`, so deleting either (Items 8 and 2) broke it. It also already showed "Room not found" for every real numeric id. Keeping a working screen on every route meant one PR with three commits, not three PRs. What else changed from the plan:
+- **Shared shell.** `components/layout/AppShell.tsx` puts the glass `TopBar` (Rooms · Sign out) around every signed-in page as one layout route in `App.tsx`. Item 7's top bar therefore already exists; that item adds one link.
+- **Sign out.** It needed `logout()` in `client/src/auth/api.ts` (server `POST /auth/logout` existed). That is a new function, and no existing auth logic changed. `getCurrentUserId()` in `tokenStore.ts` reads `sub` for the "You" label, for display only.
+- **Human entry body is `{ text }`.** The server leaves non-AI bodies undesigned (`timeline/types.ts`: "a generic object until their bodies are designed"). The client posts `{ text }` and renders any other shape as raw JSON, so nothing is hidden. This should be confirmed as the contract (it is a data-shape decision). The socket's `sending-message` schema still expects the AI-draft shape for human types, so it must be reconciled before Item 4 posts over the socket.
+- **Create room requires `affected_system`** even though the server makes it optional, because relevance scores nobody without it.
+- **`/` now redirects to `/rooms`.** The guard sends anyone signed out on to sign-in.
+- `tsc` is clean, and `utils/formatDateTime.ts` is deleted (unused).
+
+### Item 4 — Live updates *(schedule.md: "Wire live updates")* — **DONE 2026-10-11**
 
 **Scope:** `client/src/api/socket.ts` (see `api-layer.md` §4). On entering a room: connect with the in-memory token, `join-room` with `{ incidentId, sinceId: <highest id already loaded> }`, append `new-message` entries **inserted by id, not pushed** (ordering invariant), apply `confirm-draft` / `reject-draft` in place. Leave the room on unmount. Reconnect → re-join with the new `sinceId` so the gap is filled from `GET …/timeline?since=`. One polite live-region announcement per arrival.
 **Endpoint:** Socket.IO events listed above; `GET …/timeline?since=` for gap-fill.
 **Deletes:** nothing — Item 3's page gains a hook.
 **Done when:** two browsers on the same room; post in one, appears in the other without refresh; kill and restore the server; the client catches up without duplicates.
+
+**As built:** `client/src/hooks/useRoomLive.ts`, used by `RoomDetailsPage`.
+- **Receive-only.** Posting stays on HTTP, whose route already writes and then broadcasts `new-message`, so the client never uses `sending-message` (see ADR 0018, proposed).
+- **Reconnect and gap fill.** Every socket.io `connect` (the first one and each reconnect) re-joins with the highest id held, so the server sends only the gap. Arrivals, history, and confirms go through `mergeEntries`; rejects remove by id.
+- **Expired token.** The server checks the token only at handshake, so a tab idle past 15 minutes gets its reconnect refused. The hook refreshes once and reconnects; a second refusal shows Disconnected rather than looping.
+- **UI.** A `LiveDot` in the room header shows Connecting / Live / Disconnected. One polite live region announces a teammate's entry, but never your own echo.
+- **Not built.** Presence chips: the server emits only a `User-joined` message string, with no member list to render. That needs a server event first.
+
+**Checked:** 12 hook tests plus 2 page tests against a fake socket; 9 of 9 mutations caught. A two-browser run against the local database: post in A appears in B; then kill the API server, keep B blocked while A reconnects and posts twice, unblock B, and B fills the gap; identical timelines, no duplicates. The run could not capture B's join payload (it went over HTTP polling), so `sinceId` on rejoin is proven by the unit test, not the browser run.
 
 ### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")*
 
@@ -98,7 +121,7 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 **Route:** adds `/fingerprints` to `App.tsx` inside `RequireAuth` — **approved 2026-10-08**. Also needs a nav link; today there is no shared navigation outside the deferred Dashboard sidebar, so a minimal top bar (Rooms · Fingerprints · Sign out) is part of this item.
 **Done when:** two users' fingerprints render side by side with differing cells highlighted; 375 (stacked) + 1440.
 
-### Item 8 — Dashboard route: redirect and delete (**approved 2026-10-08**)
+### Item 8 — Dashboard route: redirect and delete (**approved 2026-10-08**) — **DONE 2026-10-08**
 
 `/dashboard` currently renders the deferred `DashboardPage`, which `schedule.md` cut from Minimum. **Decision: redirect `/dashboard` → `/rooms`** and delete `pages/DashboardPage.*` + `components/dashboard/*` (DashboardHeader, DashboardSidebar, QuickActions, RecentIncidents, StatisticsCard, StatisticsGrid + CSS). A route that shows "Hello John" over mock stats on demo day is worse than no route. Deleting `DashboardSidebar.tsx` also removes one rename occurrence (Item 9). Can be folded into Item 2's PR since both touch `App.tsx`.
 **Done when:** `/dashboard` lands on `/rooms`; `components/dashboard/` is gone; nothing imports it.

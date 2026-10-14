@@ -75,7 +75,7 @@ export default function Modal({ open, onClose, title, size = 'md', children }: M
             <div className="ui-modal__backdrop" onClick={onClose} aria-hidden="true" />
             <div
                 ref={panelRef}
-                className={`ui-modal__panel ui-modal__panel--${size}`}
+                className={`ui-modal__panel ui-modal__panel--${size} ui-glass`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}

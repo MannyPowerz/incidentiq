@@ -1,46 +1,101 @@
-.rooms-layout {
-  display: flex;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-
-  background-color: #f8fafc;
-}
-
 .rooms-page {
-  flex: 1;
-  min-width: 0;
-  height: 100vh;
-
-  padding: 2rem;
-  box-sizing: border-box;
-
-  overflow-x: hidden;
-  overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
 }
 
-@media (max-width: 1100px) {
-  .rooms-page {
-    padding: 1.5rem;
-  }
+.rooms-page__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
 }
 
-@media (max-width: 800px) {
-  .rooms-page {
-    padding: 1.25rem;
-  }
+.rooms-page__eyebrow {
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-primary);
 }
 
-@media (max-width: 600px) {
-  .rooms-layout {
-    display: block;
-    height: auto;
-    overflow: visible;
-  }
+.rooms-page__title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: var(--leading-tight);
+}
 
-  .rooms-page {
-    height: auto;
-    padding: 1rem;
-    overflow: visible;
-  }
+.rooms-page__subtitle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-2);
+}
+
+.rooms-page__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.rooms-page__loading {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-12) 0;
+}
+
+.rooms-page__room {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.rooms-page__room-title {
+    font-weight: var(--weight-medium);
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.rooms-page__room:hover .rooms-page__room-title {
+    color: var(--color-primary-strong);
+}
+
+.rooms-page__room:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.rooms-page__room-id,
+.rooms-page__mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-3);
+}
+
+.rooms-page__mono {
+    color: var(--color-text-2);
+}
+
+.rooms-page__muted {
+    color: var(--color-text-3);
+    white-space: nowrap;
+}
+
+/* phone: the room cell is the card's heading, so it drops its "Room" label and spans the card */
+@media (max-width: 767px) {
+    .rooms-page__metrics {
+        gap: var(--space-2);
+    }
+
+    .rooms-page td[data-label='Room'] {
+        display: block;
+    }
+
+    .rooms-page td[data-label='Room']::before {
+        display: none;
+    }
 }
