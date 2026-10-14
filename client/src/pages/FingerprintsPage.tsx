@@ -3,8 +3,8 @@ import type { FormEvent, JSX, ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ApiError, listFingerprints } from '../api';
 import type { FingerprintWithPublisher } from '../api';
-import { Button, EmptyState, ErrorState, Input, Spinner, Table } from '../components/ui';
-import type { TableColumn } from '../components/ui';
+import { Button, EmptyState, ErrorState, Input, LiveDot, Spinner, Table } from '../components/ui';
+import type { LiveState, TableColumn } from '../components/ui';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import './FingerprintsPage.css';
 
@@ -24,6 +24,20 @@ type Field = {
     value: (fp: FingerprintWithPublisher) => string | null;
     render: (fp: FingerprintWithPublisher, baseline: FingerprintWithPublisher) => ReactNode;
 };
+
+// a fingerprint older than a day may describe a machine that has since changed
+const FRESH_FOR_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How much to trust this machine's row: missing data first (a null field can't be compared), then age.
+ * The agent republishes when the environment changes, so "stale" means "not seen lately", not "wrong".
+ */
+export function freshness(fp: FingerprintWithPublisher, now = Date.now()): { state: LiveState; label: string } {
+    const missing = fp.node_version === null || fp.os_arch === null || fp.lockfile_hash === null || fp.applied_migrations === null;
+    if (missing) return { state: 'failing', label: 'Missing data' };
+    if (now - new Date(fp.updated_at).getTime() < FRESH_FOR_MS) return { state: 'live', label: 'Fresh' };
+    return { state: 'idle', label: 'Stale' };
+}
 
 const sortedMigrations = (fp: FingerprintWithPublisher) => [...(fp.applied_migrations ?? [])].sort();
 
@@ -162,11 +176,17 @@ function Comparison({ project, fingerprints }: { project: string; fingerprints: 
             </p>
             <Table caption={`Fingerprints for ${project}`} columns={columns} rows={FIELDS} rowKey={(f) => f.key} empty={null} />
             <p className="fp-published">
-                {fingerprints.map((fp) => (
-                    <span key={fp.id}>
-                        {fp.published_by} published {formatRelativeTime(fp.updated_at)}
-                    </span>
-                ))}
+                {fingerprints.map((fp) => {
+                    const { state, label } = freshness(fp);
+                    return (
+                        <span key={fp.id} className="fp-published__machine">
+                            <LiveDot state={state} label={label} />
+                            <span>
+                                {fp.published_by} published {formatRelativeTime(fp.updated_at)}
+                            </span>
+                        </span>
+                    );
+                })}
             </p>
         </section>
     );

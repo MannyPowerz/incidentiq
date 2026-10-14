@@ -163,6 +163,43 @@ describe('RoomDetailsPage', () => {
         expect((screen.getByLabelText('What happened?') as HTMLTextAreaElement).value).toBe('');
     });
 
+    it('shows the post as sending while in flight, then swaps it for the stored entry', async () => {
+        vi.mocked(getIncident).mockResolvedValue(incident());
+        vi.mocked(listTimeline).mockResolvedValue([entry(1)]);
+        let finish: (e: TimelineEntry) => void = () => {};
+        vi.mocked(postTimelineEntry).mockReturnValue(new Promise<TimelineEntry>((resolve) => (finish = resolve)));
+        renderRoom();
+
+        user.type(await screen.findByLabelText('What happened?'), 'On my way');
+        user.click(screen.getByRole('button', { name: 'Post to timeline' }));
+
+        const sending = await waitFor(() => {
+            const li = document.querySelector('.timeline__entry--sending');
+            expect(li).not.toBeNull();
+            return li!;
+        });
+        expect(sending.textContent).toContain('On my way');
+
+        await act(async () => finish(entry(2, { body: { text: 'On my way' } })));
+
+        expect(document.querySelector('.timeline__entry--sending')).toBeNull();
+        expect(timelineTexts()).toEqual(['entry 1', 'On my way']);
+    });
+
+    it('drops the sending row when the post fails', async () => {
+        vi.mocked(getIncident).mockResolvedValue(incident());
+        vi.mocked(listTimeline).mockResolvedValue([entry(1)]);
+        vi.mocked(postTimelineEntry).mockRejectedValue(new ApiError(500, 'unknown', 'Database unavailable'));
+        renderRoom();
+
+        user.type(await screen.findByLabelText('What happened?'), 'Lost');
+        user.click(screen.getByRole('button', { name: 'Post to timeline' }));
+
+        expect(await screen.findByText('Database unavailable')).toBeTruthy();
+        expect(document.querySelector('.timeline__entry--sending')).toBeNull();
+        expect(timelineTexts()).toEqual(['entry 1']);
+    });
+
     it('does not post an empty entry', async () => {
         vi.mocked(getIncident).mockResolvedValue(incident());
         vi.mocked(listTimeline).mockResolvedValue([]);
