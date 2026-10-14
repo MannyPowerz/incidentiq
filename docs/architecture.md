@@ -1,4 +1,4 @@
-# Architecture — IncidentIQ
+# Architecture — IncidentIOQ
 
 Source: System_Design.pdf
 

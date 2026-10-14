@@ -11,7 +11,7 @@ The agent has no browser interface at all. When a signature fires, the developer
 sees a box drawn in their own terminal and answers a single prompt:
 
 ```
-┌─ IncidentIQ ── VPN_LOOPBACK ── critical ────────────────────────┐
+┌─ IncidentIOQ ── VPN_LOOPBACK ── critical ───────────────────────┐
 │  Port 5173 is bound but not responding, and a tunnel interface  │
 │  (utun3) is active. A VPN is likely capturing loopback traffic. │
 │                                                                   │

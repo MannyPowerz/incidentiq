@@ -1,7 +1,7 @@
-# CLAUDE.md — IncidentIQ (shared, checked in)
+# CLAUDE.md — IncidentIOQ (shared, checked in)
 
 Restored 2026-10-08 from `e7194a4` (Jul 20), which sat on an unmerged branch and never reached `main`,
-then updated to match the repo. The project is being renamed (docs/ui-roadmap.md, Item 9); names here change when that lands.
+then updated to match the repo. Renamed IncidentIQ → IncidentIOQ on Oct 14 (docs/ui-roadmap.md, Item 9). The GitHub repo, the `incidentiq` project_id, and the `incidentiq-test-db` container keep the old name on purpose.
 
 ## What this is
 
