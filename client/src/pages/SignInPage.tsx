@@ -45,7 +45,7 @@ export default function SignInPage() : JSX.Element {
 
     return (
         <main className="sign-in-page">
-            <section className="sign-in-brand" aria-label="IncidentIQ">
+            <section className="sign-in-brand" aria-label="IncidentIOQ">
                 <div className="sign-in-brand__mesh" aria-hidden="true">
                     <span className="sign-in-brand__blob sign-in-brand__blob--1" />
                     <span className="sign-in-brand__blob sign-in-brand__blob--2" />
@@ -54,7 +54,7 @@ export default function SignInPage() : JSX.Element {
 
                 <div className="sign-in-brand__lockup">
                     <span className="sign-in-brand__mark" aria-hidden="true" />
-                    <p className="sign-in-brand__name">IncidentIQ</p>
+                    <p className="sign-in-brand__name">IncidentIOQ</p>
                 </div>
 
                 <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>
