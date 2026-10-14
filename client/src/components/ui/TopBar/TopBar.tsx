@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { JSX, ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import BrandMark, { Wordmark } from '../BrandMark/BrandMark';
 import './TopBar.css';
 
 export type TopBarLink = { to: string; label: string };
@@ -37,9 +38,9 @@ export default function TopBar({ links, right, brandTo = '/rooms' }: TopBarProps
     return (
         <header className="ui-topbar ui-glass">
             <div className="ui-topbar__inner">
-                <NavLink to={brandTo} className="ui-topbar__brand" aria-label="IncidentIQ home">
-                    <span className="ui-topbar__mark" aria-hidden="true" />
-                    <span className="ui-topbar__name">IncidentIQ</span>
+                <NavLink to={brandTo} className="ui-topbar__brand" aria-label="IncidentIOQ home">
+                    <BrandMark size="sm" />
+                    <Wordmark className="ui-topbar__name" />
                 </NavLink>
 
                 <nav ref={navRef} className="ui-topbar__nav" aria-label="Primary">

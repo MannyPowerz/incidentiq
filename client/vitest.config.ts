@@ -13,6 +13,6 @@ export default defineConfig({
         setupFiles: ['./src/test/setup.ts'],
         include: ['src/**/*.test.{ts,tsx}'],
         // Vitest blanks CSS by default; tokens.test.ts reads tokens.css?raw to check contrast
-        css: { include: [/tokens\.css/] }
+        css: { include: [/tokens\.css/, /utilities\.css/] }
     }
 });

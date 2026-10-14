@@ -135,11 +135,24 @@ describe.each([
         expect(ratio(rgb('--color-text-2'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    // page titles and subtitles sit straight on the ambient mesh, with no card behind them
-    it.each(MESH)('muted text reads over the ambient %s blob at its peak', (mesh) => {
-        const alpha = Number(resolve(palette, '--ambient-opacity'));
-        expect(alpha).toBeGreaterThan(0);
-        expect(ratio(rgb('--color-text-3'), over(rgb(mesh), alpha, rgb('--color-bg')))).toBeGreaterThanOrEqual(AA_TEXT);
+    // one liquid-glass droplet at its brightest point: the tint over the mesh color, the glossy highlight over that
+    const droplet = (mesh: string): RGB => {
+        const [tint, tintA] = rgbaToRgbA(resolve(palette, '--liquid-tint'));
+        const [shine, shineA] = rgbaToRgbA(resolve(palette, '--liquid-highlight'));
+        return over(shine, shineA, over(tint, tintA, rgb(mesh)));
+    };
+    const backdropAt = (mesh: string, opacityToken: string): RGB =>
+        over(droplet(mesh), Number(resolve(palette, opacityToken)), rgb('--color-bg'));
+
+    // app pages: subtle backdrop, and page text down to the muted tone sits straight on it
+    it.each(MESH)('muted text reads over the subtle backdrop at a %s droplet highlight', (mesh) => {
+        expect(ratio(rgb('--color-text-3'), backdropAt(mesh, '--ambient-opacity'))).toBeGreaterThanOrEqual(AA_TEXT);
+    });
+
+    // landing and sign-in panel: bold backdrop, so text on it must be secondary or stronger
+    it.each(MESH)('secondary text reads over the full backdrop at a %s droplet highlight', (mesh) => {
+        expect(ratio(rgb('--color-text-2'), backdropAt(mesh, '--backdrop-full-opacity'))).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(ratio(rgb('--color-text'), backdropAt(mesh, '--backdrop-full-opacity'))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 });
 

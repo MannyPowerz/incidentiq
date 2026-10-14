@@ -64,3 +64,45 @@
     color: var(--color-primary-strong);
 }
 
+/*
+ * Scroll motion for the app pages, with no JavaScript. Each element's animation is driven by its
+ * own position in the viewport (a view timeline), so it plays as you scroll down and reverses as
+ * you scroll back up: rows and cards rise in from below, and tuck slightly as they slide under the
+ * glass top bar. Guarded twice: browsers without scroll timelines show everything still, and
+ * reduced motion turns it off. routes.test.ts-style check: scroll-motion.test.ts keeps both guards.
+ */
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        /* the table as a whole, not its rows: .ui-table-wrap scrolls sideways for wide tables, which makes it
+           its own scroll container, and a row's view timeline would then track the wrapper instead of the page */
+        .ui-table-wrap,
+        .timeline__entry:not(.timeline__entry--new):not(.timeline__entry--sending),
+        .ui-metric,
+        .ui-card,
+        .fp-published__machine,
+        .room-log {
+            animation: scroll-flow linear both;
+            animation-timeline: view();
+            animation-range: cover 0% cover 100%;
+        }
+
+        /* the top bar firms up once content scrolls under it, and clears again at the top */
+        .ui-topbar {
+            animation: topbar-firm linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 140px;
+        }
+    }
+}
+
+@keyframes scroll-flow {
+    0% { opacity: 0; transform: translateY(24px) scale(0.98); }
+    14% { opacity: 1; transform: none; }
+    86% { opacity: 1; transform: none; }
+    100% { opacity: 0.45; transform: translateY(-10px) scale(0.99); }
+}
+
+@keyframes topbar-firm {
+    to { box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-3); }
+}
+
