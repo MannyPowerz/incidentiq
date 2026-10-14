@@ -4,6 +4,7 @@ import { ApiError, CLIENT_POSTABLE_TYPES, postTimelineEntry } from '../../api';
 import type { ClientPostableType, TimelineEntry } from '../../api';
 import { Button, Select, Textarea } from '../ui';
 import type { PendingEntry } from './Timeline';
+import type { LogEvent } from '../../hooks/useRoomLog';
 import './EntryComposer.css';
 
 type EntryComposerProps = {
@@ -12,6 +13,8 @@ type EntryComposerProps = {
     onPosted: (entry: TimelineEntry) => void;
     // what is being sent right now, so the timeline can show it as provisional; null once settled
     onSendingChange?: (pending: PendingEntry | null) => void;
+    // for the activity log: sent, saved, or failed
+    onEvent?: (event: LogEvent) => void;
 };
 
 const TYPE_LABEL: Record<ClientPostableType, string> = {
@@ -20,7 +23,7 @@ const TYPE_LABEL: Record<ClientPostableType, string> = {
     finding: 'Finding — something I learned',
 };
 
-export default function EntryComposer({ incidentId, onPosted, onSendingChange }: EntryComposerProps): JSX.Element {
+export default function EntryComposer({ incidentId, onPosted, onSendingChange, onEvent }: EntryComposerProps): JSX.Element {
     const [type, setType] = useState<ClientPostableType>('observation');
     const [text, setText] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -36,11 +39,16 @@ export default function EntryComposer({ incidentId, onPosted, onSendingChange }:
         setPosting(true);
         setError(null);
         onSendingChange?.({ type, text: trimmed });
+        onEvent?.({ source: 'room', level: 'info', message: `Sending your ${type}` });
         try {
-            onPosted(await postTimelineEntry(incidentId, { type, body: { text: trimmed } }));
+            const entry = await postTimelineEntry(incidentId, { type, body: { text: trimmed } });
+            onPosted(entry);
+            onEvent?.({ source: 'room', level: 'ok', message: `Your ${type} saved as #${entry.id}` });
             setText('');
         } catch (err) {
-            setError(err instanceof ApiError ? err.message : 'Could not post. Try again.');
+            const message = err instanceof ApiError ? err.message : 'Could not post. Try again.';
+            setError(message);
+            onEvent?.({ source: 'room', level: 'error', message: `Post failed: ${message}` });
         } finally {
             // same tick as onPosted, so the provisional row and the stored entry swap in one render
             onSendingChange?.(null);
