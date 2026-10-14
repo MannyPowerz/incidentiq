@@ -88,6 +88,12 @@ describe('Input', () => {
         expect(document.getElementById(describedBy)?.textContent).toBe('At least 8 characters');
     });
 
+    it('renders a trailing control inside the field without breaking the label link', () => {
+        render(<Input label="Password" trailing={<button>Show</button>} />);
+        expect(screen.getByLabelText('Password').tagName).toBe('INPUT');
+        expect(screen.getByRole('button', { name: 'Show' }).closest('.ui-field__trailing')).toBeTruthy();
+    });
+
     it('gives each instance a distinct id', () => {
         render(
             <>
