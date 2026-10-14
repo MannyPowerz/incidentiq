@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { JSX } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../../auth/api';
 import { Button, ThemeToggle, TopBar } from '../ui';
 import type { TopBarLink } from '../ui';
@@ -18,6 +18,7 @@ const LINKS: TopBarLink[] = [
  */
 export default function AppShell(): JSX.Element {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const [signingOut, setSigningOut] = useState(false);
 
     async function handleSignOut() {
@@ -45,7 +46,10 @@ export default function AppShell(): JSX.Element {
                 }
             />
             <main id="main" className="app-shell__main" tabIndex={-1}>
-                <Outlet />
+                {/* keyed by path, so each page mounts fresh and plays the enter transition */}
+                <div key={pathname} className="app-shell__page">
+                    <Outlet />
+                </div>
             </main>
         </div>
     );
