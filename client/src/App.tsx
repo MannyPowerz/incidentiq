@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { Navigate, Route, Routes } from "react-router-dom"
 import RequireAuth from "./auth/RequireAuth";
 import AppShell from "./components/layout/AppShell";
+import HomeGate from "./pages/HomeGate";
 import SignInPage from "./pages/SignInPage";
 import RoomsPage from "./pages/RoomsPage";
 import RoomDetailsPage from "./pages/RoomDetailsPage";
@@ -10,8 +11,8 @@ import FingerprintsPage from "./pages/FingerprintsPage";
 export default function App() : JSX.Element {
   return (
     <Routes>
-      {/* the guard decides: a live session lands on rooms, anyone else is sent to sign-in */}
-      <Route path="/" element={<Navigate to="/rooms" replace />} />
+      {/* signed in: straight to rooms. Anyone else: the landing page (lazy, with Motion) */}
+      <Route path="/" element={<HomeGate />} />
       {/* TODO: decision — /signin stays reachable while signed in. Redirecting to /rooms is a one-line
           guard in reverse; not in the done-criteria, so left for later. */}
       <Route path="/signin" element={<SignInPage />} />

@@ -200,6 +200,26 @@ describe('RoomDetailsPage', () => {
         expect(timelineTexts()).toEqual(['entry 1']);
     });
 
+    it('streams your post into the activity log, and a failure as an error', async () => {
+        vi.mocked(getIncident).mockResolvedValue(incident());
+        vi.mocked(listTimeline).mockResolvedValue([entry(1)]);
+        vi.mocked(postTimelineEntry)
+            .mockResolvedValueOnce(entry(2, { type: 'action', body: { text: 'ok' } }))
+            .mockRejectedValueOnce(new ApiError(500, 'unknown', 'Database unavailable'));
+        renderRoom();
+        const logLines = () => [...screen.getByRole('log').querySelectorAll('.room-log__message')].map((el) => el.textContent);
+
+        user.selectOptions(await screen.findByLabelText('Entry type'), 'action');
+        user.type(screen.getByLabelText('What happened?'), 'Restarted it');
+        user.click(screen.getByRole('button', { name: 'Post to timeline' }));
+        await waitFor(() => expect(logLines()).toContain('Your action saved as #2'));
+
+        user.type(screen.getByLabelText('What happened?'), 'Again');
+        user.click(screen.getByRole('button', { name: 'Post to timeline' }));
+        await waitFor(() => expect(logLines()).toContain('Post failed: Database unavailable'));
+        expect(logLines()).toContain('Sending your action');
+    });
+
     it('does not post an empty entry', async () => {
         vi.mocked(getIncident).mockResolvedValue(incident());
         vi.mocked(listTimeline).mockResolvedValue([]);
@@ -312,6 +332,19 @@ describe('RoomDetailsPage', () => {
 
             expect(screen.getByText('Paste a log or scanner output first')).toBeTruthy();
             expect(requestAiDraft).not.toHaveBeenCalled();
+        });
+
+        it('logs how long a draft took, and that it waits for a human', async () => {
+            await open([]);
+            vi.mocked(requestAiDraft).mockResolvedValue(draft(1));
+
+            user.type(screen.getByLabelText('Output to explain'), 'line one\nline two');
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+
+            await screen.findByText('Raise the keepalive');
+            const messages = [...screen.getByRole('log').querySelectorAll('.room-log__message')].map((el) => el.textContent);
+            expect(messages).toContain('Asking the AI to explain 2 line(s) of log output');
+            expect(messages.some((m) => /^Draft #1 ready in \d+\.\ds, waiting for a human to confirm$/.test(m ?? ''))).toBe(true);
         });
 
         it('says the provider did not answer on a 504 and keeps the paste for a retry', async () => {

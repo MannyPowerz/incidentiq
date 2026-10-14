@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { JSX } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { logout } from '../../auth/api';
-import { Button, TopBar } from '../ui';
+import { Button, ThemeToggle, TopBar } from '../ui';
 import type { TopBarLink } from '../ui';
 import './AppShell.css';
 
@@ -39,9 +39,12 @@ export default function AppShell(): JSX.Element {
             <TopBar
                 links={LINKS}
                 right={
-                    <Button variant="ghost" size="sm" loading={signingOut} onClick={handleSignOut}>
-                        Sign out
-                    </Button>
+                    <>
+                        <ThemeToggle />
+                        <Button variant="ghost" size="sm" loading={signingOut} onClick={handleSignOut}>
+                            Sign out
+                        </Button>
+                    </>
                 }
             />
             <main id="main" className="app-shell__main" tabIndex={-1}>

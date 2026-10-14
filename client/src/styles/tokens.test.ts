@@ -1,11 +1,11 @@
 /**
- * tokens.test.ts — "contrast is not optional," enforced.
+ * tokens.test.ts — "contrast is not optional," enforced, for both themes.
  *
- * Reads tokens.css off disk, resolves every semantic alias down to its hex, and asserts WCAG AA for
- * each text/background pair a screen can produce. Changing a color in tokens.css is allowed; making
- * one unreadable is not, and this is what says so. The last case composites the glass tint over the
- * brightest mesh color, because a floating layer has to be checked against the busiest background it
- * can land on, not a convenient one.
+ * Reads tokens.css, builds each theme's palette (dark is the base :root block; light is the base
+ * with the :root[data-theme="light"] block applied on top), resolves every semantic alias to its
+ * color, and holds each text/background pair a screen can produce at WCAG AA. Changing a color is
+ * allowed; making one unreadable in either theme is not. Glass and the ambient mesh are checked
+ * against their busiest backgrounds, not a convenient one.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -13,17 +13,32 @@ import { describe, it, expect } from 'vitest';
 import css from './tokens.css?raw';
 
 type RGB = [number, number, number];
+type Palette = Map<string, string>;
 
-const raw = new Map<string, string>();
-for (const m of css.matchAll(/(--[a-z0-9-]+):\s*([^;]+);/g)) raw.set(m[1]!, m[2]!.trim());
+// the declarations inside the block that opens at `selector {`, up to its closing brace
+function block(selector: string): string {
+    const start = css.indexOf(`${selector} {`);
+    if (start === -1) throw new Error(`no ${selector} block in tokens.css`);
+    const open = css.indexOf('{', start);
+    return css.slice(open + 1, css.indexOf('\n}', open));
+}
 
-function resolveToken(name: string, depth = 0): string {
-    const v = raw.get(name);
+function declarations(text: string): Palette {
+    const map: Palette = new Map();
+    for (const m of text.matchAll(/(--[a-z0-9-]+):\s*([^;]+);/g)) map.set(m[1]!, m[2]!.trim());
+    return map;
+}
+
+const dark = declarations(block(':root'));
+const light = new Map([...dark, ...declarations(block(':root[data-theme="light"]'))]);
+
+function resolve(palette: Palette, name: string, depth = 0): string {
+    const v = palette.get(name);
     if (!v) throw new Error(`token ${name} not found`);
     const ref = v.match(/^var\((--[a-z0-9-]+)\)$/);
     if (ref) {
         if (depth > 5) throw new Error(`alias loop at ${name}`);
-        return resolveToken(ref[1]!, depth + 1);
+        return resolve(palette, ref[1]!, depth + 1);
     }
     return v;
 }
@@ -52,8 +67,6 @@ function ratio(a: RGB, b: RGB): number {
     return (l1 + 0.05) / (l2 + 0.05);
 }
 
-const rgb = (token: string): RGB => hexToRgb(resolveToken(token));
-
 // alpha-composites `top` (with alpha) over `under`
 function over(top: RGB, alpha: number, under: RGB): RGB {
     return top.map((c, i) => Math.round(c * alpha + under[i]! * (1 - alpha))) as RGB;
@@ -61,34 +74,40 @@ function over(top: RGB, alpha: number, under: RGB): RGB {
 
 const AA_TEXT = 4.5;
 const AA_UI = 3;
+const SURFACES = ['--color-bg', '--color-surface', '--color-surface-2', '--color-field-bg'];
+const MESH = ['--mesh-1', '--mesh-2', '--mesh-3'];
 
-describe('tokens.css contrast (WCAG AA)', () => {
-    const surfaces = ['--color-bg', '--color-surface', '--color-surface-2', '--color-field-bg'];
+describe.each([
+    ['dark', dark],
+    ['light', light],
+] as const)('tokens.css contrast, %s theme (WCAG AA)', (_theme, palette) => {
+    const rgb = (token: string): RGB => hexToRgb(resolve(palette, token));
 
-    it.each(surfaces)('body text reads on %s', (bg) => {
+    it.each(SURFACES)('body text reads on %s', (bg) => {
         expect(ratio(rgb('--color-text'), rgb(bg))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    it.each(surfaces)('secondary text reads on %s', (bg) => {
+    it.each(SURFACES)('secondary text reads on %s', (bg) => {
         expect(ratio(rgb('--color-text-2'), rgb(bg))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
     // the muted tone is the one most likely to drift under the line, so every surface is checked
-    it.each(surfaces)('muted text reads on %s', (bg) => {
+    it.each(SURFACES)('muted text reads on %s', (bg) => {
         expect(ratio(rgb('--color-text-3'), rgb(bg))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    it('brand orange works as link text on the surface', () => {
-        expect(ratio(rgb('--color-primary'), rgb('--color-surface'))).toBeGreaterThanOrEqual(AA_TEXT);
-        expect(ratio(rgb('--color-primary-strong'), rgb('--color-surface'))).toBeGreaterThanOrEqual(AA_TEXT);
+    // orange as text (links, eyebrows) is always the strong orange; the base orange is a fill only
+    it.each(SURFACES)('orange text reads on %s', (bg) => {
+        expect(ratio(rgb('--color-primary-strong'), rgb(bg))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    it('button text reads on the primary and danger fills', () => {
+    it('button text reads on every fill it sits on, including hover', () => {
         expect(ratio(rgb('--color-on-primary'), rgb('--color-primary'))).toBeGreaterThanOrEqual(AA_TEXT);
-        expect(ratio(rgb('--color-on-primary'), rgb('--color-danger'))).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(ratio(rgb('--color-on-primary'), rgb('--color-primary-hover'))).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(ratio(rgb('--color-on-danger'), rgb('--color-danger'))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    // badge text sits on a 16% tint of itself over the surface; the surface is the worst case
+    // badge text sits on a light tint of itself over the surface; the bare surface is the check
     it.each(['--sev-p1', '--sev-p2', '--sev-p3', '--sev-p4', '--status-resolved', '--status-postmortem', '--color-danger', '--color-success'])(
         '%s reads as badge or state text on the surface',
         (token) => {
@@ -102,25 +121,32 @@ describe('tokens.css contrast (WCAG AA)', () => {
         expect(ratio(rgb('--color-focus'), rgb('--color-surface'))).toBeGreaterThanOrEqual(AA_UI);
     });
 
-    it('pure white is the brightest text, reserved for data', () => {
-        expect(luminance(rgb('--color-data'))).toBeGreaterThan(luminance(rgb('--color-text')));
+    // white in dark mode, near-black in light: either way data out-contrasts body text
+    it('data is the highest-contrast text, so live numbers lead', () => {
+        expect(ratio(rgb('--color-data'), rgb('--color-surface'))).toBeGreaterThan(ratio(rgb('--color-text'), rgb('--color-surface')));
     });
 
     // the HIG rule: check glass against the busiest background it can land on, not a convenient one
-    it('text on a glass layer over the brightest mesh color still reads', () => {
-        const [tint, alpha] = rgbaToRgbA(resolveToken('--glass-bg'));
-        const worstUnder = rgb('--mesh-2');
-        const composite = over(tint, alpha, worstUnder);
+    it.each(MESH)('text on a glass layer over %s still reads', (mesh) => {
+        const [tint, alpha] = rgbaToRgbA(resolve(palette, '--glass-bg'));
+        const composite = over(tint, alpha, rgb(mesh));
         expect(ratio(rgb('--color-text'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
         // .ui-glass promotes muted text to this tone; that promotion is what this line protects
         expect(ratio(rgb('--color-text-2'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
     // page titles and subtitles sit straight on the ambient mesh, with no card behind them
-    it.each(['--mesh-1', '--mesh-2', '--mesh-3'])('muted text reads over the ambient %s blob at its peak', (mesh) => {
-        const alpha = Number(resolveToken('--ambient-opacity'));
+    it.each(MESH)('muted text reads over the ambient %s blob at its peak', (mesh) => {
+        const alpha = Number(resolve(palette, '--ambient-opacity'));
         expect(alpha).toBeGreaterThan(0);
-        const composite = over(rgb(mesh), alpha, rgb('--color-bg'));
-        expect(ratio(rgb('--color-text-3'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(ratio(rgb('--color-text-3'), over(rgb(mesh), alpha, rgb('--color-bg')))).toBeGreaterThanOrEqual(AA_TEXT);
+    });
+});
+
+// guards the guard: if the light block stops parsing, light would silently test as dark
+describe('tokens.css themes', () => {
+    it('defines a light palette that actually differs from dark', () => {
+        expect(resolve(light, '--color-bg')).not.toBe(resolve(dark, '--color-bg'));
+        expect(resolve(light, '--color-text')).not.toBe(resolve(dark, '--color-text'));
     });
 });

@@ -46,3 +46,21 @@
         backdrop-filter: none;
     }
 }
+
+/* HomeGate's fallback when the landing chunk fails to load; global because the landing CSS is in that chunk */
+.landing-fallback {
+    max-width: 32rem;
+    margin: 20vh auto 0;
+    padding: 0 var(--page-gutter);
+    text-align: center;
+    color: var(--color-text-2);
+}
+
+.landing-fallback h1 {
+    color: var(--color-text);
+}
+
+.landing-fallback a {
+    color: var(--color-primary-strong);
+}
+
