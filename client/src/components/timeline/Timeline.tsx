@@ -1,8 +1,9 @@
+import { useRef } from 'react';
 import type { JSX } from 'react';
 import { readAiDraftBody } from '../../api';
-import type { RelevanceLine, TimelineEntry } from '../../api';
+import type { ClientPostableType, RelevanceLine, TimelineEntry } from '../../api';
 import type { RelevanceById } from '../../hooks/useRelevance';
-import { Badge, Button, EmptyState } from '../ui';
+import { Badge, Button, EmptyState, LiveDot } from '../ui';
 import { formatRelativeTime } from '../../utils/formatRelativeTime';
 import './Timeline.css';
 
@@ -17,7 +18,11 @@ type TimelineProps = {
     busyEntryId?: number | null;
     // the most-connected teammate per entry; an entry missing from the map shows no line yet
     relevance?: RelevanceById;
+    // your own post while the server has not confirmed it yet: shown, labeled, and never mixed into entries
+    pending?: PendingEntry | null;
 };
+
+export type PendingEntry = { type: ClientPostableType; text: string };
 
 // an ai_draft nobody has vouched for: author_id stays null until a human confirms it (ADR 0014)
 export const isPendingDraft = (entry: TimelineEntry): boolean => entry.type === 'ai_draft' && entry.author_id === null;
@@ -46,21 +51,33 @@ export default function Timeline({
     onRejectDraft,
     busyEntryId = null,
     relevance,
+    pending = null,
 }: TimelineProps): JSX.Element {
-    if (entries.length === 0) {
+    // the highest id present when the timeline first rendered; only entries after it animate in,
+    // so opening a room is calm and only what arrives while you watch moves
+    const loadedUpTo = useRef(entries.at(-1)?.id ?? 0);
+
+    if (entries.length === 0 && !pending) {
         return <EmptyState title="No entries yet" body="Post what you've seen or tried, so the next person starts from there." />;
     }
 
     return (
         <ol className="timeline" aria-label="Timeline">
             {entries.map((entry) => {
-                const pending = isPendingDraft(entry);
+                const draftPending = isPendingDraft(entry);
                 const busy = busyEntryId === entry.id;
+                const arrived = entry.id > loadedUpTo.current;
+                // a teammate's (or the AI's) arrival is news; your own post only slides in
+                const incoming = arrived && entry.author_id !== currentUserId;
+                const classes = [
+                    'timeline__entry',
+                    `timeline__entry--${entry.type}`,
+                    draftPending && 'timeline__entry--pending',
+                    arrived && 'timeline__entry--new',
+                    incoming && 'timeline__entry--incoming',
+                ].filter(Boolean).join(' ');
                 return (
-                <li
-                    key={entry.id}
-                    className={`timeline__entry timeline__entry--${entry.type}${pending ? ' timeline__entry--pending' : ''}`}
-                >
+                <li key={entry.id} className={classes}>
                     <header className="timeline__meta">
                         <Badge tone="entry" value={entry.type} />
                         <span className="timeline__author">{authorLabel(entry, currentUserId)}</span>
@@ -72,7 +89,7 @@ export default function Timeline({
                     {relevance?.has(entry.id) && (
                         <RelevanceNote line={relevance.get(entry.id) ?? null} currentUserId={currentUserId} />
                     )}
-                    {pending && onConfirmDraft && onRejectDraft && (
+                    {draftPending && onConfirmDraft && onRejectDraft && (
                         <footer className="timeline__actions">
                             <Button
                                 size="sm"
@@ -98,6 +115,17 @@ export default function Timeline({
                 </li>
                 );
             })}
+            {pending && (
+                // newest by definition: the server will give it the highest id, so it sits last (ADR 0001)
+                <li className={`timeline__entry timeline__entry--${pending.type} timeline__entry--sending`} aria-busy="true">
+                    <header className="timeline__meta">
+                        <Badge tone="entry" value={pending.type} />
+                        <span className="timeline__author">You</span>
+                        <LiveDot state="syncing" label="Sending" />
+                    </header>
+                    <p className="timeline__body">{pending.text}</p>
+                </li>
+            )}
         </ol>
     );
 }
