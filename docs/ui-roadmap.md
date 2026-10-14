@@ -83,12 +83,21 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 - **`/` now redirects to `/rooms`.** The guard sends anyone signed out on to sign-in.
 - `tsc` is clean, and `utils/formatDateTime.ts` is deleted (unused).
 
-### Item 4 — Live updates *(schedule.md: "Wire live updates")*
+### Item 4 — Live updates *(schedule.md: "Wire live updates")* — **DONE 2026-10-11**
 
 **Scope:** `client/src/api/socket.ts` (see `api-layer.md` §4). On entering a room: connect with the in-memory token, `join-room` with `{ incidentId, sinceId: <highest id already loaded> }`, append `new-message` entries **inserted by id, not pushed** (ordering invariant), apply `confirm-draft` / `reject-draft` in place. Leave the room on unmount. Reconnect → re-join with the new `sinceId` so the gap is filled from `GET …/timeline?since=`. One polite live-region announcement per arrival.
 **Endpoint:** Socket.IO events listed above; `GET …/timeline?since=` for gap-fill.
 **Deletes:** nothing — Item 3's page gains a hook.
 **Done when:** two browsers on the same room; post in one, appears in the other without refresh; kill and restore the server; the client catches up without duplicates.
+
+**As built:** `client/src/hooks/useRoomLive.ts`, used by `RoomDetailsPage`.
+- **Receive-only.** Posting stays on HTTP, whose route already writes and then broadcasts `new-message`, so the client never uses `sending-message` (see ADR 0018, proposed).
+- **Reconnect and gap fill.** Every socket.io `connect` (the first one and each reconnect) re-joins with the highest id held, so the server sends only the gap. Arrivals, history, and confirms go through `mergeEntries`; rejects remove by id.
+- **Expired token.** The server checks the token only at handshake, so a tab idle past 15 minutes gets its reconnect refused. The hook refreshes once and reconnects; a second refusal shows Disconnected rather than looping.
+- **UI.** A `LiveDot` in the room header shows Connecting / Live / Disconnected. One polite live region announces a teammate's entry, but never your own echo.
+- **Not built.** Presence chips: the server emits only a `User-joined` message string, with no member list to render. That needs a server event first.
+
+**Checked:** 12 hook tests plus 2 page tests against a fake socket; 9 of 9 mutations caught. A two-browser run against the local database: post in A appears in B; then kill the API server, keep B blocked while A reconnects and posts twice, unblock B, and B fills the gap; identical timelines, no duplicates. The run could not capture B's join payload (it went over HTTP polling), so `sinceId` on rejoin is proven by the unit test, not the browser run.
 
 ### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")*
 
