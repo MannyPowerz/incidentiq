@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import BubbleField from './BubbleField';
 import './LiquidBackdrop.css';
 
 type LiquidBackdropProps = {
@@ -25,6 +26,8 @@ export default function LiquidBackdrop({ intensity = 'subtle', contained = false
     return (
         <div className={`liquid liquid--${intensity}${contained ? ' liquid--contained' : ''}`} aria-hidden="true">
             <div className="liquid__mesh" />
+            {/* the endless bubbles sit between the mesh and the glass droplets, so the droplets refract them too */}
+            <BubbleField density={intensity === 'full' ? 1 : 0.6} />
             {Array.from({ length: DROPLETS[intensity] }, (_, i) => (
                 <span key={i} className={`liquid__drop liquid__drop--${i + 1}`} />
             ))}

@@ -16,7 +16,7 @@ type MetricProps = {
  */
 export default function Metric({ label, value, detail, tone = 'neutral' }: MetricProps): JSX.Element {
     return (
-        <div className={`ui-metric ui-metric--${tone}`}>
+        <div className={`ui-metric ui-metric--${tone}`} data-spotlight>
             <span className="ui-metric__label">{label}</span>
             <span className="ui-metric__value">{value}</span>
             {detail && <span className="ui-metric__detail">{detail}</span>}

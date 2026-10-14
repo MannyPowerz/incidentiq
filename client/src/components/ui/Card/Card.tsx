@@ -12,7 +12,7 @@ type CardProps = {
 
 export default function Card({ title, actions, padding = 'md', children, className }: CardProps): JSX.Element {
     return (
-        <section className={['ui-card', `ui-card--pad-${padding}`, className].filter(Boolean).join(' ')}>
+        <section className={['ui-card', `ui-card--pad-${padding}`, className].filter(Boolean).join(' ')} data-spotlight>
             {(title || actions) && (
                 <header className="ui-card__header">
                     {title && <h2 className="ui-card__title">{title}</h2>}
