@@ -143,19 +143,28 @@ Shape is derived from `server/src/relevance/types.ts` (`TeammateScore` → one l
 
 ### socket.ts — REAL
 
-Thin wrapper over `socket.io-client` (already in `client/package.json`, imported nowhere yet). Event names and payloads from `server/src/Socket/socketTypes-Schemas/socketTypes.ts` and the `join-room` handler as exercised by `server/tests/timeline.smoke.test.ts`.
+Thin wrapper over `socket.io-client`. Event names and payloads from `server/src/Socket/socketTypes-Schemas/socketTypes.ts`; join behavior from `server/src/Socket/socketHandlers/createRoom.ts`.
+
+**Corrected 2026-10-08 during Item 0** — the first draft of this section was wrong in three places, found by reading `createRoom.ts`:
+1. **History arrives over the socket, not HTTP.** After `join-room` the server emits `send-history` with the full timeline (or only `id > sinceId` on a rejoin). `GET …/timeline?since=` still exists and works, but the live room doesn't need it.
+2. **`send-history` must be acked within 5 seconds.** The server emits it with `socket.timeout(5000)`; without an ack it logs a failure and sends the client a `socket-error` even though the history arrived. `onHistory` acks unconditionally so no caller can forget.
+3. **`sinceId` must be a positive integer or absent.** `joinRoomSchema` rejects `0`, and a rejected payload drops the whole join. `joinRoom` omits anything that isn't a real entry id.
 
 ```ts
-connectSocket(token: string): Socket             // io(origin, { auth: { token }, reconnection: true }) — same JWT as HTTP
-joinRoom(socket, incidentId: number, sinceId?: number): void   // emit 'join-room', { incidentId, sinceId }
-leaveRoom(socket, incidentId: number): void      // [uncertain: no 'leave-room' event was seen; disconnect on unmount instead]
-onEntry(socket, cb: (e: TimelineEntry) => void)   // 'new-message'
-onConfirm(socket, cb: (e: TimelineEntry) => void) // 'confirm-draft'
-onReject(socket, cb: (e: TimelineEntry) => void)  // 'reject-draft'
-onSocketError(socket, cb: (err: { error: string }) => void)    // 'socket-error'
+connectSocket(): RoomSocket                       // auth is a CALLBACK reading the token store on every (re)connect
+disconnectSocket(socket): void                    // there is no leave-room event; leaving = disconnecting
+joinRoom(socket, incidentId, sinceId?): void      // 'join-room'; drops sinceId <= 0
+onHistory(socket, cb(entries)): Unsubscribe       // 'send-history'; acks before calling cb
+onEntry(socket, cb(entry)): Unsubscribe           // 'new-message'
+onConfirm(socket, cb(entry)): Unsubscribe         // 'confirm-draft'
+onReject(socket, cb(entry)): Unsubscribe          // 'reject-draft'
+onSocketError(socket, cb(error: string)): Unsubscribe  // 'socket-error'
+mergeEntries(current, incoming): TimelineEntry[]  // dedupe by id, sort id-ascending — ADR 0001
 ```
 
-Rules the hook that uses this must keep: insert arriving entries **by id**, never append (ADR 0001 ordering); on reconnect re-`joinRoom` with the highest id held so the server's gap-fill covers the outage; dedupe by `id` because an entry you posted over HTTP also arrives over the socket.
+`connectSocket` takes no token argument (changed from the first draft): socket.io calls the auth callback on every automatic reconnect, so a reconnect after a silent HTTP refresh sends the new token rather than retrying the expired one. The server checks the token only at handshake (`Socket/middleware/socket.ts`), which means a socket connected before the 15-minute access-token expiry stays connected after it — only a *reconnect* needs a valid token. Item 4's hook should call `refresh()` on a `connect_error` and then `socket.connect()`.
+
+Rules the hook keeps: merge every arrival through `mergeEntries` (an entry you posted over HTTP also arrives over the socket, and a late lower id must slot in, not append); rejoin with the highest id held.
 
 Socket traffic goes through the Vite dev proxy (`/socket.io` with `ws: true`, `client/vite.config.ts`), so the origin is the page's own — pass no host.
 
@@ -175,7 +184,7 @@ One table so every screen handles the same code the same way.
 | `invalid_schema_structure` (400) | ai-draft | ErrorState "The AI returned something unusable. Try again." |
 | `project_required` | fingerprints | should be unreachable (UI always sends `?project=`) |
 | `Bad Request` (400, ZodError in `message`) | `validateBody` | message is already a string by the time it leaves `auth/api.ts`'s pattern; show it inline on the form |
-| network failure (fetch throws) | — | ErrorState "Can't reach the server" with retry |
+| `network_error` (status 0) | `request()` in `client.ts` turns a thrown `fetch` into this code | ErrorState "Can't reach the server" with retry |
 
 ## 5. Testing the layer
 

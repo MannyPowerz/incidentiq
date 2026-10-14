@@ -1,0 +1,102 @@
+.ui-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--page-gutter);
+}
+
+.ui-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(26, 26, 26, 0.45);
+    animation: ui-modal-fade var(--dur-slow) var(--ease);
+}
+
+.ui-modal__panel {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: calc(100vh - 2 * var(--page-gutter));
+    overflow-y: auto;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-3);
+    font-family: var(--font-sans);
+    animation: ui-modal-rise var(--dur-slow) var(--ease);
+}
+
+.ui-modal__panel:focus-visible {
+    outline: 2px solid var(--color-focus);
+}
+
+.ui-modal__panel--sm {
+    max-width: 26rem;
+}
+
+.ui-modal__panel--md {
+    max-width: 36rem;
+}
+
+.ui-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
+    border-bottom: var(--border);
+}
+
+.ui-modal__title {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+}
+
+.ui-modal__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-3);
+    font-size: var(--text-xl);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ui-modal__close:hover {
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
+}
+
+.ui-modal__close:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.ui-modal__body {
+    padding: var(--space-6);
+}
+
+@keyframes ui-modal-fade {
+    from { opacity: 0; }
+}
+
+@keyframes ui-modal-rise {
+    from { opacity: 0; transform: translateY(var(--space-2)); }
+}
+
+/* durations are already 0 under reduced motion (tokens.css), but the keyframes still need disabling */
+@media (prefers-reduced-motion: reduce) {
+    .ui-modal__backdrop,
+    .ui-modal__panel {
+        animation: none;
+    }
+}

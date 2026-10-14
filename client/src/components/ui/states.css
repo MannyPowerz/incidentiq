@@ -1,0 +1,38 @@
+/* shared by EmptyState and ErrorState — same layout, different emphasis */
+
+.ui-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-12) var(--space-6);
+    text-align: center;
+    font-family: var(--font-sans);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+}
+
+.ui-state--error {
+    border-style: solid;
+    border-color: var(--color-danger);
+    background-color: var(--color-danger-soft);
+}
+
+.ui-state__title {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+}
+
+.ui-state__body {
+    margin: 0;
+    max-width: 32rem;
+    font-size: var(--text-sm);
+    color: var(--color-text-2);
+}
+
+.ui-state__action {
+    margin-top: var(--space-3);
+}
