@@ -23,3 +23,21 @@ export function getAccessToken(): string | null {
 export function setAccessToken(token: string | null): void {
     accessToken = token;
 }
+
+/**
+ * The signed-in user's id, read from the token's `sub` (a string — ADR 0005) so the timeline can
+ * say "You". Display only: the payload is decoded, not verified, and the server re-checks every
+ * request. null when there is no token or it doesn't parse.
+ */
+export function getCurrentUserId(): number | null {
+    const payload = accessToken?.split('.')[1];
+    if (!payload) return null;
+    try {
+        // JWT segments are base64url; atob wants plain base64 (it tolerates the missing padding)
+        const { sub } = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { sub?: unknown };
+        const id = Number(sub);
+        return Number.isInteger(id) && id > 0 ? id : null;
+    } catch {
+        return null;
+    }
+}

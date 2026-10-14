@@ -1,0 +1,16 @@
+.entry-composer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.entry-composer__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (min-width: 768px) {
+    .entry-composer__type {
+        max-width: 20rem;
+    }
+}
