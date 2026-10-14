@@ -4,11 +4,21 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '../components/ui';
 import RoomDetailsPage from './RoomDetailsPage';
-import { ApiError, connectSocket, getIncident, listTimeline, postTimelineEntry, resolveIncident } from '../api';
+import {
+    ApiError,
+    confirmAiDraft,
+    connectSocket,
+    getIncident,
+    listTimeline,
+    postTimelineEntry,
+    rejectAiDraft,
+    requestAiDraft,
+    resolveIncident,
+} from '../api';
 import type { Incident, TimelineEntry } from '../api';
 import { setAccessToken } from '../auth/tokenStore';
 import { fakeSocket } from '../test/fakeSocket';
@@ -19,6 +29,9 @@ vi.mock('../api', async (importOriginal) => ({
     listTimeline: vi.fn(),
     postTimelineEntry: vi.fn(),
     resolveIncident: vi.fn(),
+    requestAiDraft: vi.fn(),
+    confirmAiDraft: vi.fn(),
+    rejectAiDraft: vi.fn(),
     connectSocket: vi.fn(),
 }));
 
@@ -73,7 +86,9 @@ const timelineTexts = () =>
 let socket: ReturnType<typeof fakeSocket>;
 
 beforeEach(() => {
-    for (const fn of [getIncident, listTimeline, postTimelineEntry, resolveIncident]) vi.mocked(fn).mockReset();
+    for (const fn of [getIncident, listTimeline, postTimelineEntry, resolveIncident, requestAiDraft, confirmAiDraft, rejectAiDraft]) {
+        vi.mocked(fn).mockReset();
+    }
     socket = fakeSocket();
     vi.mocked(connectSocket).mockReset().mockReturnValue(socket);
 });
@@ -198,5 +213,156 @@ describe('RoomDetailsPage', () => {
 
         await screen.findByText('Room not found');
         expect(connectSocket).not.toHaveBeenCalled();
+    });
+
+    describe('AI drafts', () => {
+        const DRAFT = { summary: 'VPN keeps dropping', why_it_matters: 'Nobody can reach staging', likely_fix: 'Raise the keepalive' };
+        const draft = (id: number, over: Partial<TimelineEntry> = {}) =>
+            entry(id, { type: 'ai_draft', author_id: null, body: DRAFT, ...over });
+
+        const open = async (entries: TimelineEntry[]) => {
+            vi.mocked(getIncident).mockResolvedValue(incident());
+            vi.mocked(listTimeline).mockResolvedValue(entries);
+            renderRoom();
+            await screen.findByRole('heading', { name: 'VPN drops' });
+        };
+
+        it('requests a draft with the pasted text and kind, and shows it unconfirmed', async () => {
+            await open([]);
+            vi.mocked(requestAiDraft).mockResolvedValue(draft(1));
+
+            user.selectOptions(screen.getByLabelText('What are you pasting?'), 'scanner');
+            user.type(screen.getByLabelText('Output to explain'), '  ECONNRESET auth:4000  ');
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+
+            expect(await screen.findByText('Raise the keepalive')).toBeTruthy();
+            expect(requestAiDraft).toHaveBeenCalledWith(5, { context: 'ECONNRESET auth:4000', kind: 'scanner' });
+            expect(screen.getByText('Awaiting confirmation')).toBeTruthy();
+            expect(screen.getByRole('button', { name: 'Confirm AI draft 1' })).toBeTruthy();
+            // a stale paste would invite a duplicate draft from the next click
+            expect((screen.getByLabelText('Output to explain') as HTMLTextAreaElement).value).toBe('');
+        });
+
+        it('says it is working while a slow draft is in flight', async () => {
+            await open([]);
+            let finish: (e: TimelineEntry) => void = () => {};
+            vi.mocked(requestAiDraft).mockReturnValue(new Promise<TimelineEntry>((resolve) => (finish = resolve)));
+
+            user.type(screen.getByLabelText('Output to explain'), 'log');
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+
+            expect(await screen.findByText('Drafting. This usually takes 10 to 20 seconds.')).toBeTruthy();
+
+            finish(draft(1));
+            await screen.findByText('Raise the keepalive');
+            expect(screen.queryByText('Drafting. This usually takes 10 to 20 seconds.')).toBeNull();
+        });
+
+        it('does not ask for a draft with nothing pasted', async () => {
+            await open([]);
+
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+
+            expect(screen.getByText('Paste a log or scanner output first')).toBeTruthy();
+            expect(requestAiDraft).not.toHaveBeenCalled();
+        });
+
+        it('says the provider did not answer on a 504 and keeps the paste for a retry', async () => {
+            await open([]);
+            vi.mocked(requestAiDraft).mockRejectedValue(
+                new ApiError(504, 'upstream_error', 'Difficulty in responsiveness to the server'),
+            );
+
+            user.type(screen.getByLabelText('Output to explain'), 'some log');
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+
+            expect(await screen.findByText("The AI provider didn't answer. Try again in a moment.")).toBeTruthy();
+            expect((screen.getByLabelText('Output to explain') as HTMLTextAreaElement).value).toBe('some log');
+        });
+
+        // ADR 0014: confirming is what sets the author, and the type never changes
+        it('confirms a draft: it becomes yours, keeps its AI draft badge, and loses its buttons', async () => {
+            setAccessToken(`h.${btoa(JSON.stringify({ sub: '9' })).replace(/=+$/, '')}.s`);
+            await open([draft(1)]);
+            vi.mocked(confirmAiDraft).mockResolvedValue(draft(1, { author_id: 9 }));
+
+            user.click(screen.getByRole('button', { name: 'Confirm AI draft 1' }));
+
+            await waitFor(() => expect(screen.queryByRole('button', { name: 'Confirm AI draft 1' })).toBeNull());
+            expect(confirmAiDraft).toHaveBeenCalledWith(5, 1);
+            const list = screen.getByRole('list', { name: 'Timeline' });
+            expect(within(list).getByText('You')).toBeTruthy();
+            expect(within(list).getByText('AI draft')).toBeTruthy();
+            expect(list.querySelector('.timeline__entry--pending')).toBeNull();
+        });
+
+        // confirm and reject race each other on the server; the screen must not send both
+        it('disables both buttons while one request is in flight', async () => {
+            await open([draft(1)]);
+            let finish: (e: TimelineEntry) => void = () => {};
+            vi.mocked(confirmAiDraft).mockReturnValue(new Promise<TimelineEntry>((resolve) => (finish = resolve)));
+
+            user.click(screen.getByRole('button', { name: 'Confirm AI draft 1' }));
+
+            await waitFor(() => expect((screen.getByRole('button', { name: 'Reject AI draft 1' }) as HTMLButtonElement).disabled).toBe(true));
+            expect((screen.getByRole('button', { name: 'Confirm AI draft 1' }) as HTMLButtonElement).disabled).toBe(true);
+
+            finish(draft(1, { author_id: 9 }));
+            await waitFor(() => expect(screen.queryByRole('button', { name: 'Reject AI draft 1' })).toBeNull());
+        });
+
+        it('rejects a draft: it leaves the timeline', async () => {
+            await open([entry(1), draft(2)]);
+            vi.mocked(rejectAiDraft).mockResolvedValue(draft(2));
+
+            user.click(screen.getByRole('button', { name: 'Reject AI draft 2' }));
+
+            await waitFor(() => expect(timelineTexts()).toEqual(['entry 1']));
+            expect(rejectAiDraft).toHaveBeenCalledWith(5, 2);
+        });
+
+        it('refetches the timeline when someone else already confirmed the draft', async () => {
+            await open([draft(1)]);
+            vi.mocked(confirmAiDraft).mockRejectedValue(new ApiError(409, 'already_approved', 'ai_draft entry was already approved'));
+            vi.mocked(listTimeline).mockResolvedValue([draft(1, { author_id: 4 })]);
+
+            user.click(screen.getByRole('button', { name: 'Confirm AI draft 1' }));
+
+            expect(await screen.findByText('Someone already handled this draft. Showing the latest timeline.')).toBeTruthy();
+            await waitFor(() => expect(listTimeline).toHaveBeenCalledTimes(2));
+            expect(screen.getByText('User #4')).toBeTruthy();
+            expect(screen.queryByRole('button', { name: 'Confirm AI draft 1' })).toBeNull();
+        });
+
+        it('drops a draft someone else rejected first instead of leaving a ghost', async () => {
+            await open([entry(1), draft(2)]);
+            vi.mocked(confirmAiDraft).mockRejectedValue(new ApiError(404, 'entry_not_found', 'No entry with that id'));
+            vi.mocked(listTimeline).mockResolvedValue([entry(1)]);
+
+            user.click(screen.getByRole('button', { name: 'Confirm AI draft 2' }));
+
+            await waitFor(() => expect(timelineTexts()).toEqual(['entry 1']));
+        });
+
+        it('shows the draft once when it arrives by POST response and again over the socket', async () => {
+            await open([]);
+            vi.mocked(requestAiDraft).mockResolvedValue(draft(1));
+
+            user.type(screen.getByLabelText('Output to explain'), 'log');
+            user.click(screen.getByRole('button', { name: 'Draft from context' }));
+            await screen.findByText('Raise the keepalive');
+            act(() => socket.serverEmit('new-message', draft(1)));
+
+            expect(screen.getAllByText('Raise the keepalive')).toHaveLength(1);
+        });
+
+        it("shows a teammate's confirmation arriving over the socket without a click", async () => {
+            await open([draft(1)]);
+
+            act(() => socket.serverEmit('confirm-draft', draft(1, { author_id: 4 })));
+
+            expect(screen.queryByRole('button', { name: 'Confirm AI draft 1' })).toBeNull();
+            expect(screen.getByText('User #4')).toBeTruthy();
+        });
     });
 });
