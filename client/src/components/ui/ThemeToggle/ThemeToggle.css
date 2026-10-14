@@ -1,0 +1,51 @@
+.ui-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--space-8);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: transparent;
+    color: var(--color-text-2);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition:
+        border-color var(--dur-fast) var(--ease),
+        color var(--dur-fast) var(--ease);
+}
+
+.ui-theme-toggle:hover {
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.ui-theme-toggle:active {
+    transform: translateY(1px);
+}
+
+.ui-theme-toggle:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.ui-theme-toggle svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+
+.ui-theme-toggle .ui-theme-toggle__fill {
+    fill: currentColor;
+    stroke: none;
+}
+
+.ui-theme-toggle svg path[d^='M13 9.5'] {
+    fill: currentColor;
+    stroke: none;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import AuthForm from "../components/auth/AuthForm";
+import { ThemeToggle } from "../components/ui";
 import "./SignInPage.css"
 
 const TILT_MAX_DEG = 8;
@@ -69,6 +70,9 @@ export default function SignInPage() : JSX.Element {
             </section>
 
             <section className="sign-in-form">
+                <div className="sign-in-form__theme">
+                    <ThemeToggle />
+                </div>
                 <AuthForm />
             </section>
         </main>

@@ -200,3 +200,15 @@
         transform: rotateZ(-12deg);
     }
 }
+
+/* the theme toggle sits in the form panel's top corner, out of the form's way */
+.sign-in-form {
+    position: relative;
+}
+
+.sign-in-form__theme {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--page-gutter);
+}
+

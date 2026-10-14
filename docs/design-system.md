@@ -198,13 +198,21 @@ These are checked, not aspired to.
 8. **Target size.** Interactive targets ≥ 24×24 CSS px; primary actions ≥ 40px tall on phone.
 9. **Zoom.** Nothing breaks at 200% browser zoom; no `maximum-scale` in the viewport meta.
 
-## 5. Dark mode
+## 5. Themes: dark and light
 
-**Decision (2026-10-08): dark premium is the only theme.** This reverses the original "light only for the MVP" call.
+**Decision (2026-10-14): two themes, following the system, with a toggle.** This supersedes the Oct 8 "dark premium is the only theme" call, which itself replaced the original "light only for the MVP".
 
-Why it changed: the product is a real-time war room, the screen people keep open while something is broken, and the reference set the redesign was built from (a premium dark cockpit, HIG glass for the floating layer) only works on dark. Shipping one theme keeps the original reason intact: half the states to verify. The raw → semantic split did what it was built for. The switch was a re-point of the aliases in `tokens.css` plus one `color-scheme: dark` line, and no component logic changed.
+**How it works.**
+- `tokens.css` defines dark in the base `:root` block. Light is a single `:root[data-theme="light"]` block that re-points only the semantic aliases; components never know which theme is on.
+- A pre-paint script in `index.html` sets `data-theme` from the stored choice or the OS setting, so the page never flashes the wrong theme.
+- `src/theme/theme.ts` keeps it in sync. The toggle cycles Auto → Light → Dark. Auto follows the OS live, and the other two are remembered per browser.
 
-Cost accepted: the projector risk from the original decision. Mitigated by the contrast test, which holds every text pair at AA. A light theme later is the same move in reverse: a `[data-theme="light"]` block re-pointing the aliases.
+**Contrast is tested for both.** `tokens.test.ts` builds both palettes and holds every text pair at AA in each, including glass and ambient-mesh composites. Building light mode surfaced three pairs that would have failed, all fixed by tokens:
+- Primary-button hover text is 3.4:1 on the darker orange, so the hover fill got its own token, `--color-primary-hover`.
+- Near-black on the light-mode red is 2.6:1, so danger buttons got `--color-on-danger`, which is white in light mode.
+- Orange used as text reached only 4.3:1 on light gray, so text uses `--color-primary-strong`, deeper in light mode, and the base orange is a fill only.
+
+`color-scheme` lives on `:root` in each theme block, never on `body`. A body value overrides the theme and leaves native checkboxes and selects in the wrong scheme.
 
 ## 6. What this replaces
 
