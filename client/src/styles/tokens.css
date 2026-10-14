@@ -7,6 +7,10 @@
  */
 
 :root {
+    /* native selects, scrollbars and checkboxes follow the theme. Set here, on :root, and never on
+       body: a body-level value would override the light block below and keep controls dark. */
+    color-scheme: dark;
+
     /* --- raw palette --- */
     --navy-950: #0B0F17;
     --navy-900: #0E131D;
@@ -50,13 +54,19 @@
     --color-data: var(--white);
 
     --color-primary: var(--orange-500);
-    /* hover brightens on dark, the opposite of the light theme */
+    /* orange for text and links: AA on this theme's surfaces (tokens.test.ts) */
     --color-primary-strong: var(--orange-400);
+    /* a primary button's hover fill; its own token because the text-orange and the fill-orange differ in light mode */
+    --color-primary-hover: var(--orange-400);
     --color-primary-soft: rgba(217, 119, 87, 0.16);
     /* near-black, not white: white on #D97757 is about 3.1:1 */
     --color-on-primary: var(--ink-900);
 
     --color-danger: var(--red-400);
+    /* text on a danger fill: dark here, white in light mode, where near-black on red fails AA */
+    --color-on-danger: var(--ink-900);
+    /* the dim layer behind a dialog */
+    --color-overlay: rgba(5, 8, 14, 0.6);
     --color-danger-soft: rgba(255, 122, 107, 0.16);
     --color-success: var(--green-400);
     --color-success-soft: rgba(92, 203, 122, 0.16);
@@ -170,6 +180,88 @@
     --z-topbar: 50;
     --z-modal: 100;
     --z-toast: 200;
+}
+
+/*
+ * Light theme. The theme is chosen before first paint by the script in index.html (stored choice,
+ * else the OS setting) and kept in sync by src/theme/theme.ts, so CSS needs one selector, not a
+ * media-query copy. Only semantic aliases change; components never know which theme is on.
+ */
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --color-bg: #F6F7F9;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #EEF0F4;
+    --color-field-bg: #FFFFFF;
+    --color-border: #DDE1E8;
+    --color-border-strong: #8A94A6;
+
+    --color-text: #111827;
+    --color-text-2: #3B4252;
+    --color-text-3: #556070;
+    /* in light mode data is the darkest ink, for the same reason it is the whitest in dark: it leads */
+    --color-data: #05070B;
+
+    --color-primary: var(--orange-500);
+    /* deeper than orange-600: on the light gray surface orange-600 only reaches 4.3:1 */
+    --color-primary-strong: #A64B29;
+    --color-primary-hover: var(--orange-400);
+    --color-primary-soft: rgba(217, 119, 87, 0.14);
+    --color-on-primary: var(--ink-900);
+
+    --color-danger: #B42318;
+    --color-danger-soft: rgba(180, 35, 24, 0.1);
+    --color-on-danger: var(--white);
+    --color-success: #2E7D32;
+    --color-success-soft: rgba(46, 125, 50, 0.1);
+    --color-focus: var(--orange-600);
+    --color-overlay: rgba(15, 23, 42, 0.35);
+
+    --sev-p1: #B42318;
+    --sev-p1-soft: rgba(180, 35, 24, 0.1);
+    --sev-p2: #A15C07;
+    --sev-p2-soft: rgba(161, 92, 7, 0.1);
+    --sev-p3: #0E7C6B;
+    --sev-p3-soft: rgba(14, 124, 107, 0.1);
+    --sev-p4: #556070;
+    --sev-p4-soft: rgba(85, 96, 112, 0.1);
+
+    --status-detected: #B42318;
+    --status-detected-soft: rgba(180, 35, 24, 0.1);
+    --status-investigating: #A15C07;
+    --status-investigating-soft: rgba(161, 92, 7, 0.1);
+    --status-mitigated: #0E7C6B;
+    --status-mitigated-soft: rgba(14, 124, 107, 0.1);
+    --status-resolved: #2E7D32;
+    --status-resolved-soft: rgba(46, 125, 50, 0.1);
+    --status-postmortem: #556070;
+    --status-postmortem-soft: rgba(85, 96, 112, 0.1);
+
+    --entry-observation: #556070;
+    --entry-action: #0E7C6B;
+    --entry-finding: #A15C07;
+    --entry-system: #9AA3B2;
+    --entry-ai-draft: var(--orange-500);
+
+    --live-idle: #9AA3B2;
+    --live-on: #2E7D32;
+    --live-syncing: #A15C07;
+    --live-failing: #B42318;
+
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(15, 23, 42, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.6);
+
+    /* the prompt's "deep indigo, soft cream, electric blue", lightened so muted text still reads over them */
+    --mesh-1: #A5B4FC;
+    --mesh-2: #93C5FD;
+    --mesh-3: #FBD5B5;
+    --ambient-opacity: 0.4;
+
+    --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow-2: 0 6px 20px rgba(15, 23, 42, 0.08);
+    --shadow-3: 0 24px 60px rgba(15, 23, 42, 0.16);
 }
 
 /* one rule turns off every transition in the app, instead of an override per component */

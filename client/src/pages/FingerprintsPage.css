@@ -18,7 +18,7 @@
     font-weight: var(--weight-semibold);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-primary);
+    color: var(--color-primary-strong);
 }
 
 .fp-page__title {

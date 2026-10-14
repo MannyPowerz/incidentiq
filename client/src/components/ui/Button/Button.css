@@ -53,7 +53,7 @@
 
 /* on dark, hover brightens and glows rather than darkening */
 .ui-btn--primary:hover:not(:disabled) {
-    background-color: var(--color-primary-strong);
+    background-color: var(--color-primary-hover);
     box-shadow: var(--shadow-glow);
 }
 
@@ -79,7 +79,7 @@
 
 .ui-btn--danger {
     background-color: var(--color-danger);
-    color: var(--color-on-primary);
+    color: var(--color-on-danger);
 }
 
 .ui-btn--danger:hover:not(:disabled) {
