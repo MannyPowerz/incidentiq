@@ -6,8 +6,10 @@ import { Button, TopBar } from '../ui';
 import type { TopBarLink } from '../ui';
 import './AppShell.css';
 
-// Item 7 adds Fingerprints here
-const LINKS: TopBarLink[] = [{ to: '/rooms', label: 'Rooms' }];
+const LINKS: TopBarLink[] = [
+    { to: '/rooms', label: 'Rooms' },
+    { to: '/machines', label: 'Fingerprints' },
+];
 
 /**
  * AppShell — the frame around every signed-in page: the glass top bar, a skip link, and one <main>.

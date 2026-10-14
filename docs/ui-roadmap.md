@@ -99,27 +99,55 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 
 **Checked:** 12 hook tests plus 2 page tests against a fake socket; 9 of 9 mutations caught. A two-browser run against the local database: post in A appears in B; then kill the API server, keep B blocked while A reconnects and posts twice, unblock B, and B fills the gap; identical timelines, no duplicates. The run could not capture B's join payload (it went over HTTP polling), so `sinceId` on rejoin is proven by the unit test, not the browser run.
 
-### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")*
+### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")* — **DONE 2026-10-11**
 
 **Scope:** in the room page, a "Draft from context" action: `Textarea` (mono) for pasted log or scanner output, `kind` select (`log` / `scanner`), calls `requestAiDraft()`. The returned `ai_draft` entry renders with the brand-orange rule, `summary` / `why_it_matters` / `likely_fix` laid out, and two buttons: **Confirm** → `confirmAiDraft()` (entry becomes the caller's, rule colour drops to normal) and **Reject** → `rejectAiDraft()` (entry removed). The same entry arriving over the socket (Item 4) must not render twice. Error states for `504 upstream_error` ("the AI provider did not answer") and `409 already_approved` / `entry_state_changed` ("someone else got there first — refreshing").
 **Endpoint:** `POST /incidents/:id/ai-draft` → `201` entry; `PATCH …/:entry_id/confirmed` → `200` entry; `DELETE …/:entry_id/rejected` → `200` entry.
 **Deletes:** nothing (RoomAIAnalysis went in Item 3).
 **Done when:** draft → confirm → the entry shows as yours and `author_id` is set in the DB; draft → reject → gone; both broadcast to a second browser.
 
-### Item 6 — "Relevant to you" *(schedule.md: "Relevant-to-you section")* — **FIXTURE-BACKED**
+**As built:** `components/timeline/AiDraftComposer.tsx`, Confirm / Reject on unconfirmed drafts in `Timeline.tsx`, handlers on `RoomDetailsPage`.
+- **Unconfirmed vs confirmed.** A draft with `author_id === null` is pending: orange rule, Confirm and Reject. Once confirmed it keeps its AI draft badge (ADR 0014: type never changes) and drops to the normal rule under the confirmer's name.
+- **Races.** `already_approved`, `entry_state_changed`, `entry_not_found` and `not_ai_draft` all mean someone got there first. The page says so and refetches the timeline, replacing rather than merging, because a rejected draft is deleted and a merge would keep it on screen.
+- **Failure wording is chosen by error code**, not the server's message ("Difficulty in responsiveness to the server" is for developers). A failed request keeps the pasted text.
+- **Reject is immediate, with no confirm dialog.** It deletes an entry nobody vouched for, and the same context regenerates it. The button row says "Rejecting deletes it."
+- **A real draft takes 7 to 21 seconds**, so the form says "Drafting. This usually takes 10 to 20 seconds." while it waits.
+
+**Found by running it for real.** The configured model (`gemini-2.5-flash`) is no longer available to new users, so every draft returned 504; the local `.env` now uses `gemini-3.8-flash`. And the server was silently retrying the provider 6 times (LangChain's default) despite ADR 0007's "no retry", which held a request open for minutes on a 503. That is its own server PR (`fix/ai-draft-no-retry`).
+
+**Checked:** 12 page tests, plus 12 mutations (11 caught first time, 1 gap found and closed). Two real browsers against the local database and the real provider: draft in A appears in B; B confirms and A flips with no click, `author_id` set in the DB; a rejected draft disappears from both and is deleted. 375 and 1440, no overflow.
+
+### Item 6 — "Relevant to you" *(schedule.md: "Relevant-to-you section")* — **FIXTURE-BACKED** — **DONE 2026-10-13**
 
 **Scope:** under each timeline entry, one line: the most-relevant teammate and a plain-English reason (`build-plan.md` Minimum tier: "flag the one most-connected teammate per post with plain English reason"). Reads `getRelevance(incidentId, entryId)` from `api-layer.md` — which today returns a typed fixture because **no endpoint exists**: `server/src/relevance/` is tested scoring maths with no route, no collector, and `reason` was never written. The UI is built to the `TeammateScore` + reason shape in `server/src/relevance/types.ts` so the swap later is one function body.
 **Endpoint:** none yet. Target shape documented in `api-layer.md` §3.
 **Deletes:** nothing.
 **Done when:** every entry shows a relevance line from the fixture; the fixture file carries `// FIXTURE: replace when GET /incidents/:id/timeline returns relevance`; the zero-score case ("nobody has touched these files") renders a real sentence, not blank.
 
-### Item 7 — Fingerprint comparison *(schedule.md: "Fingerprint comparison")*
+**As built:** `hooks/useRelevance.ts` plus `RelevanceNote` in `Timeline.tsx`.
+- **Wording.** One line under each entry, written for the reader (`ReasonFor` in `server/src/relevance/types.ts`): "Ask User #2: …", "You're closest to this: …", or "Nobody on the team has touched these files yet."
+- **Tagged SAMPLE** while the data is a fixture, so a demo never presents an invented "ask User #2" as a real claim about a real teammate. Remove the tag with the fixture.
+- **Lookups.** The hook asks only about entry ids it hasn't seen, so a socket arrival gets its line without refetching the rest. A failed lookup shows no line and is retried on the next change. Switching rooms starts over and drops late answers for the old room.
+- **The swap.** When `GET /incidents/:id/timeline` returns relevance, `useRelevance` is the one place that changes, and `api/fixtures/relevance.ts` is deleted.
+- **A bug caught before it shipped.** The first draft cancelled lookups per effect run, so an entry arriving mid-flight threw away the earlier results and those entries never got a line. A test now pins that case.
+
+**Checked:** 6 hook tests, 4 wording tests, 1 page wiring test; 9 mutations, 9 caught (including that bug, re-introduced). 1280 and 375, no overflow.
+
+### Item 7 — Fingerprint comparison *(schedule.md: "Fingerprint comparison")* — **DONE 2026-10-14**
 
 **Scope:** a page listing every fingerprint for a project side by side: `published_by`, `node_version`, `os_arch`, `lockfile_hash` (mono, truncated with full value on hover/focus), `applied_migrations` (mono list). Cells that differ from the first row are highlighted — the "works on my machine" diff is the demo closer (`build-plan.md`). Project selector defaults to `incidentiq` [uncertain: the only value present in the repo is the test fixture; the agent's `.env.example` uses `AGENT_PROJECT_ID`]. Loading, empty ("Nobody has published for this project yet"), error.
 **Endpoint:** `GET /fingerprints?project=` → `{ fingerprints }`. `PUT` is the agent's job; the UI does not call it.
 **Deletes:** nothing.
 **Route:** adds `/fingerprints` to `App.tsx` inside `RequireAuth` — **approved 2026-10-08**. Also needs a nav link; today there is no shared navigation outside the deferred Dashboard sidebar, so a minimal top bar (Rooms · Fingerprints · Sign out) is part of this item.
 **Done when:** two users' fingerprints render side by side with differing cells highlighted; 375 (stacked) + 1440.
+
+**As built:** `pages/FingerprintsPage.tsx` at **`/machines`**, not `/fingerprints` as approved. The nav label stays "Fingerprints".
+- **Why the route moved.** The API mounts `/fingerprints` with no `/api` prefix (ADR 0010), and the dev proxy forwards every path starting with it to the server. A page at `/fingerprints` worked from the nav link and returned the API's JSON on reload or from a shared link. Found in a real browser, not by unit tests. `src/routes.test.ts` now reads `App.tsx` and `vite.config.ts` and fails if any page route starts with a proxied API path.
+- **Layout.** Rows are fields and columns are machines, so a difference reads across one row. On a phone each field becomes a card listing every machine. Values that differ from the first machine (the baseline) are highlighted.
+- **Comparison rules.** Migrations are compared as a set, so order alone is not a difference, and the cell names which migrations are missing or extra. A null counts as a difference and reads "not reported". The lockfile hash shows 12 characters, with the full value on hover, on keyboard focus, and always to screen readers.
+- **The project** comes from `?project=` in the URL, so a comparison can be linked. It defaults to `incidentiq` (`AGENT_PROJECT_ID` in `agent/.env.example`).
+
+**Checked:** 10 page tests and the route guard; 8 mutations caught, and putting the page back on `/fingerprints` fails the guard. Real run: two teammates PUT different fingerprints through the API, and the page, opened by direct URL, flags exactly the 3 differing fields. 1440 and 375, no overflow.
 
 ### Item 8 — Dashboard route: redirect and delete (**approved 2026-10-08**) — **DONE 2026-10-08**
 

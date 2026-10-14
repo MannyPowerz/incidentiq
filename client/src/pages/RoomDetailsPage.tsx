@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ApiError, getIncident, listTimeline, mergeEntries, resolveIncident } from '../api';
+import { ApiError, confirmAiDraft, getIncident, listTimeline, mergeEntries, rejectAiDraft, resolveIncident } from '../api';
 import type { Incident, TimelineEntry } from '../api';
 import { getCurrentUserId } from '../auth/tokenStore';
 import { Badge, Button, Card, EmptyState, ErrorState, LiveDot, Spinner, useToast } from '../components/ui';
 import type { LiveState } from '../components/ui';
 import { useRoomLive } from '../hooks/useRoomLive';
 import type { EntriesUpdate } from '../hooks/useRoomLive';
+import { useRelevance } from '../hooks/useRelevance';
 import Timeline from '../components/timeline/Timeline';
 import EntryComposer from '../components/timeline/EntryComposer';
+import AiDraftComposer from '../components/timeline/AiDraftComposer';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import './RoomDetailsPage.css';
 
@@ -28,8 +30,9 @@ type LoadState =
 
 /**
  * RoomDetailsPage — one incident: its header, its timeline (oldest first, by entry id — ADR 0001),
- * and the form to add to it. Every change shown here comes from a stored row the server returned,
+ * and the forms to add to it. Every change shown here comes from a stored row the server returned,
  * whether from an HTTP response or a socket broadcast; both merge through mergeEntries.
+ * AI drafts arrive unconfirmed. A human confirming one is what gives it an author (ADR 0014).
  */
 export default function RoomDetailsPage(): JSX.Element {
     const { roomId } = useParams<{ roomId: string }>();
@@ -39,6 +42,8 @@ export default function RoomDetailsPage(): JSX.Element {
     const [state, setState] = useState<LoadState>(validId ? { status: 'loading' } : { status: 'not-found' });
     const [attempt, setAttempt] = useState(0);
     const [resolving, setResolving] = useState(false);
+    // the one draft with a confirm or reject in flight; its sibling buttons wait too
+    const [busyEntryId, setBusyEntryId] = useState<number | null>(null);
     const toast = useToast();
     const currentUserId = getCurrentUserId();
 
@@ -54,6 +59,8 @@ export default function RoomDetailsPage(): JSX.Element {
         currentUserId,
         apply: applyLive,
     });
+    // fixture-backed until the relevance endpoint ships; only asks about entries it has not seen
+    const relevance = useRelevance(ready ? id : null, ready ? state.entries.map((e) => e.id) : []);
 
     useEffect(() => {
         if (!validId) return;
@@ -79,6 +86,45 @@ export default function RoomDetailsPage(): JSX.Element {
 
     function handlePosted(entry: TimelineEntry) {
         setState((s) => (s.status === 'ready' ? { ...s, entries: mergeEntries(s.entries, [entry]) } : s));
+    }
+
+    // these four mean the draft is no longer what this screen thinks it is: someone confirmed it,
+    // someone rejected it, or it changed between the server's check and its write
+    const DRAFT_RACE_CODES = ['already_approved', 'entry_state_changed', 'entry_not_found', 'not_ai_draft'];
+
+    async function handleDraftAction(entry: TimelineEntry, action: 'confirm' | 'reject') {
+        setBusyEntryId(entry.id);
+        try {
+            if (action === 'confirm') {
+                // the response is the stored row with author_id set; the socket echo merges to the same entry
+                const confirmed = await confirmAiDraft(id, entry.id);
+                setState((s) => (s.status === 'ready' ? { ...s, entries: mergeEntries(s.entries, [confirmed]) } : s));
+                toast.show('success', 'Draft confirmed. It is now under your name.');
+            } else {
+                const rejected = await rejectAiDraft(id, entry.id);
+                setState((s) => (s.status === 'ready' ? { ...s, entries: s.entries.filter((e) => e.id !== rejected.id) } : s));
+                toast.show('success', 'Draft rejected and deleted.');
+            }
+        } catch (error) {
+            if (error instanceof ApiError && DRAFT_RACE_CODES.includes(error.code)) {
+                toast.show('info', 'Someone already handled this draft. Showing the latest timeline.');
+                await refreshTimeline();
+            } else {
+                toast.show('error', error instanceof ApiError ? error.message : 'Could not update the draft.');
+            }
+        } finally {
+            setBusyEntryId(null);
+        }
+    }
+
+    // replaces rather than merges: a rejected draft is deleted, and a merge would keep it on screen
+    async function refreshTimeline() {
+        try {
+            const fresh = await listTimeline(id);
+            setState((s) => (s.status === 'ready' ? { ...s, entries: mergeEntries([], fresh) } : s));
+        } catch {
+            toast.show('error', "Couldn't refresh the timeline. Reload the page.");
+        }
     }
 
     async function handleResolve() {
@@ -174,7 +220,14 @@ export default function RoomDetailsPage(): JSX.Element {
                 <h2 id="timeline-heading" className="room-page__section-title">
                     Timeline
                 </h2>
-                <Timeline entries={entries} currentUserId={currentUserId} />
+                <Timeline
+                    entries={entries}
+                    currentUserId={currentUserId}
+                    busyEntryId={busyEntryId}
+                    onConfirmDraft={(entry) => handleDraftAction(entry, 'confirm')}
+                    onRejectDraft={(entry) => handleDraftAction(entry, 'reject')}
+                    relevance={relevance}
+                />
                 {/* one polite region for arrivals: announced once each, never a focus steal (design-system.md §4.6) */}
                 <p className="ui-sr-only" aria-live="polite">
                     {live.announcement}
@@ -183,6 +236,10 @@ export default function RoomDetailsPage(): JSX.Element {
 
             <Card title="Add to the timeline">
                 <EntryComposer incidentId={incident.id} onPosted={handlePosted} />
+            </Card>
+
+            <Card title="Draft with AI">
+                <AiDraftComposer incidentId={incident.id} onDrafted={handlePosted} />
             </Card>
         </div>
     );
