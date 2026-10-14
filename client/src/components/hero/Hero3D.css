@@ -1,0 +1,9 @@
+/* fills the hero frame on sign-in; the canvas sizes itself to this box */
+.hero-3d {
+    width: 100%;
+    height: 100%;
+}
+
+.hero-3d canvas {
+    display: block;
+}
