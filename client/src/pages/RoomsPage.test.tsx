@@ -132,4 +132,20 @@ describe('RoomsPage', () => {
         expect(await screen.findByText('Database unavailable')).toBeTruthy();
         expect(screen.getByRole('dialog')).toBeTruthy();
     });
+
+    it('pulses only open P1 rooms', async () => {
+        vi.mocked(listIncidents).mockResolvedValue([
+            incident({ id: 3, title: 'Open P1', severity: 'P1' }),
+            incident({ id: 2, title: 'Resolved P1', severity: 'P1', status: 'resolved' }),
+            incident({ id: 1, title: 'Open P2', severity: 'P2' }),
+        ]);
+        renderPage();
+
+        const pulsing = async (title: string) =>
+            (await screen.findByRole('link', { name: new RegExp(title) })).querySelector('.ui-livedot--failing') !== null;
+        expect(await pulsing('Open P1')).toBe(true);
+        expect(await pulsing('Resolved P1')).toBe(false);
+        expect(await pulsing('Open P2')).toBe(false);
+    });
 });
+

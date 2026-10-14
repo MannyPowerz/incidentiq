@@ -57,3 +57,49 @@ describe('Timeline relevance line', () => {
         expect(notes()).toEqual([]);
     });
 });
+
+describe('Timeline real-time states', () => {
+    const entryLis = () => [...document.querySelectorAll('ol.timeline > li')];
+    const by = (author: number | null, id: number): TimelineEntry => ({ ...entry(id), author_id: author });
+
+    it('animates only entries that arrive after the first render', () => {
+        const { rerender } = render(<Timeline entries={[by(4, 1), by(4, 2)]} currentUserId={9} />);
+        expect(entryLis().some((li) => li.classList.contains('timeline__entry--new'))).toBe(false);
+
+        rerender(<Timeline entries={[by(4, 1), by(4, 2), by(4, 3)]} currentUserId={9} />);
+
+        const [first, second, third] = entryLis();
+        expect(first!.classList.contains('timeline__entry--new')).toBe(false);
+        expect(second!.classList.contains('timeline__entry--new')).toBe(false);
+        expect(third!.classList.contains('timeline__entry--new')).toBe(true);
+    });
+
+    it("flashes a teammate's arrival but only slides in your own", () => {
+        const { rerender } = render(<Timeline entries={[by(4, 1)]} currentUserId={9} />);
+
+        rerender(<Timeline entries={[by(4, 1), by(4, 2), by(9, 3)]} currentUserId={9} />);
+
+        const [, teammate, mine] = entryLis();
+        expect(teammate!.classList.contains('timeline__entry--incoming')).toBe(true);
+        expect(mine!.classList.contains('timeline__entry--new')).toBe(true);
+        expect(mine!.classList.contains('timeline__entry--incoming')).toBe(false);
+    });
+
+    it('shows your in-flight post last, labeled as sending, and busy', () => {
+        render(<Timeline entries={[by(4, 1)]} currentUserId={9} pending={{ type: 'action', text: 'Restarted the VPN' }} />);
+
+        const last = entryLis().at(-1)!;
+        expect(last.classList.contains('timeline__entry--sending')).toBe(true);
+        expect(last.getAttribute('aria-busy')).toBe('true');
+        expect(last.textContent).toContain('Restarted the VPN');
+        expect(last.textContent).toContain('Sending');
+    });
+
+    it('shows a pending post instead of the empty state on an empty room', () => {
+        render(<Timeline entries={[]} currentUserId={9} pending={{ type: 'observation', text: 'first!' }} />);
+
+        expect(screen.queryByText('No entries yet')).toBeNull();
+        expect(screen.getByText('first!')).toBeTruthy();
+    });
+});
+

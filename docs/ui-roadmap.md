@@ -198,6 +198,16 @@ Every tracked occurrence of the old name, from a case-insensitive scan of all tr
 **Removal path:** delete `client/src/components/hero/`, remove the lazy import from `SignInPage.tsx`, `npm uninstall three @react-three/fiber`, confirm `npm run build` chunk table no longer lists the hero chunk. Nothing else references these packages.
 **Done when:** shape renders and rotates on sign-in at 1440; static fallback at 375 and under reduced-motion; CPU drops to idle when the tab is hidden (observable in the browser task manager); chunk size recorded above.
 
+### Polish pass — from the Oct 8 redesign prompts — **DONE 2026-10-14**
+
+The parts of the "premium dark cockpit" and liquid-glass prompts that fit an app, applied to the existing pages in plain CSS with no new dependencies:
+- **Ambient backdrop.** The sign-in mesh drifts faintly behind every signed-in page (`AppShell`), at `--ambient-opacity`. `tokens.test.ts` holds muted text at AA over each blob at its peak. It is static under reduced motion.
+- **Real-time timeline.** Only entries that arrive after the page loads slide in. A teammate's entry flashes the brand glow once. Your own post shows as a dashed "Sending" row until the server answers. That row is never mixed into the stored entries, so ordering by id (ADR 0001) is untouched.
+- **Live dots.** Open P1 rooms pulse red; the dot is decorative there, because the P1 badge already says it in text. Each machine on Fingerprints reads Fresh (published within 24h), Stale, or Missing data.
+- **States.** Clickable things lift and press; things that aren't only brighten their border. A form card brightens while you type in it.
+
+**Deliberately not built:** multiplayer cursors and team avatars (the server sends no member list), streaming logs (no data source until the agent ships), and the landing-page sections, light-mode toggle and GSAP/Framer Motion from the prompts (the Oct 8 choices: app screens, dark only, no dependencies).
+
 ## 3. Sequencing summary
 
 ```

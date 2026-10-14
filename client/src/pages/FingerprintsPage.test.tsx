@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import FingerprintsPage from './FingerprintsPage';
+import FingerprintsPage, { freshness } from './FingerprintsPage';
 import { ApiError, listFingerprints } from '../api';
 import type { FingerprintWithPublisher } from '../api';
 
@@ -157,4 +157,26 @@ describe('FingerprintsPage', () => {
         await waitFor(() => expect(listFingerprints).toHaveBeenLastCalledWith('payments'));
         expect(screen.getByTestId('search').textContent).toBe('?project=payments');
     });
+
+    it('labels each machine fresh, stale, or missing data', async () => {
+        const dayAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+        vi.mocked(listFingerprints).mockResolvedValue([fp(1), fp(2, { updated_at: dayAgo }), fp(3, { lockfile_hash: null })]);
+        renderPage();
+
+        await screen.findByText(/fields differ/);
+        const labels = [...document.querySelectorAll('.fp-published .ui-livedot')].map((el) => el.textContent);
+        expect(labels).toEqual(['Fresh', 'Stale', 'Missing data']);
+    });
 });
+
+describe('freshness', () => {
+    const now = Date.parse('2026-10-14T12:00:00Z');
+    it('puts missing data ahead of age', () => {
+        expect(freshness(fp(1, { os_arch: null, updated_at: '2026-10-14T11:59:00Z' }), now).label).toBe('Missing data');
+    });
+    it('is fresh under a day and stale at a day or more', () => {
+        expect(freshness(fp(1, { updated_at: '2026-10-13T12:00:01Z' }), now).label).toBe('Fresh');
+        expect(freshness(fp(1, { updated_at: '2026-10-13T12:00:00Z' }), now).label).toBe('Stale');
+    });
+});
+

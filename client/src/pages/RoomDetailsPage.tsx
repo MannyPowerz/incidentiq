@@ -10,6 +10,7 @@ import { useRoomLive } from '../hooks/useRoomLive';
 import type { EntriesUpdate } from '../hooks/useRoomLive';
 import { useRelevance } from '../hooks/useRelevance';
 import Timeline from '../components/timeline/Timeline';
+import type { PendingEntry } from '../components/timeline/Timeline';
 import EntryComposer from '../components/timeline/EntryComposer';
 import AiDraftComposer from '../components/timeline/AiDraftComposer';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
@@ -44,6 +45,8 @@ export default function RoomDetailsPage(): JSX.Element {
     const [resolving, setResolving] = useState(false);
     // the one draft with a confirm or reject in flight; its sibling buttons wait too
     const [busyEntryId, setBusyEntryId] = useState<number | null>(null);
+    // your post while it is in flight; shown in the timeline as provisional, never stored in entries
+    const [sending, setSending] = useState<PendingEntry | null>(null);
     const toast = useToast();
     const currentUserId = getCurrentUserId();
 
@@ -227,6 +230,7 @@ export default function RoomDetailsPage(): JSX.Element {
                     onConfirmDraft={(entry) => handleDraftAction(entry, 'confirm')}
                     onRejectDraft={(entry) => handleDraftAction(entry, 'reject')}
                     relevance={relevance}
+                    pending={sending}
                 />
                 {/* one polite region for arrivals: announced once each, never a focus steal (design-system.md §4.6) */}
                 <p className="ui-sr-only" aria-live="polite">
@@ -235,7 +239,7 @@ export default function RoomDetailsPage(): JSX.Element {
             </section>
 
             <Card title="Add to the timeline">
-                <EntryComposer incidentId={incident.id} onPosted={handlePosted} />
+                <EntryComposer incidentId={incident.id} onPosted={handlePosted} onSendingChange={setSending} />
             </Card>
 
             <Card title="Draft with AI">

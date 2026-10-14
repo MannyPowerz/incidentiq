@@ -142,3 +142,50 @@
     text-transform: uppercase;
     color: var(--color-text-3);
 }
+
+/* --- real time: what arrives while you watch moves; what was already there does not --- */
+.timeline__entry {
+    transition:
+        border-color var(--dur-fast) var(--ease),
+        background-color var(--dur-fast) var(--ease);
+}
+
+/* entries are not clickable, so hover only brightens the edge to help the eye track, never lifts */
+.timeline__entry:hover {
+    border-color: var(--color-border-strong);
+}
+
+.timeline__entry--new {
+    animation: timeline-enter var(--dur-slow) var(--ease);
+}
+
+/* a teammate's entry also flashes the brand glow once, then settles */
+.timeline__entry--incoming {
+    animation:
+        timeline-enter var(--dur-slow) var(--ease),
+        timeline-flash 2.4s var(--ease);
+}
+
+/* your own post before the server confirms it: visibly provisional */
+.timeline__entry--sending {
+    border-style: dashed;
+    opacity: 0.75;
+    animation: timeline-enter var(--dur-slow) var(--ease);
+}
+
+@keyframes timeline-enter {
+    from { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes timeline-flash {
+    from { box-shadow: var(--shadow-glow); }
+    to { box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .timeline__entry--new,
+    .timeline__entry--incoming,
+    .timeline__entry--sending {
+        animation: none;
+    }
+}
