@@ -66,6 +66,14 @@ describe('LiveDot', () => {
         expect(screen.getByText('Agent offline').className).toBe('ui-sr-only');
     });
 
+    // used where a badge already says the same thing in text, so it must not add a second status region
+    it('is hidden from assistive tech and has no status role when decorative', () => {
+        const { container } = render(<LiveDot state="failing" label="Open P1" decorative />);
+        expect(screen.queryByRole('status')).toBeNull();
+        expect(container.firstElementChild!.getAttribute('aria-hidden')).toBe('true');
+        expect(container.textContent).toBe('');
+    });
+
     it('falls back to a state label when none is given', () => {
         render(<LiveDot state="syncing" label="" />);
         expect(screen.getByRole('status').textContent).toBe('Syncing');
