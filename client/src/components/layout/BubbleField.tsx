@@ -3,13 +3,19 @@ import type { JSX } from 'react';
 import { bubbleCount, makeBubbles, position, repel } from './bubbleMath';
 import type { Bubble } from './bubbleMath';
 
-type Palette = { tints: string[]; highlight: string };
+type Palette = { tints: string[]; glass: string; glass2: string; highlight: string; shade: string };
 
-// tokens, read off the page, so the bubbles change with the theme and stay within what tokens.test.ts checks
+// tokens, read off the page, so the droplets change with the theme and stay within what tokens.test.ts checks
 function readPalette(): Palette {
     const css = getComputedStyle(document.documentElement);
     const v = (name: string) => css.getPropertyValue(name).trim();
-    return { tints: [v('--mesh-1'), v('--mesh-2'), v('--mesh-3'), v('--color-primary')], highlight: v('--liquid-highlight') };
+    return {
+        tints: [v('--mesh-1'), v('--mesh-2'), v('--mesh-3'), v('--color-primary')],
+        glass: v('--liquid-tint'),
+        glass2: v('--liquid-tint-2'),
+        highlight: v('--liquid-highlight'),
+        shade: v('--liquid-shade'),
+    };
 }
 
 // "#3730A3" or "rgb(...)" -> "rgba(r, g, b, a)"
@@ -23,31 +29,54 @@ function withAlpha(color: string, alpha: number): string {
     return rgb ? `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
 }
 
-function drawBubble(ctx: CanvasRenderingContext2D, x: number, y: number, b: Bubble, p: Palette): void {
-    const tint = p.tints[b.hue] ?? p.tints[0]!;
-    // glass: clear in the middle, the color gathering at the rim, as light does in a real bubble
-    const body = ctx.createRadialGradient(x, y, b.r * 0.2, x, y, b.r);
-    body.addColorStop(0, withAlpha(tint, 0));
-    body.addColorStop(0.75, withAlpha(tint, 0.06));
-    body.addColorStop(1, withAlpha(tint, 0.28));
-    ctx.fillStyle = body;
+// the droplet outline: a circle whose radius ripples by angle, slowly, so it reads as liquid, not a soap bubble
+function blobPath(ctx: CanvasRenderingContext2D, x: number, y: number, b: Bubble, t: number): void {
+    const steps = 28;
     ctx.beginPath();
-    ctx.arc(x, y, b.r, 0, Math.PI * 2);
+    for (let i = 0; i <= steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        const k = 1 + 0.11 * Math.sin(2 * a + b.phase + t) + 0.06 * Math.sin(3 * a + b.phase * 1.7 - t * 0.7);
+        const px = x + Math.cos(a) * b.r * k;
+        const py = y + Math.sin(a) * b.r * k;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+}
+
+// drawn like the .liquid__drop elements: glass tint, a shaded underside, a gloss that follows the cursor, a colored rim
+function drawBubble(ctx: CanvasRenderingContext2D, x: number, y: number, b: Bubble, p: Palette, t: number, px: number, py: number): void {
+    blobPath(ctx, x, y, b, t);
+    const glass = ctx.createLinearGradient(x - b.r, y - b.r, x + b.r, y + b.r);
+    glass.addColorStop(0, p.glass);
+    glass.addColorStop(1, p.glass2);
+    ctx.fillStyle = glass;
     ctx.fill();
-    ctx.lineWidth = b.r > 14 ? 1.2 : 0.8;
-    ctx.strokeStyle = withAlpha(tint, 0.45);
-    ctx.stroke();
-    // the specular highlight, the same token as the glass droplets' gloss
-    if (b.r > 6) {
-        ctx.fillStyle = p.highlight;
-        ctx.beginPath();
-        ctx.ellipse(x - b.r * 0.38, y - b.r * 0.42, b.r * 0.22, b.r * 0.12, -0.6, 0, Math.PI * 2);
+    const shade = ctx.createLinearGradient(x, y, x, y + b.r);
+    shade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    shade.addColorStop(1, p.shade);
+    ctx.fillStyle = shade;
+    ctx.fill();
+    if (b.r > 8) {
+        const gx = x - b.r * (0.3 - px * 0.16);
+        const gy = y - b.r * (0.35 - py * 0.16);
+        const gloss = ctx.createRadialGradient(gx, gy, 0, gx, gy, b.r * 0.7);
+        gloss.addColorStop(0, p.highlight);
+        gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = gloss;
         ctx.fill();
     }
+    // the rim sweeps two of the theme's colors, like the droplets' iridescent ring
+    const rim = ctx.createLinearGradient(x - b.r, y, x + b.r, y);
+    rim.addColorStop(0, withAlpha(p.tints[b.hue] ?? p.tints[0]!, 0.55));
+    rim.addColorStop(1, withAlpha(p.tints[(b.hue + 1) % 4]!, 0.35));
+    ctx.lineWidth = b.r > 14 ? 1.2 : 0.8;
+    ctx.strokeStyle = rim;
+    ctx.stroke();
 }
 
 /**
- * BubbleField — an endless field of glass bubbles of every size, on a canvas behind the content.
+ * BubbleField — an endless field of liquid glass droplets of every size, on a canvas behind the content.
  * They stream past as you scroll (nearer ones faster), drift with the cursor by depth, part around
  * it, and wrap so the field never runs out. A canvas rather than elements: dozens of blurred glass
  * elements would cost the GPU every frame; a few dozen gradient circles cost almost nothing.
@@ -90,7 +119,7 @@ export default function BubbleField({ density = 1 }: { density?: number }): JSX.
             for (const b of bubbles) {
                 const at = position(b, f);
                 const away = repel(at.x, at.y, pointer.x, pointer.y);
-                drawBubble(ctx, at.x + away.dx, at.y + away.dy, b, palette);
+                drawBubble(ctx, at.x + away.dx, at.y + away.dy, b, palette, f.time / 2400, pointer.ex, pointer.ey);
             }
         };
 
