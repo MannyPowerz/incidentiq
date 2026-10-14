@@ -9,9 +9,11 @@ import './styles/tokens.css'
 import './styles/reset.css'
 import './styles/utilities.css'
 import { installPointerField } from './motion/pointerField'
+import { installInteractions } from './motion/interactions'
 
-// once, outside React: StrictMode's double mount would otherwise add two listeners
+// once, outside React: StrictMode's double mount would otherwise add two listeners each
 installPointerField()
+installInteractions()
 
 const root = document.getElementById("root");
 

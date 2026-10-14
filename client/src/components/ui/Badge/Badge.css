@@ -40,3 +40,20 @@
 .ui-badge--entry-finding { --badge-fg: var(--entry-finding); --badge-bg: var(--sev-p2-soft); }
 .ui-badge--entry-system { --badge-fg: var(--color-text-3); --badge-bg: var(--color-surface-2); }
 .ui-badge--entry-ai_draft { --badge-fg: var(--color-primary-strong); --badge-bg: var(--color-primary-soft); }
+
+/* badges answer the cursor in their own color: a pixel of lift and a soft ring of their tone */
+.ui-badge {
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.ui-badge:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--badge-fg, var(--color-text-2)) 55%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--badge-fg, var(--color-text-2)) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-badge:hover { transform: none; }
+}
+
