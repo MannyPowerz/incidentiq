@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import AuthForm from "../components/auth/AuthForm";
+import HeroGate from "../components/hero/HeroGate";
 import "./SignInPage.css"
 
 const TILT_MAX_DEG = 8;
@@ -38,7 +39,7 @@ function useTilt() {
 /**
  * SignInPage — the one cinematic screen. The brand panel carries the mesh gradient and the hero
  * shape; the form stays a solid card, because it is content, not chrome (design-system.md §2.7).
- * Item 10 swaps the static shape for the lazy-loaded 3D hero and keeps this as its fallback.
+ * The hero is 3D on desktop (lazy-loaded) and this CSS shape everywhere else.
  */
 export default function SignInPage() : JSX.Element {
     const tiltRef = useTilt();
@@ -60,7 +61,8 @@ export default function SignInPage() : JSX.Element {
                 <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>
 
                 <div ref={tiltRef} className="sign-in-brand__hero" aria-hidden="true">
-                    <span className="sign-in-brand__shape" />
+                    {/* the CSS shape is the fallback for every case the 3D one can't serve (HeroGate.tsx) */}
+                    <HeroGate fallback={<span className="sign-in-brand__shape" />} />
                 </div>
 
                 <p className="sign-in-brand__pitch">

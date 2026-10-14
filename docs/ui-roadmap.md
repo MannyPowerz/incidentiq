@@ -190,10 +190,11 @@ Every tracked occurrence of the old name, from a case-insensitive scan of all tr
 **Still yours to do:** rename the GitHub repo in Settings (GitHub redirects the old URL), then `git remote set-url origin <new url>`. Optionally rename the local folder and the Docker container together.
 
 ### Item 10 — 3D hero *(last; optional; isolated)*
+### Item 10 — 3D hero *(last; optional; isolated)* — **DONE 2026-10-14**
 
 **Scope:** `client/src/components/hero/` — `Hero3D.tsx` (lazy via `React.lazy` + `Suspense`), `HeroFallback.tsx` (static SVG/PNG of the same shape in `--orange-500`), `Hero3D.css`. One `<Canvas>`, `frameloop="demand"` driven by a `requestAnimationFrame` loop that stops on `document.visibilitychange` hidden; a single rounded shape built from a plain `boxGeometry` with bevelled edges (**decided 2026-10-08 — no drei**), ambient + one directional light, no textures, no network-loaded assets; mouse parallax via a pointer listener on the wrapper clamped to a few degrees; `prefers-reduced-motion: reduce` → render `HeroFallback` only. Host: the sign-in page, above the form at `desktop`+, hidden at `phone`.
 **Dependencies and why — two, not three:** `three` (the renderer) and `@react-three/fiber` **^9** (React 19 reconciler — v8 is React 18 only, verified against the package's peer range `react >=19 <19.4` on 2026-10-08). `@react-three/drei` is **not** added: its only use would have been `RoundedBox`, and a bevelled `boxGeometry` from `three` itself gives the same soft shape. One fewer package to own and remove.
-**Bundle cost:** [uncertain — not measured]. Measuring requires installing, which Phase 1 forbids. First step of this item in Phase 2: `npm run build` before and after, compare the lazy chunk size in Vite's output table, record both numbers here.
+**Bundle cost, measured Oct 14:** main bundle 304.89 kB → 305.94 kB (+1.05 kB for the gate). The lazy 3D chunk is **918.94 kB (244.42 kB gzipped)**, downloaded only on desktop sign-in with motion allowed and WebGL available. Full record in ADR 0019.
 **Removal path:** delete `client/src/components/hero/`, remove the lazy import from `SignInPage.tsx`, `npm uninstall three @react-three/fiber`, confirm `npm run build` chunk table no longer lists the hero chunk. Nothing else references these packages.
 **Done when:** shape renders and rotates on sign-in at 1440; static fallback at 375 and under reduced-motion; CPU drops to idle when the tab is hidden (observable in the browser task manager); chunk size recorded above.
 
