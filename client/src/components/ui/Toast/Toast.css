@@ -23,7 +23,7 @@
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     border-left: 3px solid var(--toast-accent, var(--color-text-3));
     font-family: var(--font-sans);
     font-size: var(--text-sm);

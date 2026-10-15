@@ -9,8 +9,9 @@
     text-align: center;
     font-family: var(--font-sans);
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background-color: var(--color-surface);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 .ui-state--error {
