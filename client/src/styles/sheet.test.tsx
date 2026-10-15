@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import css from './utilities.css?raw';
 import AuthForm from '../components/auth/AuthForm';
+import SignInPage from '../pages/SignInPage';
 import { Card, Modal } from '../components/ui';
 
 // the rules inside the one @media block that follows `start`
@@ -40,6 +41,15 @@ describe('sheets', () => {
             </Modal>,
         );
         expect(screen.getByRole('dialog').className).toContain('ui-glass ui-sheet');
+    });
+
+    it('puts the interactive scanner lens in the sign-in hero', () => {
+        const { container } = render(
+            <MemoryRouter>
+                <SignInPage />
+            </MemoryRouter>,
+        );
+        expect(container.querySelector('.sign-in-brand__hero .brand-mark--xl.brand-mark--interactive')).not.toBeNull();
     });
 
     it('leaves content cards solid', () => {

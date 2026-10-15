@@ -35,7 +35,7 @@
         background-color 400ms var(--ease);
 }
 
-.ide-win--editor { --w: clamp(19rem, 32vw, 32rem); --h: 16.5rem; }
+.ide-win--editor { --w: clamp(17rem, 26vw, 27rem); --h: 13.8rem; }
 .ide-win--terminal { --w: clamp(18rem, 28vw, 28rem); --h: 11.5rem; }
 .ide-win--problems { --w: 16rem; --h: 8.5rem; }
 

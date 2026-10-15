@@ -17,14 +17,14 @@ export const AUTO_MS = 70;
 // reduced motion shows the session this far in: the proxy fixed, tests green, the commit made
 export const STILL_STEPS = 260;
 // the editor shows this many lines around the caret, like a window scrolled to where you are working
-export const EDITOR_LINES = 9;
+export const EDITOR_LINES = 7;
 
 type Win = 'editor' | 'terminal' | 'problems';
 type Spot = { left: number; top: number };
 
 const WINS: Win[] = ['editor', 'terminal', 'problems'];
-// what counts as the page's content: anything a person reads or uses inside <main>
-const CONTENT = 'main :is(h1, h2, h3, p, a, button, input, select, textarea, label, tr, figure, li, [data-spotlight], .ui-card)';
+// what counts as the page's content: anything a person reads or uses inside <main>, plus visuals marked data-backdrop-clear
+const CONTENT = 'main :is(h1, h2, h3, p, a, button, input, select, textarea, label, tr, figure, li, form, [data-spotlight], [data-backdrop-clear], .ui-card, .ui-sheet)';
 // wait this long after a page change before measuring, so data that loads after the route (the rooms list) is on screen
 export const SETTLE_MS = 500;
 
