@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { FILES, SCRIPT, TERMINAL_LINES, initialState, step, stepN } from './ideScript';
+import { FILES, SCRIPT, TERMINAL_LINES, focusOf, initialState, step, stepN } from './ideScript';
 import type { IdeState, Op } from './ideScript';
 
 // a state sitting just before the given op, with the given file open and caret
@@ -78,6 +78,21 @@ describe('step', () => {
         expect(s.terminal[0]!.text).toBe('l1');
     });
 
+    it('moves the windows on at a new task', () => {
+        const s = step(at(find('shuffle'), { layout: 2 }));
+        expect(s.layout).toBe(3);
+    });
+
+    it('puts the focus on the window the last op touched, and keeps it through a pause', () => {
+        // part-way through typing code, then part-way through typing a command
+        expect(focusOf({ ...initialState(), op: SCRIPT.indexOf(find('type')), at: 1 })).toBe('editor');
+        expect(focusOf({ ...initialState(), op: SCRIPT.indexOf(find('run')), at: 1 })).toBe('terminal');
+        // the first op is opening a file; before it has run, the editor is still the focus
+        expect(focusOf({ ...initialState(), op: 1, at: 0 })).toBe('editor');
+        const pause = SCRIPT.findIndex((o, i) => o.k === 'wait' && SCRIPT[i - 1]!.k === 'run');
+        expect(focusOf({ ...initialState(), op: pause })).toBe('terminal');
+    });
+
     it('opens a file in a new tab once, and switches to it', () => {
         const op = find('open') as Extract<Op, { k: 'open' }>;
         const s = step(at(op, { tabs: ['a.ts', op.file] }));
@@ -118,5 +133,6 @@ describe('the session', () => {
         expect(again.op).toBe(0);
         expect(again.files).toEqual(FILES);
         expect(again.terminal).toEqual(end.terminal);
+        expect(again.layout).toBe(end.layout + 1);
     });
 });

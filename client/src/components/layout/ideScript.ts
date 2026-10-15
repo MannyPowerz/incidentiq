@@ -24,7 +24,9 @@ export type Op =
     | { k: 'mark'; mark: Mark }
     | { k: 'run'; cmd: string }
     | { k: 'out'; text: string; kind?: Exclude<TermKind, 'cmd'> }
-    | { k: 'wait'; n: number };
+    | { k: 'wait'; n: number }
+    // a new task: the windows rearrange, like a developer moving windows on a desktop
+    | { k: 'shuffle' };
 
 export type IdeState = {
     files: Record<string, string[]>;
@@ -34,6 +36,8 @@ export type IdeState = {
     // `${file}:${line}` -> mark, so a flag stays on its file when the tab changes
     marks: Record<string, Mark>;
     terminal: TermLine[];
+    // which arrangement of the windows; it only counts up, the component picks a layout from it
+    layout: number;
     op: number;
     at: number;
 };
@@ -90,6 +94,7 @@ const mark = (m: Mark): Op => ({ k: 'mark', mark: m });
 const run = (cmd: string): Op => ({ k: 'run', cmd });
 const out = (text: string, kind?: Exclude<TermKind, 'cmd'>): Op => (kind ? { k: 'out', text, kind } : { k: 'out', text });
 const wait = (n: number): Op => ({ k: 'wait', n });
+const shuffle: Op = { k: 'shuffle' };
 
 export const SCRIPT: Op[] = [
     // 1. the dev server comes up, the scanner catches the proxy on the wrong port, the fix lands
@@ -115,6 +120,7 @@ export const SCRIPT: Op[] = [
     wait(16),
 
     // 2. a test catches the timeline sorted by arrival time; sort by entry_id instead
+    shuffle,
     o('timeline.ts'),
     go(5),
     wait(8),
@@ -132,6 +138,7 @@ export const SCRIPT: Op[] = [
     wait(14),
 
     // 3. the scanner catches a silent VPN failure; a human posts it to the room
+    shuffle,
     run('incidentioq scan'),
     wait(8),
     out('ports, interfaces, lockfile, migrations'),
@@ -144,6 +151,7 @@ export const SCRIPT: Op[] = [
     wait(16),
 
     // 4. this machine drifted from main; bring Node back in line
+    shuffle,
     o('package.json'),
     run('incidentioq fingerprint --diff main'),
     wait(8),
@@ -160,6 +168,7 @@ export const SCRIPT: Op[] = [
     wait(14),
 
     // 5. a migration one laptop never ran: write it, run it, the room sees it in sync
+    shuffle,
     o('0007_entries_org.sql'),
     go(0),
     nl,
@@ -191,6 +200,7 @@ export function initialState(): IdeState {
         caret: { line: 0, col: 0 },
         marks: {},
         terminal: [],
+        layout: 0,
         op: 0,
         at: 0,
     };
@@ -207,8 +217,8 @@ function edit(s: IdeState, line: number, text: string): Record<string, string[]>
 /** One step of the session: one character typed or erased, or one whole action. */
 export function step(s: IdeState): IdeState {
     const op = SCRIPT[s.op];
-    // the session is over: start again from clean files, keeping the terminal's scrollback
-    if (!op) return { ...initialState(), terminal: s.terminal };
+    // the session is over: start again from clean files, keeping the terminal's scrollback and moving the windows on
+    if (!op) return { ...initialState(), terminal: s.terminal, layout: s.layout + 1 };
 
     const lines = s.files[s.open]!;
     const { line, col } = s.caret;
@@ -249,7 +259,23 @@ export function step(s: IdeState): IdeState {
             return next({ ...s, terminal: [...s.terminal, { text: op.text, kind: op.kind ?? 'out', typing: false }].slice(-TERMINAL_LINES) });
         case 'wait':
             return s.at + 1 >= op.n ? next(s) : { ...s, at: s.at + 1 };
+        case 'shuffle':
+            return next({ ...s, layout: s.layout + 1 });
     }
+}
+
+const TERMINAL_OPS: ReadonlySet<Op['k']> = new Set(['run', 'out']);
+const EDITOR_OPS: ReadonlySet<Op['k']> = new Set(['open', 'goto', 'type', 'erase', 'newline', 'mark']);
+
+/** The window being worked in: the last one an op touched, so a pause keeps its focus. */
+export function focusOf(s: IdeState): 'editor' | 'terminal' {
+    // an op part-way through is the one being worked; otherwise the one that just finished
+    for (let i = Math.min(s.at > 0 ? s.op : s.op - 1, SCRIPT.length - 1); i >= 0; i--) {
+        const k = SCRIPT[i]!.k;
+        if (TERMINAL_OPS.has(k)) return 'terminal';
+        if (EDITOR_OPS.has(k)) return 'editor';
+    }
+    return 'editor';
 }
 
 export function stepN(s: IdeState, n: number): IdeState {
