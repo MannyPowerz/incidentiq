@@ -1,0 +1,198 @@
+/* The faint IDE behind every page (IdeBackdrop.tsx). The backdrop's own opacity keeps it quiet: stronger on landing and sign-in, fainter in the app. */
+.ide {
+    --ide-line: 1.45rem;
+    position: absolute;
+    inset: clamp(4.5rem, 9vh, 6rem) clamp(0.75rem, 3vw, 3rem) clamp(0.75rem, 3vh, 2rem);
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-2);
+    pointer-events: none;
+}
+
+.ide__tabs {
+    display: flex;
+    gap: 2px;
+    padding: 0.4rem 0.6rem 0;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--color-text-3);
+}
+
+.ide__tab {
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.ide__tab.is-open {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    box-shadow: inset 0 2px 0 var(--color-primary);
+}
+
+.ide__editor {
+    position: relative;
+    overflow: hidden;
+}
+
+/* the file glides so the caret sits under the cursor (--ide-x/--ide-y, set by the component); it never slides left of its own margin. 5.5ch is the gutter plus its gap */
+.ide__code {
+    position: absolute;
+    inset: 0 0 auto 0;
+    transform:
+        translateX(max(0px, calc(var(--ide-x, 0px) - (var(--caret-col) + 5.5) * 1ch)))
+        translateY(calc(var(--ide-y, 40%) - var(--caret-line) * var(--ide-line) - var(--ide-line) / 2));
+    transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ide__line {
+    display: flex;
+    align-items: center;
+    height: var(--ide-line);
+    white-space: pre;
+}
+
+.ide__gutter {
+    flex: 0 0 4ch;
+    margin-right: 1.5ch;
+    text-align: right;
+    color: var(--color-text-3);
+}
+
+.ide__line.is-active {
+    background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.ide__line.is-active .ide__gutter {
+    color: var(--color-text-2);
+}
+
+/* the scanner's flag on a line, and the same line once the fix is in */
+.ide__line.is-flag code {
+    text-decoration: underline wavy color-mix(in srgb, var(--color-danger) 70%, transparent);
+    text-underline-offset: 4px;
+}
+
+.ide__line.is-flag .ide__gutter {
+    color: var(--color-danger);
+}
+
+.ide__line.is-ok {
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+.ide__line.is-ok .ide__gutter {
+    color: var(--color-success);
+}
+
+.ide__caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    margin: 0 -1px;
+    vertical-align: text-bottom;
+    background: var(--color-primary);
+    animation: ide-blink 1s steps(1) infinite;
+}
+
+@keyframes ide-blink {
+    50% { opacity: 0; }
+}
+
+.ide__terminal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-height: 11.5rem;
+    padding: 0.5rem 1rem 0.7rem;
+    border-top: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--color-surface) 35%, transparent);
+}
+
+.ide__panel-title {
+    margin-bottom: 0.25rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-3);
+}
+
+.ide__term {
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* markers say what kind of line it is, the way a shell prompt and a test runner do */
+.ide__term--cmd::before { content: '$ '; color: var(--color-primary-strong); }
+.ide__term--out { color: var(--color-text-3); }
+.ide__term--flag { color: var(--color-danger); }
+.ide__term--flag::before { content: '⚠ '; }
+.ide__term--fail { color: var(--color-danger); }
+.ide__term--fail::before { content: '✗ '; }
+.ide__term--ok { color: var(--color-success); }
+.ide__term--ok::before { content: '✓ '; }
+
+.ide__term.is-typing::after {
+    content: '';
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    background: var(--color-primary);
+    animation: ide-blink 1s steps(1) infinite;
+}
+
+.ide__status {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.3rem 1rem;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.68rem;
+    color: var(--color-text-3);
+}
+
+.ide__watch {
+    margin-left: auto;
+}
+
+.ide__watch::before {
+    content: '';
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-success);
+    animation: ide-blink 2.4s ease-in-out infinite;
+}
+
+/* a phone: smaller type, and the terminal takes less of the screen */
+@media (max-width: 720px) {
+    .ide {
+        --ide-line: 1.2rem;
+        font-size: 0.66rem;
+    }
+
+    .ide__terminal {
+        min-height: 7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ide__code {
+        transition: none;
+    }
+
+    .ide__caret,
+    .ide__term.is-typing::after,
+    .ide__watch::before {
+        animation: none;
+    }
+}
