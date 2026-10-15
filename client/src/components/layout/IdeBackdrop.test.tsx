@@ -1,13 +1,15 @@
 /**
  * IdeBackdrop.test.tsx — it works by itself from the first frame; your cursor, scrolling, keys and
  * clicks drive it instead and pause the autopilot until you have been idle for IDLE_MS; the windows
- * rearrange per task and the one in use comes forward; it never shows what you typed; and reduced
+ * rearrange per task, measured off the page so they keep clear of its content, and the one in use
+ * comes forward; it never shows what you typed; and reduced
  * motion is one still picture.
  */
 
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { act, fireEvent, render } from '@testing-library/react';
-import IdeBackdrop, { AUTO_MS, CLICK_STEPS, EDITOR_LINES, IDLE_MS, KEY_STEPS, LAYOUTS, MOVE_PX, SCROLL_PX, STILL_STEPS } from './IdeBackdrop';
+import IdeBackdrop, { AUTO_MS, CLICK_STEPS, EDITOR_LINES, IDLE_MS, KEY_STEPS, LAYOUTS, MOVE_PX, SCROLL_PX, SETTLE_MS, STILL_STEPS } from './IdeBackdrop';
+import { overlap } from './windowPlacement';
 import { initialState, step, stepN } from './ideScript';
 
 // the script opens vite.config.ts in one step, then types `npm run dev` into the terminal
@@ -91,6 +93,29 @@ describe('IdeBackdrop', () => {
         wait(AUTO_MS * n);
         expect(editor().style.getPropertyValue('--x')).toBe(`${LAYOUTS[1]!.editor.left}%`);
         expect(editor().style.getPropertyValue('--y')).toBe(`${LAYOUTS[1]!.editor.top}%`);
+    });
+
+    it('measures the page and keeps every window off its content', () => {
+        const box = (x: number, y: number, w: number, h: number) => () => ({ x, y, left: x, top: y, width: w, height: h, right: x + w, bottom: y + h, toJSON() {} }) as DOMRect;
+        // a 1440x900 screen whose heading runs across the upper left; every window is 300x200
+        const heading = { x: 100, y: 90, w: 700, h: 300 };
+        vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(300);
+        vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(200);
+        const { container } = render(
+            <main>
+                <h1>Rooms</h1>
+                <IdeBackdrop />
+            </main>,
+        );
+        container.querySelector('h1')!.getBoundingClientRect = box(heading.x, heading.y, heading.w, heading.h);
+        container.querySelector<HTMLElement>('.ide')!.getBoundingClientRect = box(0, 0, 1440, 900);
+        wait(SETTLE_MS);
+        for (const win of container.querySelectorAll<HTMLElement>('.ide-win')) {
+            const x = parseFloat(win.style.getPropertyValue('--x'));
+            const y = parseFloat(win.style.getPropertyValue('--y'));
+            expect(win.style.getPropertyValue('--x')).toMatch(/px$/);
+            expect(overlap({ x, y, w: 300, h: 200 }, heading)).toBe(0);
+        }
     });
 
     it('brings the window being worked in to the front', () => {
