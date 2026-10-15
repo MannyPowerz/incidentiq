@@ -3,7 +3,7 @@ import type { CSSProperties, JSX, PointerEvent } from 'react';
 import './BrandMark.css';
 
 type BrandMarkProps = {
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
     // follows the pointer in 3D, sways when idle, flips on click
     interactive?: boolean;
 };
@@ -64,7 +64,7 @@ export default function BrandMark({ size = 'sm', interactive = false }: BrandMar
                 <span className="brand-mark__ring">
                     <span className="brand-mark__sweep" />
                 </span>
-                <span className="brand-mark__core">{size === 'lg' && <span className="brand-mark__monogram">IOQ</span>}</span>
+                <span className="brand-mark__core">{(size === 'lg' || size === 'xl') && <span className="brand-mark__monogram">IOQ</span>}</span>
                 <span className="brand-mark__blip" />
             </span>
         </span>

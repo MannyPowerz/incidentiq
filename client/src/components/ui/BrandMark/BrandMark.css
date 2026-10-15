@@ -13,6 +13,8 @@
 
 .brand-mark--md { --mark-size: 2rem; }
 .brand-mark--lg { --mark-size: 5.5rem; }
+/* the sign-in hero */
+.brand-mark--xl { --mark-size: clamp(11rem, 16vw, 15rem); }
 
 .brand-mark__lens {
     position: relative;

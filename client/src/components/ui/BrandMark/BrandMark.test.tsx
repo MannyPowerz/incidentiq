@@ -24,9 +24,13 @@ describe('BrandMark', () => {
         for (const part of ['ring', 'sweep', 'core', 'blip']) expect(container.querySelector(`.brand-mark__${part}`)).not.toBeNull();
     });
 
-    it('shows the IOQ monogram only at the large size', () => {
+    it('shows the IOQ monogram only at the large sizes', () => {
         const { container, rerender } = render(<BrandMark size="lg" />);
         expect(container.querySelector('.brand-mark__monogram')!.textContent).toBe('IOQ');
+        rerender(<BrandMark size="xl" />);
+        expect(container.querySelector('.brand-mark__monogram')!.textContent).toBe('IOQ');
+        rerender(<BrandMark size="md" />);
+        expect(container.querySelector('.brand-mark__monogram')).toBeNull();
         rerender(<BrandMark size="sm" />);
         expect(container.querySelector('.brand-mark__monogram')).toBeNull();
     });
