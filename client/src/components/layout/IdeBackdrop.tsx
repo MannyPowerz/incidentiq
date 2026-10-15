@@ -20,15 +20,15 @@ export const EDITOR_LINES = 9;
 type Win = 'editor' | 'terminal' | 'problems';
 type Spot = { left: number; top: number };
 
-// where the windows sit, as % of the backdrop, one arrangement per task. Every page's title is top
-// left (the landing headline, the sign-in brand), so the windows keep to the right, the bottom and
-// the corners. CSS clamps each one onto the screen.
+// where the windows sit, as % of the backdrop, one arrangement per task. Every page keeps its text
+// on the left (the landing headline, the sign-in brand and pitch), so the windows keep to the right
+// and the bottom middle. CSS clamps each one onto the screen.
 export const LAYOUTS: Record<Win, Spot>[] = [
-    { editor: { left: 60, top: 12 }, terminal: { left: 4, top: 72 }, problems: { left: 66, top: 66 } },
-    { editor: { left: 56, top: 50 }, terminal: { left: 62, top: 12 }, problems: { left: 4, top: 76 } },
-    { editor: { left: 30, top: 66 }, terminal: { left: 66, top: 40 }, problems: { left: 72, top: 12 } },
-    { editor: { left: 4, top: 66 }, terminal: { left: 58, top: 68 }, problems: { left: 74, top: 30 } },
-    { editor: { left: 62, top: 30 }, terminal: { left: 30, top: 74 }, problems: { left: 70, top: 10 } },
+    { editor: { left: 60, top: 12 }, terminal: { left: 42, top: 72 }, problems: { left: 70, top: 62 } },
+    { editor: { left: 56, top: 50 }, terminal: { left: 62, top: 12 }, problems: { left: 44, top: 78 } },
+    { editor: { left: 42, top: 66 }, terminal: { left: 66, top: 40 }, problems: { left: 72, top: 12 } },
+    { editor: { left: 58, top: 58 }, terminal: { left: 60, top: 10 }, problems: { left: 44, top: 74 } },
+    { editor: { left: 62, top: 30 }, terminal: { left: 42, top: 74 }, problems: { left: 70, top: 10 } },
 ];
 
 /**
