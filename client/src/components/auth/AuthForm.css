@@ -1,4 +1,4 @@
-/* The sign-in card. Fields, button, and spinner come from components/ui; this file only lays them out. */
+/* The sign-in sheet. Its glass, rim and states are .ui-glass .ui-sheet (styles/utilities.css); fields, button and spinner come from components/ui; this file only lays them out. */
 
 .auth-form {
     display: flex;
@@ -7,10 +7,6 @@
     width: 100%;
     max-width: 26rem;
     padding: var(--space-8);
-    background-color: var(--color-surface);
-    border: var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-2);
 }
 
 .auth-form__heading {

@@ -118,7 +118,7 @@ function TiltCard({ children }: { children: ReactNode }): JSX.Element {
 
     return (
         <motion.div
-            className="landing-hero__card ui-glass"
+            className="landing-hero__card ui-glass ui-sheet"
             style={{ rotateX, rotateY, scaleX, transformPerspective: 1100 }}
             onPointerMove={onMove}
             onPointerLeave={() => {
@@ -312,7 +312,7 @@ export default function LandingPage(): JSX.Element {
                     </Reveal>
 
                     <Reveal id="start" className="landing-section">
-                        <div className="landing-cta ui-glass" data-spotlight>
+                        <div className="landing-cta ui-glass ui-sheet" data-spotlight>
                             <h2 className="landing-cta__title">Your next silent failure is already on someone's laptop.</h2>
                             <p className="landing-cta__body">Make an account and open your first war room in under a minute.</p>
                             <form className="landing-cta__form" onSubmit={handleSignup}>
