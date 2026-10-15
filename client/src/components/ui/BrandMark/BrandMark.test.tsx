@@ -1,6 +1,7 @@
 /**
- * BrandMark.test.tsx — the cube is decorative (the wordmark is the name), the interactive one turns
- * toward the pointer and adds a full turn per click, and the small ones take no pointer input.
+ * BrandMark.test.tsx — the scanner lens is decorative (the wordmark is the name), the interactive one
+ * tilts toward the pointer, points its sweep at it and flips once per click, and the small ones take
+ * no pointer input.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -13,12 +14,14 @@ function sized(el: Element) {
     return el as HTMLElement;
 }
 const turn = (el: HTMLElement) => [el.style.getPropertyValue('--mark-rx'), el.style.getPropertyValue('--mark-ry')];
+const sweep = (el: HTMLElement) => el.style.getPropertyValue('--sweep');
 
 describe('BrandMark', () => {
-    it('is a six-faced cube hidden from assistive tech', () => {
+    it('is a scanner lens, a thick ring with a sweep, a core and a caught blip, hidden from assistive tech', () => {
         const { container } = render(<BrandMark />);
         expect(container.firstElementChild!.getAttribute('aria-hidden')).toBe('true');
-        expect(container.querySelectorAll('.brand-mark__face')).toHaveLength(6);
+        expect(container.querySelectorAll('.brand-mark__edge')).toHaveLength(2);
+        for (const part of ['ring', 'sweep', 'core', 'blip']) expect(container.querySelector(`.brand-mark__${part}`)).not.toBeNull();
     });
 
     it('shows the IOQ monogram only at the large size', () => {
@@ -28,27 +31,35 @@ describe('BrandMark', () => {
         expect(container.querySelector('.brand-mark__monogram')).toBeNull();
     });
 
-    it('turns toward the pointer, and back to rest when it leaves', () => {
+    it('tilts toward the pointer and points its sweep at it, and goes back to rest when it leaves', () => {
         const { container } = render(<BrandMark size="lg" interactive />);
         const mark = sized(container.firstElementChild!);
 
+        // the right edge, halfway down: tilt fully right, sweep pointing right (0deg is up)
         fireEvent.pointerMove(mark, { clientX: 100, clientY: 50 });
-        expect(turn(mark)).toEqual(['-24deg', '70deg']);
+        expect(turn(mark)).toEqual(['14deg', '8deg']);
+        expect(sweep(mark)).toBe('90deg');
         expect(mark.classList.contains('brand-mark--held')).toBe(true);
+
+        // the bottom edge, halfway across: tilt fully down, sweep pointing down
+        fireEvent.pointerMove(mark, { clientX: 50, clientY: 100 });
+        expect(turn(mark)).toEqual(['-16deg', '-22deg']);
+        expect(sweep(mark)).toBe('180deg');
 
         fireEvent.pointerLeave(mark);
         expect(turn(mark)).toEqual(['', '']);
+        expect(sweep(mark)).toBe('');
         expect(mark.classList.contains('brand-mark--held')).toBe(false);
     });
 
-    it('adds a full turn for every click', () => {
+    it('adds a full flip for every click', () => {
         const { container } = render(<BrandMark size="lg" interactive />);
         const mark = sized(container.firstElementChild!);
 
         fireEvent.click(mark);
         fireEvent.click(mark);
 
-        expect(turn(mark)[1]).toBe(`${36 + 720}deg`);
+        expect(turn(mark)[1]).toBe(`${-22 + 720}deg`);
     });
 
     it('ignores the pointer when it is not interactive', () => {
