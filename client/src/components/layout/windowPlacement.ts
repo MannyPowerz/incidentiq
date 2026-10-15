@@ -2,7 +2,9 @@
  * windowPlacement — where the background windows go, decided from the page itself.
  *
  * Each window tries many random spots and keeps the one that covers the least of the page's
- * content and of the windows already placed. So the windows land in whatever empty space this
+ * content and of the windows already placed, weighted by how much the covering would show: text on
+ * the bare background counts heavily, anything inside a solid panel barely at all, since the panel
+ * hides the window. So the windows land in whatever empty space this
  * page has: the margins of a list, the space beside a form, below a short page. They land
  * somewhere new every time, because each arrangement draws from its own seed.
  *
@@ -10,6 +12,8 @@
  */
 
 export type Rect = { x: number; y: number; w: number; h: number };
+// content to steer around; weight scales what covering it costs (1 when omitted)
+export type KeepOut = Rect & { weight?: number };
 export type Size = { w: number; h: number };
 
 export type PlaceOptions = {
@@ -44,7 +48,7 @@ export function overlap(a: Rect, b: Rect): number {
 }
 
 /** One rect per size, inside the view, each placed where it covers the least content and the fewest windows. */
-export function placeWindows(view: Size, sizes: Size[], keepOut: Rect[], rand: () => number, options: Partial<PlaceOptions> = {}): Rect[] {
+export function placeWindows(view: Size, sizes: Size[], keepOut: KeepOut[], rand: () => number, options: Partial<PlaceOptions> = {}): Rect[] {
     const { top, gap, tries } = { ...DEFAULTS, ...options };
     const placed: Rect[] = [];
     for (const size of sizes) {
@@ -56,7 +60,7 @@ export function placeWindows(view: Size, sizes: Size[], keepOut: Rect[], rand: (
         for (let i = 0; i < tries; i++) {
             const spot = { x: Math.round(gap + rand() * (maxX - gap)), y: Math.round(top + rand() * (maxY - top)), ...size };
             let cost = 0;
-            for (const k of keepOut) cost += overlap(spot, k);
+            for (const k of keepOut) cost += overlap(spot, k) * (k.weight ?? 1);
             for (const p of placed) cost += overlap(spot, p) * WINDOW_WEIGHT;
             if (cost < bestCost) {
                 best = spot;

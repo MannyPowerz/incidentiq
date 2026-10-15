@@ -3,7 +3,7 @@ import type { CSSProperties, JSX } from 'react';
 import { focusOf, initialState, stepN } from './ideScript';
 import type { IdeState } from './ideScript';
 import { placeWindows, seeded } from './windowPlacement';
-import type { Rect } from './windowPlacement';
+import type { KeepOut } from './windowPlacement';
 import './IdeBackdrop.css';
 
 // you drive: every this much cursor travel, scroll, key or click is this many steps of work
@@ -28,16 +28,36 @@ const CONTENT = 'main :is(h1, h2, h3, p, a, button, input, select, textarea, lab
 // wait this long after a page change before measuring, so data that loads after the route (the rooms list) is on screen
 export const SETTLE_MS = 500;
 
+// covering text on the bare page shows through; covering anything inside a solid panel does not
+const ON_BARE_PAGE = 12;
+const INSIDE_SOLID = 0.1;
+
+// true when the element or one of its ancestors paints an opaque background, which hides a window behind it
+function insideSolid(el: Element, seen: Map<Element, boolean>): boolean {
+    for (let node: Element | null = el; node && node.tagName !== 'MAIN'; node = node.parentElement) {
+        const known = seen.get(node);
+        if (known !== undefined) return known;
+        const alpha = getComputedStyle(node).backgroundColor.match(/rgba?\([^)]*?,[^)]*?,[^)]*?(?:,\s*([\d.]+))?\)/);
+        if (alpha && (alpha[1] === undefined || Number(alpha[1]) > 0.9)) {
+            seen.set(el, true);
+            return true;
+        }
+    }
+    seen.set(el, false);
+    return false;
+}
+
 // the page's content as rects relative to the backdrop, skipping the backdrop itself, hidden text, and wrappers too big to steer around
-function measureContent(box: DOMRect): Rect[] {
-    const rects: Rect[] = [];
+function measureContent(box: DOMRect): KeepOut[] {
+    const rects: KeepOut[] = [];
+    const seen = new Map<Element, boolean>();
     for (const el of document.querySelectorAll(CONTENT)) {
         if (el.closest('.liquid')) continue;
         const r = el.getBoundingClientRect();
         const area = r.width * r.height;
         if (area < 4 || area > box.width * box.height * 0.5) continue;
         if (r.bottom < box.top || r.top > box.bottom || r.right < box.left || r.left > box.right) continue;
-        rects.push({ x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height });
+        rects.push({ x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height, weight: insideSolid(el, seen) ? INSIDE_SOLID : ON_BARE_PAGE });
     }
     return rects;
 }

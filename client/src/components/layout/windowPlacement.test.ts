@@ -56,6 +56,17 @@ describe('placeWindows', () => {
         expect(r!.x).toBeGreaterThan(900);
     });
 
+    it('when it must cover something, covers a solid panel rather than text on the bare page', () => {
+        // the view is split in two: bare-page text on the left, a solid panel on the right, no free space
+        const view = { w: 1000, h: 600 };
+        const text = { x: 0, y: 0, w: 500, h: 600, weight: 12 };
+        const panel = { x: 500, y: 0, w: 500, h: 600, weight: 0.1 };
+        for (let seed = 1; seed <= 10; seed++) {
+            const [r] = placeWindows(view, [{ w: 300, h: 200 }], [text, panel], seeded(seed), { top: 0, gap: 0, tries: 200 });
+            expect(overlap(r!, text)).toBe(0);
+        }
+    });
+
     it('lands somewhere different from one arrangement to the next', () => {
         const spots = new Set(
             Array.from({ length: 10 }, (_, seed) => {
