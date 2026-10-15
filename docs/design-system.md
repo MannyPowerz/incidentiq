@@ -154,6 +154,22 @@ From Apple's HIG on Liquid Glass: glass is for controls and navigation that floa
 - Contrast is checked against the busiest background glass can land on (`--mesh-2`), not a convenient one. Inside glass, muted text is promoted to `--color-text-2`, because the muted tone falls under 4.5:1 there.
 - Goes solid under `prefers-reduced-transparency: reduce` and in browsers without `backdrop-filter`.
 
+**Sheets.** `.ui-sheet` (also in `utilities.css`) is glass at its best, for the layers a person works in: the sign-in form, the `Modal` panel, `Toast`, and the landing hero and call-to-action panels. It adds a top sheen, a 1px iridescent rim in the backdrop's colors, a shadow tinted to the backdrop's indigo, and the `--radius-xl` corner. Content stays solid; cards, states and fields share only the top highlight, so the two read as one family.
+
+A sheet shows its state on its rim, read from what it holds through `:has()`, so no component passes state props for it:
+
+| State | Trigger | Rim |
+|---|---|---|
+| default | — | theme blue to brand orange, faint |
+| hover | pointer over it | brighter |
+| focused | a field inside has focus | warms to the brand orange |
+| active | a button is pressed | the button's own press |
+| loading | holds a `.ui-btn--loading` | light runs round the rim; fields quieten |
+| syncing | holds a `.ui-livedot--syncing` | light runs round the rim |
+| failing | holds a `role="alert"` (refused submit, invalid field) | red, and the sheet shakes once |
+
+Under reduced motion the colors still carry the state and nothing moves.
+
 ## 3. Primitives
 
 Each lives in `client/src/components/ui/<Name>/`. Props are the public contract; a screen never reaches into a primitive's CSS.
