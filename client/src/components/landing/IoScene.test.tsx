@@ -1,5 +1,5 @@
 /**
- * IoScene.test.tsx — the hero picture: three incidents in, three outcomes out, the logo cube at the
+ * IoScene.test.tsx — the hero picture: three incidents in, three outcomes out, the logo lens at the
  * center, the log above, and one plain sentence for assistive tech instead of the decoration.
  */
 
@@ -16,7 +16,7 @@ describe('IoScene', () => {
         expect(container.querySelector('.io-terminal')!.getAttribute('aria-hidden')).toBe('true');
     });
 
-    it('flows three incidents in and three outcomes out around the logo cube', () => {
+    it('flows three incidents in and three outcomes out around the logo lens', () => {
         const { container } = render(<IoScene />);
         expect(container.querySelectorAll('.io-tile--in')).toHaveLength(3);
         expect(container.querySelectorAll('.io-tile--out')).toHaveLength(3);

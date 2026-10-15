@@ -34,7 +34,7 @@
     mask: radial-gradient(closest-side, #000 55%, transparent);
 }
 
-/* the brand glow pooling under the cube */
+/* the brand glow pooling under the lens */
 .io-scene__glow {
     position: absolute;
     left: 50%;
@@ -66,7 +66,7 @@
     transform: translate(-50%, -50%) rotateZ(34deg) rotateX(-54deg) translateY(calc(var(--u) * -3));
 }
 
-/* --- the lanes: tiles slide along the floor toward the cube, and away from it --- */
+/* --- the lanes: tiles slide along the floor toward the lens, and away from it --- */
 .io-lane {
     position: absolute;
     top: 50%;
@@ -112,7 +112,7 @@
 .io-tile--out { --lane-anim: io-out; border-left: 2px solid var(--color-success); }
 .io-tile--out svg { color: var(--color-success); }
 
-/* in: from far left of the floor to the cube, fading in and then into the cube */
+/* in: from far left of the floor to the lens, fading in and then into the lens */
 @keyframes io-in {
     0% { opacity: 0; transform: translate(calc(var(--u) * -14), calc(var(--u) * -1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))); }
     12% { opacity: 1; }
@@ -120,7 +120,7 @@
     100% { opacity: 0; transform: translate(calc(var(--u) * -3.6), calc(var(--u) * -1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))) scale(0.85); }
 }
 
-/* out: from the cube to the far right, growing in as it leaves */
+/* out: from the lens to the far right, growing in as it leaves */
 @keyframes io-out {
     0% { opacity: 0; transform: translate(calc(var(--u) * 3.6), calc(var(--u) * 1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))) scale(0.85); }
     20% { opacity: 1; }
