@@ -85,29 +85,6 @@
         aspect-ratio: 1;
         max-height: 22rem;
         margin: var(--space-8) 0;
-        /* depth for the tilt; the panel is the stage, the shape is the actor */
-        perspective: 900px;
-    }
-
-    /* the hero shape: orange rounded box, lit from the top-left, tilting toward the pointer */
-    .sign-in-brand__shape {
-        display: block;
-        width: 55%;
-        aspect-ratio: 1;
-        border-radius: var(--radius-lg);
-        background:
-            linear-gradient(155deg, var(--color-primary-strong) -20%, var(--color-primary) 45%, var(--orange-600) 120%);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.25),
-            var(--shadow-glow),
-            var(--shadow-3);
-        /* leans toward the cursor from anywhere on the page; over the shape itself, its own tilt takes over */
-        transform:
-            rotateX(var(--tilt-x, calc(var(--pointer-y, 0) * -10deg)))
-            rotateY(var(--tilt-y, calc(var(--pointer-x, 0) * 14deg)))
-            rotateZ(-12deg);
-        transition: transform var(--dur-base) var(--ease);
-        will-change: transform;
     }
 
     .sign-in-brand__pitch {
@@ -126,12 +103,20 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* the lens watches the form: green while you type, a faster sweep while signing in, red after a refusal */
+.sign-in-page:has(.auth-form:focus-within) .sign-in-brand__hero .brand-mark__blip {
+    background: var(--color-success);
+    box-shadow: 0 0 calc(var(--mark-size) * 0.12) var(--color-success);
+}
 
-    .sign-in-brand__shape {
-        transition: none;
-        transform: rotateZ(-12deg);
-    }
+.sign-in-page:has(.auth-form .ui-btn--loading) .sign-in-brand__hero .brand-mark__sweep {
+    animation-duration: 0.9s;
+}
+
+.sign-in-page:has(.auth-form [role='alert']) .sign-in-brand__hero .brand-mark__blip {
+    background: var(--color-danger);
+    box-shadow: 0 0 calc(var(--mark-size) * 0.12) var(--color-danger);
+    animation-duration: 0.8s;
 }
 
 /* the theme toggle sits in the form panel's top corner, out of the form's way */

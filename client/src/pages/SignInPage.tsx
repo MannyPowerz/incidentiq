@@ -1,51 +1,15 @@
-import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import AuthForm from "../components/auth/AuthForm";
 import LiquidBackdrop from "../components/layout/LiquidBackdrop";
 import { BrandMark, ThemeToggle, Wordmark } from "../components/ui";
 import "./SignInPage.css"
 
-const TILT_MAX_DEG = 8;
-
 /**
- * Tilts the hero toward the pointer: one listener on the panel, two CSS variables, the transform
- * lives in CSS. Skipped entirely under reduced motion, which is the only branch that matters here.
- */
-function useTilt() {
-    const ref = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const onMove = (e: PointerEvent) => {
-            const r = el.getBoundingClientRect();
-            const x = (e.clientX - r.left) / r.width - 0.5;
-            const y = (e.clientY - r.top) / r.height - 0.5;
-            el.style.setProperty('--tilt-x', `${(-y * TILT_MAX_DEG).toFixed(2)}deg`);
-            el.style.setProperty('--tilt-y', `${(x * TILT_MAX_DEG).toFixed(2)}deg`);
-        };
-        // removed rather than zeroed, so the page-wide lean toward the cursor takes over again
-        const onLeave = () => {
-            el.style.removeProperty('--tilt-x');
-            el.style.removeProperty('--tilt-y');
-        };
-        el.addEventListener('pointermove', onMove);
-        el.addEventListener('pointerleave', onLeave);
-        return () => {
-            el.removeEventListener('pointermove', onMove);
-            el.removeEventListener('pointerleave', onLeave);
-        };
-    }, []);
-    return ref;
-}
-
-/**
- * SignInPage — the one cinematic screen. The brand panel carries the mesh gradient and the hero
- * shape; the form stays a solid card, because it is content, not chrome (design-system.md §2.7).
- * Item 10 swaps the static shape for the lazy-loaded 3D hero and keeps this as its fallback.
+ * SignInPage — the one cinematic screen. The brand panel carries the hero: the scanner lens from the
+ * logo at full size, tilting to the cursor and watching the form beside it (SignInPage.css). The form
+ * is the glass sheet (design-system.md §2.7).
  */
 export default function SignInPage() : JSX.Element {
-    const tiltRef = useTilt();
-
     return (
         <main className="sign-in-page">
             {/* one backdrop behind both halves, so the brand panel and the form read as one page */}
@@ -61,12 +25,12 @@ export default function SignInPage() : JSX.Element {
 
                 <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>
 
-                <div ref={tiltRef} className="sign-in-brand__hero" aria-hidden="true">
-                    <span className="sign-in-brand__shape" />
+                <div className="sign-in-brand__hero" aria-hidden="true" data-backdrop-clear>
+                    <BrandMark size="xl" interactive />
                 </div>
 
                 <p className="sign-in-brand__pitch">
-                    One room per incident. Every observation, action, and AI draft in order — and the teammate who knows the code, flagged.
+                    One room per incident. Every observation, action, and AI draft in order, and the teammate who knows the code, flagged.
                 </p>
             </section>
 

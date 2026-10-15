@@ -1,5 +1,5 @@
 /**
- * FingerprintsPage.test.tsx — the comparison against a mocked api module. What matters is that
+ * FingerprintsPage.test.tsx — the machine cards against a mocked api module. What matters is that
  * exactly the values differing from the baseline machine are flagged, and that migrations name
  * what is missing rather than only saying "different".
  */
@@ -44,23 +44,28 @@ function renderPage(path = '/machines') {
     );
 }
 
-// the differing cells, as "<field> | <column header>" pairs, read straight from the rendered table
+// the differing values, as "<field> | <machine>" pairs, read straight from the rendered cards
 const diffs = () =>
-    [...document.querySelectorAll('.fp-cell--diff')].map((cell) => {
-        const td = cell.closest('td')!;
-        const field = td.parentElement!.querySelector('td')!.textContent;
-        return `${field} | ${td.getAttribute('data-label')}`;
-    });
+    [...document.querySelectorAll('.fp-cell--diff')].map(
+        (row) => `${row.querySelector('dt')!.textContent} | ${row.closest('article')!.getAttribute('aria-label')}`,
+    );
 
-beforeEach(() => vi.mocked(listFingerprints).mockReset());
+beforeEach(() => {
+    vi.mocked(listFingerprints).mockReset();
+});
 
 describe('FingerprintsPage', () => {
-    it('defaults to the incidentiq project and shows one column per machine, the first as baseline', async () => {
+    it('defaults to the incidentiq project and shows one card per machine, the first as baseline', async () => {
         vi.mocked(listFingerprints).mockResolvedValue([fp(1), fp(2)]);
         renderPage();
 
-        expect(await screen.findByRole('columnheader', { name: 'user1@example.com (baseline)' })).toBeTruthy();
-        expect(screen.getByRole('columnheader', { name: 'user2@example.com' })).toBeTruthy();
+        const first = await screen.findByRole('article', { name: 'user1@example.com' });
+        const second = screen.getByRole('article', { name: 'user2@example.com' });
+        expect(first.textContent).toContain('baseline');
+        expect(second.textContent).not.toContain('baseline');
+        // every card lists the same fields in the same order, so a difference reads straight across
+        const fields = (card: HTMLElement) => [...card.querySelectorAll('dt')].map((dt) => dt.textContent);
+        expect(fields(second)).toEqual(fields(first));
         expect(listFingerprints).toHaveBeenCalledWith('incidentiq');
     });
 
@@ -125,6 +130,15 @@ describe('FingerprintsPage', () => {
         renderPage();
 
         expect(await screen.findByText('Only one machine has published, so there is nothing to compare yet.')).toBeTruthy();
+        // the empty seat says how to fill it, for this project
+        expect(screen.getByText('Add a second machine')).toBeTruthy();
+        expect(screen.getByText('AGENT_PROJECT_ID=incidentiq')).toBeTruthy();
+    });
+
+    it('holds card-shaped placeholders while loading', () => {
+        vi.mocked(listFingerprints).mockReturnValue(new Promise(() => {}));
+        renderPage();
+        expect(screen.getByRole('status', { name: 'Loading fingerprints' })).toBeTruthy();
     });
 
     it('shows the empty state with the agent setting to use', async () => {
@@ -164,7 +178,7 @@ describe('FingerprintsPage', () => {
         renderPage();
 
         await screen.findByText(/fields differ/);
-        const labels = [...document.querySelectorAll('.fp-published .ui-livedot')].map((el) => el.textContent);
+        const labels = [...document.querySelectorAll('.fp-machine .ui-livedot')].map((el) => el.textContent);
         expect(labels).toEqual(['Fresh', 'Stale', 'Missing data']);
     });
 });

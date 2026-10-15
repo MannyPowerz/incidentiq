@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 import { focusOf, initialState, stepN } from './ideScript';
 import type { IdeState } from './ideScript';
+import { placeWindows, seeded } from './windowPlacement';
+import type { KeepOut } from './windowPlacement';
 import './IdeBackdrop.css';
 
 // you drive: every this much cursor travel, scroll, key or click is this many steps of work
@@ -15,12 +17,52 @@ export const AUTO_MS = 70;
 // reduced motion shows the session this far in: the proxy fixed, tests green, the commit made
 export const STILL_STEPS = 260;
 // the editor shows this many lines around the caret, like a window scrolled to where you are working
-export const EDITOR_LINES = 9;
+export const EDITOR_LINES = 7;
 
 type Win = 'editor' | 'terminal' | 'problems';
 type Spot = { left: number; top: number };
 
-// where the windows sit, as % of the backdrop, one arrangement per task. Every page keeps its text
+const WINS: Win[] = ['editor', 'terminal', 'problems'];
+// what counts as the page's content: anything a person reads or uses inside <main>, plus visuals marked data-backdrop-clear
+const CONTENT = 'main :is(h1, h2, h3, p, a, button, input, select, textarea, label, tr, figure, li, form, [data-spotlight], [data-backdrop-clear], .ui-card, .ui-sheet)';
+// wait this long after a page change before measuring, so data that loads after the route (the rooms list) is on screen
+export const SETTLE_MS = 500;
+
+// covering text on the bare page shows through; covering anything inside a solid panel does not
+const ON_BARE_PAGE = 12;
+const INSIDE_SOLID = 0.1;
+
+// true when the element or one of its ancestors paints an opaque background, which hides a window behind it
+function insideSolid(el: Element, seen: Map<Element, boolean>): boolean {
+    for (let node: Element | null = el; node && node.tagName !== 'MAIN'; node = node.parentElement) {
+        const known = seen.get(node);
+        if (known !== undefined) return known;
+        const alpha = getComputedStyle(node).backgroundColor.match(/rgba?\([^)]*?,[^)]*?,[^)]*?(?:,\s*([\d.]+))?\)/);
+        if (alpha && (alpha[1] === undefined || Number(alpha[1]) > 0.9)) {
+            seen.set(el, true);
+            return true;
+        }
+    }
+    seen.set(el, false);
+    return false;
+}
+
+// the page's content as rects relative to the backdrop, skipping the backdrop itself, hidden text, and wrappers too big to steer around
+function measureContent(box: DOMRect): KeepOut[] {
+    const rects: KeepOut[] = [];
+    const seen = new Map<Element, boolean>();
+    for (const el of document.querySelectorAll(CONTENT)) {
+        if (el.closest('.liquid')) continue;
+        const r = el.getBoundingClientRect();
+        const area = r.width * r.height;
+        if (area < 4 || area > box.width * box.height * 0.5) continue;
+        if (r.bottom < box.top || r.top > box.bottom || r.right < box.left || r.left > box.right) continue;
+        rects.push({ x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height, weight: insideSolid(el, seen) ? INSIDE_SOLID : ON_BARE_PAGE });
+    }
+    return rects;
+}
+
+// the fallback when the page cannot be measured (no layout yet, or a test): as % of the backdrop, one arrangement per task. Every page keeps its text
 // on the left (the landing headline, the sign-in brand and pitch), so the windows keep to the right
 // and the bottom middle. CSS clamps each one onto the screen.
 export const LAYOUTS: Record<Win, Spot>[] = [
@@ -34,8 +76,9 @@ export const LAYOUTS: Record<Win, Spot>[] = [
 /**
  * IdeBackdrop — a developer's desktop behind every page: an editor, a terminal and the incidentioq
  * problems panel, floating as separate windows and doing real work on this app (ideScript.ts). At
- * each new task the windows glide to a new arrangement, the way someone moves windows around, and
- * the one being worked in comes to the front. The droplets float over them all.
+ * each new task, and on each new page, the windows glide to new spots found by measuring the page
+ * (windowPlacement.ts): wherever its content leaves room, never twice the same. The one being worked
+ * in comes to the front. The droplets float over them all.
  *
  * You drive it. Cursor travel, scrolling, typing and clicks each push the work along. Stop, and it
  * pauses. After IDLE_MS without input it carries on by itself until you come back. It starts on
@@ -48,6 +91,46 @@ export const LAYOUTS: Record<Win, Spot>[] = [
 export default function IdeBackdrop(): JSX.Element {
     const still = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const [ide, setIde] = useState<IdeState>(() => (still ? stepN(initialState(), STILL_STEPS) : initialState()));
+    // measured spots for this arrangement and this page; null until measured
+    const [spots, setSpots] = useState<Record<Win, Spot> | null>(null);
+    // bumped when the page or the window size changes, so the windows find new gaps
+    const [pageKey, setPageKey] = useState(0);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const winRefs = { editor: useRef<HTMLDivElement>(null), terminal: useRef<HTMLDivElement>(null), problems: useRef<HTMLDivElement>(null) };
+
+    useEffect(() => {
+        let path = window.location.pathname;
+        const changed = () => setPageKey((n) => n + 1);
+        // a route change has no event outside the router, so the path is checked on a slow timer
+        const watch = window.setInterval(() => {
+            if (window.location.pathname !== path) {
+                path = window.location.pathname;
+                changed();
+            }
+        }, 400);
+        window.addEventListener('resize', changed);
+        return () => {
+            window.clearInterval(watch);
+            window.removeEventListener('resize', changed);
+        };
+    }, []);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            const box = rootRef.current?.getBoundingClientRect();
+            if (!box || box.width === 0) return;
+            const sizes = WINS.map((w) => ({ w: winRefs[w].current?.offsetWidth ?? 0, h: winRefs[w].current?.offsetHeight ?? 0 }));
+            const rects = placeWindows({ w: box.width, h: box.height }, sizes, measureContent(box), seeded(ide.layout * 7919 + pageKey + 1));
+            setSpots({
+                editor: { left: rects[0]!.x, top: rects[0]!.y },
+                terminal: { left: rects[1]!.x, top: rects[1]!.y },
+                problems: { left: rects[2]!.x, top: rects[2]!.y },
+            });
+        }, SETTLE_MS);
+        return () => window.clearTimeout(timer);
+        // the refs are stable; only a new task or a new page moves the windows
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ide.layout, pageKey]);
 
     useEffect(() => {
         if (still) return;
@@ -100,7 +183,10 @@ export default function IdeBackdrop(): JSX.Element {
 
     const layout = LAYOUTS[ide.layout % LAYOUTS.length]!;
     const focus = focusOf(ide);
-    const place = (win: Win): CSSProperties => ({ '--x': `${layout[win].left}%`, '--y': `${layout[win].top}%` }) as CSSProperties;
+    const place = (win: Win): CSSProperties =>
+        (spots
+            ? { '--x': `${spots[win].left}px`, '--y': `${spots[win].top}px` }
+            : { '--x': `${layout[win].left}%`, '--y': `${layout[win].top}%` }) as CSSProperties;
     const frame = (win: Win) => `ide-win ide-win--${win}${focus === win ? ' is-focused' : ''}`;
 
     const lines = ide.files[ide.open]!;
@@ -109,8 +195,8 @@ export default function IdeBackdrop(): JSX.Element {
     const problems = Object.entries(ide.marks);
 
     return (
-        <div className="ide" aria-hidden="true">
-            <div className={frame('editor')} style={place('editor')}>
+        <div ref={rootRef} className="ide" aria-hidden="true">
+            <div ref={winRefs.editor} className={frame('editor')} style={place('editor')}>
                 <div className="ide__tabs">
                     {ide.tabs.map((t) => (
                         <span key={t} className={`ide__tab${t === ide.open ? ' is-open' : ''}`}>
@@ -149,7 +235,7 @@ export default function IdeBackdrop(): JSX.Element {
                 </div>
             </div>
 
-            <div className={frame('terminal')} style={place('terminal')}>
+            <div ref={winRefs.terminal} className={frame('terminal')} style={place('terminal')}>
                 <span className="ide__title">zsh — incidentiq</span>
                 <div className="ide__terminal">
                     {ide.terminal.map((t, i) => (
@@ -160,7 +246,7 @@ export default function IdeBackdrop(): JSX.Element {
                 </div>
             </div>
 
-            <div className={frame('problems')} style={place('problems')}>
+            <div ref={winRefs.problems} className={frame('problems')} style={place('problems')}>
                 <span className="ide__title ide__watch">incidentioq · watching</span>
                 {problems.length === 0 ? (
                     <code className="ide__problem">no silent failures</code>

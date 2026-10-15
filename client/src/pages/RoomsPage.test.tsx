@@ -1,5 +1,6 @@
 /**
- * RoomsPage.test.tsx — the rooms list against a mocked api module: all four states, and create.
+ * RoomsPage.test.tsx — the triage board against a mocked api module: all its states, the three
+ * groups and their order, the filters, and create.
  * The api functions are mocked rather than fetch, because api.test.ts already covers the wire.
  */
 
@@ -7,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ToastProvider } from '../components/ui';
-import RoomsPage from './RoomsPage';
+import RoomsPage, { ATTENTION_CARDS } from './RoomsPage';
 import { ApiError, createIncident, listIncidents } from '../api';
 import type { Incident } from '../api';
 
@@ -62,10 +63,72 @@ describe('RoomsPage', () => {
 
         const link = await screen.findByRole('link', { name: /Login 500s/ });
         expect(link.getAttribute('href')).toBe('/rooms/7');
-        const summary = screen.getByRole('region', { name: 'Summary' });
-        expect(within(summary).getByText('Open').nextSibling?.textContent).toBe('1');
-        expect(within(summary).getByText('P1 open').nextSibling?.textContent).toBe('1');
-        expect(within(summary).getByText('Resolved').nextSibling?.textContent).toBe('1');
+        expect(screen.getByLabelText('Summary').textContent).toBe('1 open, 1 at P1, 1 resolved');
+    });
+
+    it('puts open P1s first as cards, the other open rooms by severity, and folds resolved ones away', async () => {
+        vi.mocked(listIncidents).mockResolvedValue([
+            incident({ id: 9, title: 'Newest P3', severity: 'P3' }),
+            incident({ id: 8, title: 'Fresh P1', severity: 'P1' }),
+            incident({ id: 7, title: 'Older P2', severity: 'P2' }),
+            incident({ id: 6, title: 'Done', severity: 'P1', status: 'resolved' }),
+            incident({ id: 5, title: 'Written up', severity: 'P2', status: 'postmortem' }),
+        ]);
+        renderPage();
+
+        const attention = await screen.findByRole('region', { name: 'Needs attention' });
+        expect(within(attention).getAllByRole('link').map((l) => l.textContent)).toEqual([expect.stringContaining('Fresh P1')]);
+
+        const open = screen.getByRole('region', { name: /^Open/ });
+        expect(within(open).getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual(['/rooms/7', '/rooms/9']);
+
+        const finished = screen.getByText('Resolved', { selector: 'summary' }).closest('details')!;
+        expect(finished.open).toBe(false);
+        expect(within(finished).getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual(['/rooms/6', '/rooms/5']);
+    });
+
+    it('caps the cards, and lets the rest of the open P1s lead the open list', async () => {
+        const p1s = Array.from({ length: ATTENTION_CARDS + 2 }, (_, i) => incident({ id: 100 - i, title: `P1 number ${i}`, severity: 'P1' }));
+        vi.mocked(listIncidents).mockResolvedValue([...p1s, incident({ id: 1, title: 'A P2', severity: 'P2' })]);
+        renderPage();
+
+        const attention = await screen.findByRole('region', { name: 'Needs attention' });
+        expect(within(attention).getAllByRole('link')).toHaveLength(ATTENTION_CARDS);
+        const open = within(screen.getByRole('region', { name: /^Open/ })).getAllByRole('link');
+        expect(open.map((l) => l.getAttribute('href'))).toEqual(['/rooms/94', '/rooms/93', '/rooms/1']);
+    });
+
+    it('filters by severity and system, with counts on the chips, and clears back to everything', async () => {
+        vi.mocked(listIncidents).mockResolvedValue([
+            incident({ id: 3, title: 'Auth P1', severity: 'P1', affected_system: 'auth' }),
+            incident({ id: 2, title: 'Auth P2', severity: 'P2', affected_system: 'auth' }),
+            incident({ id: 1, title: 'Socket P2', severity: 'P2', affected_system: 'sockets' }),
+        ]);
+        renderPage();
+
+        const p2 = await screen.findByRole('button', { name: 'P2 2' });
+        user.click(p2);
+        expect(p2.getAttribute('aria-pressed')).toBe('true');
+        expect(screen.queryByRole('link', { name: /Auth P1/ })).toBeNull();
+        expect(screen.getAllByRole('link', { name: /P2/ })).toHaveLength(2);
+        // picking a severity leaves the other chips' counts alone, so you can see where else to look
+        expect(screen.getByRole('button', { name: 'P1 1' })).toBeTruthy();
+
+        user.selectOptions(screen.getByLabelText('System'), 'sockets');
+        expect(screen.getAllByRole('link', { name: /P2/ }).map((l) => l.textContent)).toEqual([expect.stringContaining('Socket P2')]);
+        // the chip counts follow the system filter, not the severity one
+        expect(screen.getByRole('button', { name: 'P1 0' })).toBeTruthy();
+
+        user.click(screen.getByRole('button', { name: 'P1 0' }));
+        expect(screen.getByText('No P1 rooms in sockets.')).toBeTruthy();
+        user.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(screen.getAllByRole('link', { name: /Auth|Socket/ })).toHaveLength(3);
+    });
+
+    it("shows the board's shape while loading", async () => {
+        vi.mocked(listIncidents).mockReturnValue(new Promise(() => {}));
+        renderPage();
+        expect(screen.getByRole('status', { name: 'Loading rooms' })).toBeTruthy();
     });
 
     it('shows the empty state with a create action when the org has no rooms', async () => {
