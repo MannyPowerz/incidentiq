@@ -228,7 +228,7 @@ export default function LandingPage(): JSX.Element {
                             </div>
                         </TiltCard>
 
-                        {/* the product in one picture: incidents in, the IncidentIOQ cube in the middle, fixes out */}
+                        {/* the product in one picture: incidents in, the IncidentIOQ lens in the middle, fixes out */}
                         <IoScene />
 
                         <motion.dl
