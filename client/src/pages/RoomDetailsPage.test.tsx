@@ -206,6 +206,16 @@ describe('RoomDetailsPage', () => {
         expect(screen.getByText('New observation in the timeline')).toBeTruthy();
     });
 
+    // getRelevance is the real fixture here (not mocked), so this is the page wiring end to end
+    it('shows a tagged relevance line under every entry', async () => {
+        vi.mocked(getIncident).mockResolvedValue(incident());
+        vi.mocked(listTimeline).mockResolvedValue([entry(1), entry(2), entry(3)]);
+        renderRoom();
+
+        await waitFor(() => expect(document.querySelectorAll('.timeline__relevance')).toHaveLength(3));
+        expect(screen.getAllByText('sample')).toHaveLength(3);
+    });
+
     it('never opens a socket for a room that does not exist', async () => {
         vi.mocked(getIncident).mockRejectedValue(new ApiError(404, 'not_found', 'Incident not found'));
         vi.mocked(listTimeline).mockResolvedValue([]);

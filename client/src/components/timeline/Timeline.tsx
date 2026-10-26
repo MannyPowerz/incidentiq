@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 import { readAiDraftBody } from '../../api';
-import type { TimelineEntry } from '../../api';
+import type { RelevanceLine, TimelineEntry } from '../../api';
+import type { RelevanceById } from '../../hooks/useRelevance';
 import { Badge, Button, EmptyState } from '../ui';
 import { formatRelativeTime } from '../../utils/formatRelativeTime';
 import './Timeline.css';
@@ -14,6 +15,8 @@ type TimelineProps = {
     onRejectDraft?: (entry: TimelineEntry) => void;
     // the draft with a request in flight, so its two buttons can't both fire
     busyEntryId?: number | null;
+    // the most-connected teammate per entry; an entry missing from the map shows no line yet
+    relevance?: RelevanceById;
 };
 
 // an ai_draft nobody has vouched for: author_id stays null until a human confirms it (ADR 0014)
@@ -36,7 +39,14 @@ export function entryText(entry: TimelineEntry): string {
     return typeof text === 'string' ? text : JSON.stringify(entry.body, null, 2);
 }
 
-export default function Timeline({ entries, currentUserId, onConfirmDraft, onRejectDraft, busyEntryId = null }: TimelineProps): JSX.Element {
+export default function Timeline({
+    entries,
+    currentUserId,
+    onConfirmDraft,
+    onRejectDraft,
+    busyEntryId = null,
+    relevance,
+}: TimelineProps): JSX.Element {
     if (entries.length === 0) {
         return <EmptyState title="No entries yet" body="Post what you've seen or tried, so the next person starts from there." />;
     }
@@ -59,6 +69,9 @@ export default function Timeline({ entries, currentUserId, onConfirmDraft, onRej
                         </time>
                     </header>
                     <EntryBody entry={entry} />
+                    {relevance?.has(entry.id) && (
+                        <RelevanceNote line={relevance.get(entry.id) ?? null} currentUserId={currentUserId} />
+                    )}
                     {pending && onConfirmDraft && onRejectDraft && (
                         <footer className="timeline__actions">
                             <Button
@@ -106,4 +119,24 @@ function EntryBody({ entry }: { entry: TimelineEntry }): JSX.Element {
     const text = entryText(entry);
     const isJson = typeof entry.body.text !== 'string';
     return <p className={`timeline__body${isJson ? ' timeline__body--raw' : ''}`}>{text}</p>;
+}
+
+/**
+ * "Who should look at this", written for the person reading (server/src/relevance/types.ts ReasonFor).
+ * Tagged "sample" because the line comes from a fixture until the relevance endpoint ships; an
+ * untagged invented "ask User #2" in a demo would read as a real claim about a real teammate.
+ */
+export function RelevanceNote({ line, currentUserId }: { line: RelevanceLine | null; currentUserId: number | null }): JSX.Element {
+    let text: string;
+    if (line === null) text = 'Nobody on the team has touched these files yet.';
+    else if (line.user_id === currentUserId) text = `You're closest to this: ${line.reason}`;
+    else text = `Ask User #${line.user_id}: ${line.reason}`;
+    return (
+        <p className="timeline__relevance">
+            <span className="timeline__relevance-text">{text}</span>
+            <span className="timeline__relevance-tag" title="Sample data until the relevance endpoint ships">
+                sample
+            </span>
+        </p>
+    );
 }
