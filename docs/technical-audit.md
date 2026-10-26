@@ -1,4 +1,4 @@
-# IncidentIQ — Technical Audit
+# IncidentIOQ — Technical Audit
 
 **Audited:** 2026-08-30 against `origin/main` at `ad0c2ed` (merge of PR #18)
 **Verified by:** `npx tsc --noEmit` clean, `npx vitest run` → **42 passed, 0 failed**

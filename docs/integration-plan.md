@@ -1,4 +1,4 @@
-# IncidentIQ — Integration Plan
+# IncidentIOQ — Integration Plan
 
 **Purpose:** every seam between components, who owns each side, what crosses it, and in what order it all comes together.
 **Team:** Manny, Anthony. Gabriella has left; her collector and her UI branch are reassigned below.

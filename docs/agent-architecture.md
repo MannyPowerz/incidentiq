@@ -1,4 +1,4 @@
-# IncidentIQ Local Agent — Architecture
+# IncidentIOQ Local Agent — Architecture
 
 **Status:** design, nothing built
 **Scope:** Minimum tier per `build-plan.md` — one signature, the human gate, fingerprint publish
@@ -167,7 +167,7 @@ Tier 2 signature lands — additive, no rewrite.
 
 ```
 AGENT_API_URL          http://localhost:3000
-AGENT_EMAIL            the developer's incidentiq login
+AGENT_EMAIL            the developer's IncidentIOQ login
 AGENT_PASSWORD         see §8 for why this is acceptable at Minimum
 AGENT_PROJECT_ID       string, e.g. 'incidentiq' — the fingerprint's project_id
 AGENT_PROJECT_ROOT     absolute path to the repo being watched
@@ -263,7 +263,7 @@ plus tunnel → critical. Mutation-verified per ADR 0015.
 ### 6.5 `card.ts` — the private card and the gate
 
 ```
-┌─ IncidentIQ ── VPN_LOOPBACK ── critical ────────────────────────┐
+┌─ IncidentIOQ ── VPN_LOOPBACK ── critical ───────────────────────┐
 │                                                                   │
 │  Port 5173 is bound but not responding, and a tunnel interface   │
 │  (utun3) is active. A VPN is likely capturing loopback traffic.  │

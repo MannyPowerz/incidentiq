@@ -38,9 +38,9 @@ export default function TopBar({ links, right, brandTo = '/rooms' }: TopBarProps
     return (
         <header className="ui-topbar ui-glass">
             <div className="ui-topbar__inner">
-                <NavLink to={brandTo} className="ui-topbar__brand" aria-label="IncidentIOQ home" data-magnetic>
-                    <BrandMark size="sm" />
-                    <Wordmark className="ui-topbar__name" />
+                <NavLink to={brandTo} className="ui-topbar__brand" aria-label="IncidentIOQ home">
+                    <span className="ui-topbar__mark" aria-hidden="true" />
+                    <span className="ui-topbar__name">IncidentIOQ</span>
                 </NavLink>
 
                 <nav ref={navRef} className="ui-topbar__nav" aria-label="Primary">

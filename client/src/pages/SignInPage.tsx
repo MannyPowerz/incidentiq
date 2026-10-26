@@ -48,15 +48,16 @@ export default function SignInPage() : JSX.Element {
 
     return (
         <main className="sign-in-page">
-            {/* one backdrop behind both halves, so the brand panel and the form read as one page */}
-            <LiquidBackdrop intensity="full" />
             <section className="sign-in-brand" aria-label="IncidentIOQ">
+                <div className="sign-in-brand__mesh" aria-hidden="true">
+                    <span className="sign-in-brand__blob sign-in-brand__blob--1" />
+                    <span className="sign-in-brand__blob sign-in-brand__blob--2" />
+                    <span className="sign-in-brand__blob sign-in-brand__blob--3" />
+                </div>
 
-                <div className="sign-in-brand__lockup brand" data-magnetic>
-                    <BrandMark size="md" />
-                    <p className="sign-in-brand__name">
-                        <Wordmark />
-                    </p>
+                <div className="sign-in-brand__lockup">
+                    <span className="sign-in-brand__mark" aria-hidden="true" />
+                    <p className="sign-in-brand__name">IncidentIOQ</p>
                 </div>
 
                 <p className="sign-in-brand__tagline">Detect. Collaborate. Resolve.</p>
