@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 import AuthForm from "../components/auth/AuthForm";
-import { ThemeToggle } from "../components/ui";
+import LiquidBackdrop from "../components/layout/LiquidBackdrop";
+import { BrandMark, ThemeToggle, Wordmark } from "../components/ui";
 import "./SignInPage.css"
 
 const TILT_MAX_DEG = 8;
@@ -22,9 +23,10 @@ function useTilt() {
             el.style.setProperty('--tilt-x', `${(-y * TILT_MAX_DEG).toFixed(2)}deg`);
             el.style.setProperty('--tilt-y', `${(x * TILT_MAX_DEG).toFixed(2)}deg`);
         };
+        // removed rather than zeroed, so the page-wide lean toward the cursor takes over again
         const onLeave = () => {
-            el.style.setProperty('--tilt-x', '0deg');
-            el.style.setProperty('--tilt-y', '0deg');
+            el.style.removeProperty('--tilt-x');
+            el.style.removeProperty('--tilt-y');
         };
         el.addEventListener('pointermove', onMove);
         el.addEventListener('pointerleave', onLeave);

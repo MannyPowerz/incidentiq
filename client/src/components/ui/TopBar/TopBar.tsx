@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { JSX, ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import BrandMark, { Wordmark } from '../BrandMark/BrandMark';
 import './TopBar.css';
 
 export type TopBarLink = { to: string; label: string };

@@ -1,6 +1,7 @@
 // the only import path screens use for primitives: import { Button, Badge } from '../components/ui'
 export { default as Badge } from './Badge/Badge';
 export type { BadgeTone } from './Badge/Badge';
+export { default as BrandMark, Wordmark } from './BrandMark/BrandMark';
 export { default as Button } from './Button/Button';
 export type { ButtonProps } from './Button/Button';
 export { default as Card } from './Card/Card';
