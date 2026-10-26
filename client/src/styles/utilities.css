@@ -106,3 +106,208 @@
     to { box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-3); }
 }
 
+/*
+ * Touchable glass (motion/interactions.ts). [data-spotlight] gets a soft glow and a glowing edge that
+ * follow the cursor across it; [data-tilt] also leans toward the cursor; [data-magnetic] leans toward
+ * the cursor as it approaches. The glow stays under reduced motion, because light is not motion; the
+ * tilt and the lean do not.
+ */
+[data-spotlight] {
+    position: relative;
+    isolation: isolate;
+}
+
+/* the glow: under the content, over the surface's own background */
+[data-spotlight]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+        280px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+        color-mix(in srgb, var(--color-primary) 14%, transparent),
+        transparent 65%
+    );
+    transition: opacity var(--dur-base) var(--ease);
+}
+
+/* the edge: a 1px ring lit only near the cursor, in the brand orange running into the mesh blue */
+[data-spotlight]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+        200px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+        var(--color-primary),
+        color-mix(in srgb, var(--mesh-2) 60%, transparent) 45%,
+        transparent 70%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    transition: opacity var(--dur-base) var(--ease);
+}
+
+[data-spotlight].is-lit::before,
+[data-spotlight].is-lit::after {
+    opacity: 1;
+}
+
+[data-tilt] {
+    transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-tilt].is-lit {
+    transform: perspective(900px) rotateX(calc(var(--spot-ny, 0) * -5deg)) rotateY(calc(var(--spot-nx, 0) * 7deg)) translateY(-2px);
+}
+
+/* a box you are typing in holds still */
+[data-tilt]:focus-within {
+    transform: none;
+}
+
+/*
+ * .ui-sheet — the floating layer at its best: sign-in, modals, toasts. It adds to .ui-glass a top
+ * sheen (light landing on the upper edge), an iridescent rim in the backdrop's colors, and a shadow
+ * tinted to the backdrop. Its contents stay solid controls; the glass is only the sheet.
+ *
+ * States come from what the sheet holds, through :has(), so no component carries state props for
+ * them: hover lifts the rim, focus turns it orange, a busy button (loading) or a syncing live dot
+ * sends light running round it, and an error (role=alert, or an invalid field) turns it red and
+ * shakes the sheet once. Under reduced motion the colors still say the state; nothing moves.
+ */
+@property --rim-turn {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.ui-sheet {
+    --rim-1: var(--mesh-2);
+    --rim-2: var(--color-primary);
+    --rim-3: var(--mesh-1);
+    --rim-opacity: 0.45;
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--radius-xl);
+    background-image: linear-gradient(180deg, var(--sheet-sheen), transparent 40%);
+    box-shadow:
+        inset 0 1px 0 var(--glass-highlight),
+        var(--shadow-sheet);
+}
+
+/* the rim: a 1px ring of the theme's colors; under the cursor the spotlight ring takes the edge over */
+.ui-sheet::after,
+.ui-sheet[data-spotlight]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    opacity: var(--rim-opacity);
+    background: conic-gradient(from var(--rim-turn), var(--rim-1), var(--rim-2), var(--rim-3), var(--rim-1));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    transition: opacity var(--dur-base) var(--ease);
+}
+
+.ui-sheet[data-spotlight].is-lit::after {
+    --rim-opacity: 1;
+    background:
+        radial-gradient(200px circle at var(--spot-x, 50%) var(--spot-y, 50%), var(--color-primary), transparent 70%),
+        conic-gradient(from var(--rim-turn), var(--rim-1), var(--rim-2), var(--rim-3), var(--rim-1));
+}
+
+/* hover and focus: the rim brightens, then warms to the brand when you are typing in it */
+.ui-sheet:hover {
+    --rim-opacity: 0.75;
+}
+
+.ui-sheet:focus-within {
+    --rim-1: var(--color-primary);
+    --rim-2: var(--orange-400);
+    --rim-3: color-mix(in srgb, var(--color-primary) 40%, var(--mesh-2));
+    --rim-opacity: 0.9;
+}
+
+/* loading and syncing: light runs round the rim; loading also quiets the fields under the busy button */
+.ui-sheet:has(.ui-btn--loading, .ui-livedot--syncing)::after {
+    --rim-opacity: 1;
+    animation: sheet-rim-run 1.6s linear infinite;
+}
+
+.ui-sheet:has(.ui-btn--loading) .ui-field {
+    opacity: 0.6;
+    transition: opacity var(--dur-base) var(--ease);
+}
+
+@keyframes sheet-rim-run {
+    to { --rim-turn: 360deg; }
+}
+
+/* failing: the rim goes red and the sheet shakes once, the way a refused password field does */
+.ui-sheet:has([role='alert']):not(.ui-toast),
+.ui-toast--error.ui-sheet {
+    --rim-1: var(--color-danger);
+    --rim-2: color-mix(in srgb, var(--color-danger) 50%, transparent);
+    --rim-3: var(--color-danger);
+    --rim-opacity: 0.9;
+}
+
+.ui-sheet:has([role='alert']):not(.ui-toast) {
+    animation: sheet-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* translate, not transform, so it composes with the tilt */
+@keyframes sheet-shake {
+    20%, 60% { translate: -5px 0; }
+    40%, 80% { translate: 5px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-sheet,
+    .ui-sheet::after {
+        animation: none !important;
+    }
+}
+
+[data-magnetic] {
+    transform: translate(var(--mag-x, 0), var(--mag-y, 0));
+    transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 260ms var(--ease);
+    filter: drop-shadow(0 0 calc(var(--mag, 0) * 14px) color-mix(in srgb, var(--color-primary) 55%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-tilt].is-lit,
+    [data-magnetic] {
+        transform: none;
+    }
+}
+
+/* --- finishing touches --- */
+
+/* headlines break into even lines instead of leaving one orphaned word */
+h1, h2, h3 {
+    text-wrap: balance;
+}
+
+::selection {
+    background-color: color-mix(in srgb, var(--color-primary) 32%, transparent);
+    color: var(--color-text);
+}
+
+/* thin, themed scrollbars, so the browser's default grey never breaks the glass */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-text-3) 55%, transparent) transparent;
+}
+

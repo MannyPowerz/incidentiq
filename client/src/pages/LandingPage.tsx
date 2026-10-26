@@ -18,6 +18,7 @@ import { MotionConfig, motion, useMotionValue, useScroll, useSpring, useTransfor
 import type { AuthHandoff } from '../components/auth/AuthForm';
 import { BrandMark, ThemeToggle, Wordmark } from '../components/ui';
 import LiquidBackdrop from '../components/layout/LiquidBackdrop';
+import IoScene from '../components/landing/IoScene';
 import './LandingPage.css';
 
 const NAV = [
@@ -117,7 +118,7 @@ function TiltCard({ children }: { children: ReactNode }): JSX.Element {
 
     return (
         <motion.div
-            className="landing-hero__card ui-glass"
+            className="landing-hero__card ui-glass ui-sheet"
             style={{ rotateX, rotateY, scaleX, transformPerspective: 1100 }}
             onPointerMove={onMove}
             onPointerLeave={() => {
@@ -176,7 +177,7 @@ export default function LandingPage(): JSX.Element {
 
                 <header className="landing-nav ui-glass">
                     <div className="landing-nav__inner">
-                        <a className="landing-nav__brand" href="#top">
+                        <a className="landing-nav__brand" href="#top" data-magnetic>
                             <BrandMark size="sm" />
                             <Wordmark />
                         </a>
@@ -209,20 +210,16 @@ export default function LandingPage(): JSX.Element {
                 <main id="top">
                     <motion.section className="landing-hero" aria-labelledby="hero-title" style={{ y: heroY, opacity: heroFade }}>
                         <TiltCard>
-                            {/* the logo, in 3D: turns on its own, follows the cursor, spins when clicked */}
-                            <div className="landing-hero__mark">
-                                <BrandMark size="lg" interactive />
-                            </div>
                             <p className="landing-eyebrow">For teams who ship software</p>
                             <h1 id="hero-title" className="landing-hero__title">
-                                Catch the bug that never throws.
+                                Catch the bug <span className="landing-hero__sheen">that never throws.</span>
                             </h1>
                             <p className="landing-hero__subtitle">
                                 A VPN eating localhost. A lockfile that drifted. A migration one laptop never ran. IncidentIOQ puts the whole team in one live war room to find
                                 it, and flags the teammate who knows that code.
                             </p>
                             <div className="landing-hero__actions">
-                                <Link to="/signin" state={{ mode: 'register' } satisfies AuthHandoff} className="landing-btn landing-btn--solid">
+                                <Link to="/signin" state={{ mode: 'register' } satisfies AuthHandoff} className="landing-btn landing-btn--solid" data-magnetic>
                                     Open a war room
                                 </Link>
                                 <a href="#how" className="landing-btn landing-btn--glass">
@@ -231,8 +228,12 @@ export default function LandingPage(): JSX.Element {
                             </div>
                         </TiltCard>
 
+                        {/* the product in one picture: incidents in, the IncidentIOQ lens in the middle, fixes out */}
+                        <IoScene />
+
                         <motion.dl
                             className="landing-stats ui-glass"
+                            data-spotlight
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.25, ease: [0.2, 0, 0, 1] }}
@@ -250,21 +251,24 @@ export default function LandingPage(): JSX.Element {
                         <h2 className="landing-section__title">Built for the failures nobody logs</h2>
                         <div className="landing-grid landing-grid--3">
                             {FEATURES.map((f, i) => (
-                                <motion.article
+                                // Motion animates the wrapper; the card inside tilts in CSS. One element can't do both:
+                                // Motion writes transform inline, and an inline transform always beats the CSS tilt
+                                <motion.div
                                     key={f.title}
-                                    className="landing-card ui-glass"
+                                    className="landing-card-wrap"
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: false, amount: 0.3 }}
                                     transition={{ duration: 0.5, delay: i * 0.08 }}
-                                    whileHover={{ y: -4 }}
                                 >
-                                    <svg className="landing-card__icon" viewBox="0 0 24 24" aria-hidden="true">
-                                        {f.icon}
-                                    </svg>
-                                    <h3 className="landing-card__title">{f.title}</h3>
-                                    <p className="landing-card__body">{f.body}</p>
-                                </motion.article>
+                                    <article className="landing-card ui-glass" data-spotlight data-tilt>
+                                        <svg className="landing-card__icon" viewBox="0 0 24 24" aria-hidden="true">
+                                            {f.icon}
+                                        </svg>
+                                        <h3 className="landing-card__title">{f.title}</h3>
+                                        <p className="landing-card__body">{f.body}</p>
+                                    </article>
+                                </motion.div>
                             ))}
                         </div>
                     </Reveal>
@@ -273,7 +277,7 @@ export default function LandingPage(): JSX.Element {
                         <h2 className="landing-section__title">How it works</h2>
                         <ol className="landing-steps">
                             {STEPS.map((step, i) => (
-                                <li key={step.title} className="landing-step ui-glass">
+                                <li key={step.title} className="landing-step ui-glass" data-spotlight>
                                     <span className="landing-step__number" aria-hidden="true">
                                         {i + 1}
                                     </span>
@@ -294,7 +298,7 @@ export default function LandingPage(): JSX.Element {
                         <p className="landing-section__note">Illustrative scenarios, not customer quotes.</p>
                         <div className="landing-grid landing-grid--2">
                             {VOICES.map((v) => (
-                                <figure key={v.who} className="landing-voice ui-glass">
+                                <figure key={v.who} className="landing-voice ui-glass" data-spotlight data-tilt>
                                     <blockquote className="landing-voice__quote">{v.quote}</blockquote>
                                     <figcaption className="landing-voice__who">
                                         <span className="landing-voice__avatar" aria-hidden="true">
@@ -308,7 +312,7 @@ export default function LandingPage(): JSX.Element {
                     </Reveal>
 
                     <Reveal id="start" className="landing-section">
-                        <div className="landing-cta ui-glass">
+                        <div className="landing-cta ui-glass ui-sheet" data-spotlight>
                             <h2 className="landing-cta__title">Your next silent failure is already on someone's laptop.</h2>
                             <p className="landing-cta__body">Make an account and open your first war room in under a minute.</p>
                             <form className="landing-cta__form" onSubmit={handleSignup}>

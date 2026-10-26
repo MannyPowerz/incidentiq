@@ -127,7 +127,7 @@ export default function AuthForm() : JSX.Element {
 
     // Authentication form structure — markup rebuilt on the ui primitives; every handler above is unchanged from #34
     return (
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-form ui-glass ui-sheet" onSubmit={handleSubmit} noValidate data-spotlight data-tilt>
             <div className="auth-form__heading">
                 <h1>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
                 <p>{mode === "signin" ? "Sign in to your war room." : "You'll join the Demo Team for now."}</p>

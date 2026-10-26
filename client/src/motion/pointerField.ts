@@ -3,7 +3,7 @@
  * --pointer-x and --pointer-y, each from -1 (left/top) to 1 (right/bottom), 0 at the center.
  *
  * Decorative things read them in CSS to react to the cursor anywhere on screen: backdrop droplets
- * drift at different depths, their highlight follows the light, logo cubes turn toward it. Content
+ * drift at different depths, their highlight follows the light, logo lenses tip toward it. Content
  * never reads them, so text stays still to read.
  *
  * One listener, and at most one write per animation frame. Installed only for a fine pointer (a

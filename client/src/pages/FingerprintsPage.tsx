@@ -3,8 +3,8 @@ import type { FormEvent, JSX, ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ApiError, listFingerprints } from '../api';
 import type { FingerprintWithPublisher } from '../api';
-import { Button, EmptyState, ErrorState, Input, LiveDot, Spinner, Table } from '../components/ui';
-import type { LiveState, TableColumn } from '../components/ui';
+import { Button, EmptyState, ErrorState, Input, LiveDot } from '../components/ui';
+import type { LiveState } from '../components/ui';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import './FingerprintsPage.css';
 
@@ -69,9 +69,10 @@ const FIELDS: Field[] = [
 ];
 
 /**
- * FingerprintsPage — "works on my machine", answered. Every machine that published for a project,
- * side by side, with each value that differs from the first machine highlighted (build-plan.md's
- * demo closer). Rows are fields and columns are machines, so a difference reads across one row.
+ * FingerprintsPage — "works on my machine", answered. Every machine that published for a project is
+ * a card, side by side, under one verdict line that names what differs (build-plan.md's demo closer).
+ * Each card lists the same fields in the same order, so a difference reads straight across, and a
+ * value that differs from the first machine (the baseline) is marked on that machine's card.
  * Read-only: publishing is the agent's job (api/fingerprints.ts).
  */
 export default function FingerprintsPage(): JSX.Element {
@@ -106,9 +107,8 @@ export default function FingerprintsPage(): JSX.Element {
         <div className="fp-page">
             <header className="fp-page__header">
                 <div>
-                    <p className="fp-page__eyebrow">Environment</p>
                     <h1 className="fp-page__title">Fingerprints</h1>
-                    <p className="fp-page__subtitle">Every teammate's machine for one project, side by side. Differences from the first machine are highlighted.</p>
+                    <p className="fp-page__subtitle">Every teammate's machine for one project, side by side.</p>
                 </div>
                 <form className="fp-page__project" onSubmit={handleCompare}>
                     <Input label="Project" mono value={draft} onChange={(e) => setDraft(e.target.value)} />
@@ -119,8 +119,9 @@ export default function FingerprintsPage(): JSX.Element {
             </header>
 
             {state.status === 'loading' && (
-                <div className="fp-page__loading">
-                    <Spinner label="Loading fingerprints" />
+                <div className="fp-skeleton" role="status" aria-label="Loading fingerprints">
+                    <span />
+                    <span />
                 </div>
             )}
 
@@ -145,50 +146,76 @@ function Comparison({ project, fingerprints }: { project: string; fingerprints: 
 
     const baseline = fingerprints[0]!;
     const differing = FIELDS.filter((f) => fingerprints.some((fp) => f.value(fp) !== f.value(baseline)));
-
-    const columns: TableColumn<Field>[] = [
-        { key: 'field', header: 'Field', width: '11rem', render: (field) => <span className="fp-field">{field.label}</span> },
-        ...fingerprints.map(
-            (fp, i): TableColumn<Field> => ({
-                key: `fp-${fp.id}`,
-                header: i === 0 ? `${fp.published_by} (baseline)` : fp.published_by,
-                render: (field) => {
-                    const differs = i > 0 && field.value(fp) !== field.value(baseline);
-                    return (
-                        <div className={`fp-cell${differs ? ' fp-cell--diff' : ''}`}>
-                            {field.render(fp, baseline)}
-                            {differs && <span className="ui-sr-only"> (differs from baseline)</span>}
-                        </div>
-                    );
-                },
-            }),
-        ),
-    ];
+    const verdict =
+        fingerprints.length === 1 ? 'single' : differing.length === 0 ? 'match' : 'differ';
 
     return (
         <section className="fp-comparison" aria-labelledby="fp-summary">
-            <p id="fp-summary" className="fp-summary" role="status">
-                {fingerprints.length === 1
+            <p id="fp-summary" className={`fp-verdict fp-verdict--${verdict}`} role="status">
+                {verdict === 'single'
                     ? 'Only one machine has published, so there is nothing to compare yet.'
-                    : differing.length === 0
+                    : verdict === 'match'
                       ? `All ${fingerprints.length} machines match.`
                       : `${differing.length} of ${FIELDS.length} fields differ across ${fingerprints.length} machines: ${differing.map((f) => f.label).join(', ')}.`}
             </p>
-            <Table caption={`Fingerprints for ${project}`} columns={columns} rows={FIELDS} rowKey={(f) => f.key} empty={null} />
-            <p className="fp-published">
-                {fingerprints.map((fp) => {
-                    const { state, label } = freshness(fp);
+            <div className="fp-machines">
+                {fingerprints.map((fp, i) => (
+                    <MachineCard key={fp.id} fp={fp} baseline={baseline} isBaseline={i === 0} />
+                ))}
+                {fingerprints.length === 1 && (
+                    <div className="fp-machine fp-machine--next">
+                        <p className="fp-machine__next-title">Add a second machine</p>
+                        <p className="fp-machine__next-body">
+                            Run the agent with <code className="fp-mono">AGENT_PROJECT_ID={project}</code> on a teammate's machine. It shows up here, compared against this one.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+}
+
+// the publisher's initials, from the part of the email before the @
+function initials(email: string): string {
+    const name = email.split('@')[0] ?? email;
+    const parts = name.split(/[._-]+/).filter(Boolean);
+    return ((parts.length > 1 ? parts[0]![0]! + parts[1]![0]! : name.slice(0, 2)) || '?').toUpperCase();
+}
+
+function MachineCard({ fp, baseline, isBaseline }: { fp: FingerprintWithPublisher; baseline: FingerprintWithPublisher; isBaseline: boolean }): JSX.Element {
+    const { state, label } = freshness(fp);
+    return (
+        <article className={`fp-machine${isBaseline ? ' fp-machine--baseline' : ''}`} aria-label={fp.published_by} data-spotlight>
+            <header className="fp-machine__head">
+                <span className="fp-machine__avatar" aria-hidden="true">
+                    {initials(fp.published_by)}
+                </span>
+                <span className="fp-machine__who">
+                    <span className="fp-machine__email" title={fp.published_by}>
+                        {fp.published_by}
+                    </span>
+                    <span className="fp-machine__when">
+                        <LiveDot state={state} label={label} />
+                        <span>published {formatRelativeTime(fp.updated_at)}</span>
+                    </span>
+                </span>
+                {isBaseline && <span className="fp-machine__baseline">baseline</span>}
+            </header>
+            <dl className="fp-fields">
+                {FIELDS.map((field) => {
+                    const differs = field.value(fp) !== field.value(baseline);
                     return (
-                        <span key={fp.id} className="fp-published__machine">
-                            <LiveDot state={state} label={label} />
-                            <span>
-                                {fp.published_by} published {formatRelativeTime(fp.updated_at)}
-                            </span>
-                        </span>
+                        <div key={field.key} className={`fp-fields__row${differs ? ' fp-cell--diff' : ''}`} data-field={field.label}>
+                            <dt>{field.label}</dt>
+                            <dd>
+                                {field.render(fp, baseline)}
+                                {differs && <span className="ui-sr-only"> (differs from baseline)</span>}
+                            </dd>
+                        </div>
                     );
                 })}
-            </p>
-        </section>
+            </dl>
+        </article>
     );
 }
 

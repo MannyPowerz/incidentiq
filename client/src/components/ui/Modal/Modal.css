@@ -12,19 +12,22 @@
     position: absolute;
     inset: 0;
     background-color: var(--color-overlay);
+    /* the page behind goes out of focus, so the sheet is the one thing in focus */
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     animation: ui-modal-fade var(--dur-slow) var(--ease);
 }
 
-/* the sheet is a floating layer, so it is the one glass surface in the dialog; its contents are solid controls */
+/* the sheet is a floating layer, so it is the one glass surface in the dialog (.ui-sheet); its contents are solid controls */
 .ui-modal__panel {
     position: relative;
     box-sizing: border-box;
     width: 100%;
     max-height: calc(100vh - 2 * var(--page-gutter));
     overflow-y: auto;
-    border-radius: var(--radius-lg);
     font-family: var(--font-sans);
-    animation: ui-modal-rise var(--dur-slow) var(--ease);
+    /* a slight overshoot, so the sheet settles like it has weight */
+    animation: ui-modal-rise 380ms cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 .ui-modal__panel:focus-visible {
@@ -89,7 +92,7 @@
 }
 
 @keyframes ui-modal-rise {
-    from { opacity: 0; transform: translateY(var(--space-2)) scale(0.98); }
+    from { opacity: 0; transform: translateY(var(--space-4)) scale(0.96); }
 }
 
 /* durations are already 0 under reduced motion (tokens.css), but the keyframes still need disabling */

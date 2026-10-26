@@ -1,0 +1,198 @@
+/* The isometric I/O stage. --u is the scene's unit, so the whole thing scales from one number. */
+.io-scene {
+    --u: clamp(0.8rem, 1.2vw, 1.05rem);
+    position: relative;
+    margin: 0;
+    height: calc(var(--u) * 30);
+    perspective: calc(var(--u) * 90);
+    font-family: var(--font-mono);
+    /* tiles fade in at the lane ends; clip so none reaches into the text column beside it */
+    overflow: clip;
+}
+
+/* the stage tips back into an isometric view and leans with the cursor (motion/pointerField.ts) */
+.io-scene__stage {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform:
+        rotateX(calc(54deg - var(--pointer-y, 0) * 5deg))
+        rotateZ(calc(-34deg + var(--pointer-x, 0) * 7deg));
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* the grid floor, fading out at the edges */
+.io-scene__floor {
+    position: absolute;
+    inset: 4% 4%;
+    border-radius: calc(var(--u) * 2);
+    background:
+        repeating-linear-gradient(0deg, color-mix(in srgb, var(--color-text-3) 22%, transparent) 0 1px, transparent 1px calc(var(--u) * 2.4)),
+        repeating-linear-gradient(90deg, color-mix(in srgb, var(--color-text-3) 22%, transparent) 0 1px, transparent 1px calc(var(--u) * 2.4)),
+        color-mix(in srgb, var(--color-surface) 35%, transparent);
+    -webkit-mask: radial-gradient(closest-side, #000 55%, transparent);
+    mask: radial-gradient(closest-side, #000 55%, transparent);
+}
+
+/* the brand glow pooling under the lens */
+.io-scene__glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--u) * 12);
+    height: calc(var(--u) * 12);
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 55%, transparent), transparent 70%);
+    filter: blur(calc(var(--u) * 0.8));
+    animation: io-pulse 4s ease-in-out infinite;
+}
+
+@keyframes io-pulse {
+    50% { opacity: 0.55; scale: 0.9; }
+}
+
+/* billboard: undo the stage's tilt so a thing stands up facing the viewer */
+.io-scene__core,
+.io-tile,
+.io-terminal {
+    transform-style: preserve-3d;
+}
+
+.io-scene__core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotateZ(34deg) rotateX(-54deg) translateY(calc(var(--u) * -3));
+}
+
+/* --- the lanes: tiles slide along the floor toward the lens, and away from it --- */
+.io-lane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+}
+
+.io-tile {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--u) * 0.45);
+    padding: calc(var(--u) * 0.45) calc(var(--u) * 0.8);
+    border-radius: calc(var(--u) * 0.6);
+    white-space: nowrap;
+    font-size: calc(var(--u) * 0.78);
+    color: var(--color-text);
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-2);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    /* each tile runs its own screen row (applied after the billboard turn), so tiles on a lane never stack */
+    --row: calc((var(--i) - 1) * var(--u) * 2.4);
+    animation: var(--lane-anim) 7.5s linear infinite;
+    animation-delay: calc(var(--i) * -2.5s);
+}
+
+.io-tile svg {
+    width: calc(var(--u) * 0.95);
+    height: calc(var(--u) * 0.95);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.io-tile--in { --lane-anim: io-in; border-left: 2px solid var(--color-danger); }
+.io-tile--in svg { color: var(--color-danger); }
+.io-tile--out { --lane-anim: io-out; border-left: 2px solid var(--color-success); }
+.io-tile--out svg { color: var(--color-success); }
+
+/* in: from far left of the floor to the lens, fading in and then into the lens */
+@keyframes io-in {
+    0% { opacity: 0; transform: translate(calc(var(--u) * -14), calc(var(--u) * -1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))); }
+    12% { opacity: 1; }
+    78% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(var(--u) * -3.6), calc(var(--u) * -1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))) scale(0.85); }
+}
+
+/* out: from the lens to the far right, growing in as it leaves */
+@keyframes io-out {
+    0% { opacity: 0; transform: translate(calc(var(--u) * 3.6), calc(var(--u) * 1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))) scale(0.85); }
+    20% { opacity: 1; }
+    86% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(var(--u) * 14), calc(var(--u) * 1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))); }
+}
+
+/* --- the floating terminal: the activity log, typing; flat in the top corner, leaning with the cursor --- */
+.io-terminal {
+    position: absolute;
+    top: 2%;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 0.2);
+    width: max-content;
+    padding: calc(var(--u) * 0.7) calc(var(--u) * 0.9);
+    border-radius: calc(var(--u) * 0.8);
+    transform: rotateX(calc(var(--pointer-y, 0) * -6deg)) rotateY(calc(var(--pointer-x, 0) * 8deg));
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: io-float 6s ease-in-out infinite;
+}
+
+@keyframes io-float {
+    50% { translate: 0 calc(var(--u) * -0.5); }
+}
+
+.io-terminal__dots {
+    display: flex;
+    gap: calc(var(--u) * 0.3);
+    margin-bottom: calc(var(--u) * 0.2);
+}
+
+.io-terminal__dots i {
+    width: calc(var(--u) * 0.45);
+    height: calc(var(--u) * 0.45);
+    border-radius: 50%;
+    background: var(--color-border-strong);
+}
+
+.io-terminal__dots i:first-child { background: var(--color-danger); }
+.io-terminal__dots i:nth-child(2) { background: var(--sev-p2); }
+.io-terminal__dots i:last-child { background: var(--color-success); }
+
+.io-terminal__line {
+    overflow: hidden;
+    font-size: calc(var(--u) * 0.66);
+    color: var(--color-text-2);
+    white-space: nowrap;
+    clip-path: inset(0 100% 0 0);
+    animation: io-type 9s steps(40) infinite;
+    animation-delay: calc(var(--i) * 1.4s);
+}
+
+.io-terminal__line:last-child {
+    color: var(--color-success);
+}
+
+@keyframes io-type {
+    0% { clip-path: inset(0 100% 0 0); }
+    18%, 88% { clip-path: inset(0 0 0 0); }
+    100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+
+/* still picture: tiles placed along their lanes, every log line shown */
+@media (prefers-reduced-motion: reduce) {
+    .io-scene__stage,
+    .io-terminal { transition: none; }
+    .io-scene__glow,
+    .io-terminal { animation: none; }
+    .io-terminal__line { animation: none; clip-path: none; }
+    .io-tile { animation: none; }
+    .io-tile--in { transform: translate(calc(var(--u) * (-12 + var(--i) * 3)), calc(var(--u) * -1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))); }
+    .io-tile--out { transform: translate(calc(var(--u) * (6 + var(--i) * 3)), calc(var(--u) * 1.6)) rotateZ(34deg) rotateX(-54deg) translate(-50%, calc(-50% + var(--row))); }
+}
