@@ -1,0 +1,236 @@
+/* A developer's desktop behind the page (IdeBackdrop.tsx). The backdrop's own opacity keeps it quiet: stronger on landing and sign-in, fainter in the app. */
+.ide {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--color-text-2);
+}
+
+/* one window; --x/--y come from the layout, --w/--h per window keep it on screen */
+.ide-win {
+    --gap: 1rem;
+    --depth: 1;
+    position: absolute;
+    left: max(var(--gap), min(var(--x), calc(100% - var(--w) - var(--gap))));
+    top: max(5rem, min(var(--y), calc(100% - var(--h) - var(--gap))));
+    width: var(--w);
+    height: var(--h);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--color-surface) 50%, transparent);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    /* drift with the cursor by depth, like the droplets (motion/pointerField.ts) */
+    translate: calc(var(--pointer-x, 0) * var(--depth) * -1vw) calc(var(--pointer-y, 0) * var(--depth) * -1vh);
+    transition:
+        left 1.1s cubic-bezier(0.2, 0.8, 0.2, 1),
+        top 1.1s cubic-bezier(0.2, 0.8, 0.2, 1),
+        translate 1s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 400ms var(--ease),
+        background-color 400ms var(--ease);
+}
+
+.ide-win--editor { --w: clamp(19rem, 32vw, 32rem); --h: 16.5rem; }
+.ide-win--terminal { --w: clamp(18rem, 28vw, 28rem); --h: 11.5rem; }
+.ide-win--problems { --w: 16rem; --h: 8.5rem; }
+
+/* the window being worked in comes forward, the way a focused window does */
+.ide-win.is-focused {
+    --depth: 2.2;
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--glass-border));
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.ide__title {
+    padding: 0.4rem 0.8rem;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 0.68rem;
+    color: var(--color-text-3);
+}
+
+.ide__tabs {
+    display: flex;
+    gap: 2px;
+    padding: 0.35rem 0.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--color-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ide__tab {
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.ide__tab.is-open {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    box-shadow: inset 0 2px 0 var(--color-primary);
+}
+
+.ide__code {
+    flex: 1;
+    padding: 0.3rem 0;
+    overflow: hidden;
+}
+
+.ide__line {
+    display: flex;
+    align-items: center;
+    height: 1.35rem;
+    white-space: pre;
+}
+
+.ide__gutter {
+    flex: 0 0 3ch;
+    margin-right: 1.25ch;
+    text-align: right;
+    color: var(--color-text-3);
+}
+
+.ide__line.is-active {
+    background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.ide__line.is-active .ide__gutter {
+    color: var(--color-text-2);
+}
+
+/* the scanner's flag on a line, and the same line once the fix is in */
+.ide__line.is-flag code {
+    text-decoration: underline wavy color-mix(in srgb, var(--color-danger) 70%, transparent);
+    text-underline-offset: 4px;
+}
+
+.ide__line.is-flag .ide__gutter {
+    color: var(--color-danger);
+}
+
+.ide__line.is-ok {
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+.ide__line.is-ok .ide__gutter {
+    color: var(--color-success);
+}
+
+.ide__caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    margin: 0 -1px;
+    vertical-align: text-bottom;
+    background: var(--color-primary);
+    animation: ide-blink 1s steps(1) infinite;
+}
+
+@keyframes ide-blink {
+    50% { opacity: 0; }
+}
+
+.ide__status {
+    display: flex;
+    gap: 1.25rem;
+    padding: 0.25rem 0.8rem;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.66rem;
+    color: var(--color-text-3);
+}
+
+.ide__terminal {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    flex: 1;
+    gap: 0.12rem;
+    padding: 0.4rem 0.8rem 0.6rem;
+    overflow: hidden;
+}
+
+.ide__term {
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* markers say what kind of line it is, the way a shell prompt and a test runner do */
+.ide__term--cmd::before { content: '$ '; color: var(--color-primary-strong); }
+.ide__term--out { color: var(--color-text-3); }
+.ide__term--flag { color: var(--color-danger); }
+.ide__term--flag::before { content: '⚠ '; }
+.ide__term--fail { color: var(--color-danger); }
+.ide__term--fail::before { content: '✗ '; }
+.ide__term--ok { color: var(--color-success); }
+.ide__term--ok::before { content: '✓ '; }
+
+.ide__term.is-typing::after {
+    content: '';
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    background: var(--color-primary);
+    animation: ide-blink 1s steps(1) infinite;
+}
+
+.ide__problem {
+    padding: 0.2rem 0.8rem;
+    color: var(--color-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ide__problem.is-flag { color: var(--color-danger); }
+.ide__problem.is-flag::before { content: '⚠ '; }
+.ide__problem.is-ok { color: var(--color-success); }
+.ide__problem.is-ok::before { content: '✓ '; }
+
+.ide__watch::before {
+    content: '';
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.4rem;
+    border-radius: 50%;
+    background: var(--color-success);
+    animation: ide-blink 2.4s ease-in-out infinite;
+}
+
+/* a phone has no room beside its content: only the terminal, pinned along the bottom (the layout's position is overridden) */
+@media (max-width: 720px) {
+    .ide-win--editor,
+    .ide-win--problems {
+        display: none;
+    }
+
+    .ide-win--terminal {
+        --h: 9rem;
+        left: 1rem;
+        right: 1rem;
+        top: auto;
+        bottom: 1rem;
+        width: auto;
+        font-size: 0.66rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ide-win {
+        transition: none;
+    }
+
+    .ide__caret,
+    .ide__term.is-typing::after,
+    .ide__watch::before {
+        animation: none;
+    }
+}

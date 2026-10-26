@@ -32,10 +32,10 @@ function TileView({ tile, kind, index }: { tile: Tile; kind: 'in' | 'out'; index
 }
 
 /**
- * IoScene — the product in one picture: incident signals stream in, the IncidentIOQ cube (the
+ * IoScene — the product in one picture: incident signals stream in, the IncidentIOQ scanner lens (the
  * "IQ" in the middle of I/O) works on them, resolved outcomes stream out, and the activity log
  * types above it. An isometric stage built with CSS 3D, so it costs no WebGL. The whole stage leans
- * with the cursor through the page-wide pointer field; the cube itself follows the cursor and spins
+ * with the cursor through the page-wide pointer field; the lens itself follows the cursor, aims its sweep and flips
  * when clicked. Still under reduced motion. Described in one sentence for assistive tech.
  */
 export default function IoScene(): JSX.Element {
@@ -61,7 +61,7 @@ export default function IoScene(): JSX.Element {
                     <BrandMark size="lg" interactive />
                 </div>
             </div>
-            {/* flat, outside the tipped stage, so it never covers the cube */}
+            {/* flat, outside the tipped stage, so it never covers the lens */}
             <div className="io-terminal ui-glass" aria-hidden="true">
                 <span className="io-terminal__dots">
                     <i />
