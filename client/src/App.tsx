@@ -5,6 +5,7 @@ import AppShell from "./components/layout/AppShell";
 import SignInPage from "./pages/SignInPage";
 import RoomsPage from "./pages/RoomsPage";
 import RoomDetailsPage from "./pages/RoomDetailsPage";
+import FingerprintsPage from "./pages/FingerprintsPage";
 
 export default function App() : JSX.Element {
   return (
@@ -20,6 +21,9 @@ export default function App() : JSX.Element {
       <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/rooms/:roomId" element={<RoomDetailsPage />} />
+        {/* not /fingerprints: the dev proxy sends every path starting with an API mount to the server,
+            so a page there would return JSON on reload. routes.test.ts holds this rule for every route. */}
+        <Route path="/machines" element={<FingerprintsPage />} />
       </Route>
 
       {/* the dashboard was cut from Minimum (schedule.md); an old link or bookmark lands somewhere real */}
