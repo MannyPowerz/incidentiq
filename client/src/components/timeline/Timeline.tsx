@@ -1,7 +1,7 @@
 import type { JSX } from 'react';
 import { readAiDraftBody } from '../../api';
 import type { TimelineEntry } from '../../api';
-import { Badge, EmptyState } from '../ui';
+import { Badge, Button, EmptyState } from '../ui';
 import { formatRelativeTime } from '../../utils/formatRelativeTime';
 import './Timeline.css';
 
@@ -9,7 +9,15 @@ type TimelineProps = {
     // expected id-ascending (mergeEntries); rendered in the order given, never re-sorted by time
     entries: TimelineEntry[];
     currentUserId: number | null;
+    // both present means unconfirmed drafts get Confirm / Reject; absent means the timeline is read-only
+    onConfirmDraft?: (entry: TimelineEntry) => void;
+    onRejectDraft?: (entry: TimelineEntry) => void;
+    // the draft with a request in flight, so its two buttons can't both fire
+    busyEntryId?: number | null;
 };
+
+// an ai_draft nobody has vouched for: author_id stays null until a human confirms it (ADR 0014)
+export const isPendingDraft = (entry: TimelineEntry): boolean => entry.type === 'ai_draft' && entry.author_id === null;
 
 // author_id is accountability, not authorship (server/src/timeline/types.ts); null means no human owns it yet
 export function authorLabel(entry: TimelineEntry, currentUserId: number | null): string {
@@ -28,15 +36,21 @@ export function entryText(entry: TimelineEntry): string {
     return typeof text === 'string' ? text : JSON.stringify(entry.body, null, 2);
 }
 
-export default function Timeline({ entries, currentUserId }: TimelineProps): JSX.Element {
+export default function Timeline({ entries, currentUserId, onConfirmDraft, onRejectDraft, busyEntryId = null }: TimelineProps): JSX.Element {
     if (entries.length === 0) {
         return <EmptyState title="No entries yet" body="Post what you've seen or tried, so the next person starts from there." />;
     }
 
     return (
         <ol className="timeline" aria-label="Timeline">
-            {entries.map((entry) => (
-                <li key={entry.id} className={`timeline__entry timeline__entry--${entry.type}`}>
+            {entries.map((entry) => {
+                const pending = isPendingDraft(entry);
+                const busy = busyEntryId === entry.id;
+                return (
+                <li
+                    key={entry.id}
+                    className={`timeline__entry timeline__entry--${entry.type}${pending ? ' timeline__entry--pending' : ''}`}
+                >
                     <header className="timeline__meta">
                         <Badge tone="entry" value={entry.type} />
                         <span className="timeline__author">{authorLabel(entry, currentUserId)}</span>
@@ -45,8 +59,32 @@ export default function Timeline({ entries, currentUserId }: TimelineProps): JSX
                         </time>
                     </header>
                     <EntryBody entry={entry} />
+                    {pending && onConfirmDraft && onRejectDraft && (
+                        <footer className="timeline__actions">
+                            <Button
+                                size="sm"
+                                loading={busy}
+                                disabled={busyEntryId !== null}
+                                aria-label={`Confirm AI draft ${entry.id}`}
+                                onClick={() => onConfirmDraft(entry)}
+                            >
+                                Confirm
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={busyEntryId !== null}
+                                aria-label={`Reject AI draft ${entry.id}`}
+                                onClick={() => onRejectDraft(entry)}
+                            >
+                                Reject
+                            </Button>
+                            <span className="timeline__actions-note">Confirming puts your name on it. Rejecting deletes it.</span>
+                        </footer>
+                    )}
                 </li>
-            ))}
+                );
+            })}
         </ol>
     );
 }

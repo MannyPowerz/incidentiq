@@ -22,8 +22,9 @@
 .timeline__entry--finding { --entry-rule: var(--entry-finding); }
 .timeline__entry--system { --entry-rule: var(--entry-system); }
 
-/* an unconfirmed AI draft is the one entry waiting on a human, so it is the one that glows */
-.timeline__entry--ai_draft {
+/* an unconfirmed AI draft is the one entry waiting on a human, so it is the one that glows; once
+   confirmed it keeps its AI draft badge and drops to the normal rule (ADR 0014: type never changes) */
+.timeline__entry--pending {
     --entry-rule: var(--entry-ai-draft);
     background:
         linear-gradient(90deg, var(--color-primary-soft), transparent 60%),
@@ -87,5 +88,28 @@
 
     .timeline__draft dd {
         margin-bottom: 0;
+    }
+}
+
+.timeline__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: var(--border);
+}
+
+.timeline__actions-note {
+    flex-basis: 100%;
+    font-size: var(--text-xs);
+    color: var(--color-text-3);
+}
+
+@media (min-width: 768px) {
+    .timeline__actions-note {
+        flex-basis: auto;
+        margin-left: var(--space-2);
     }
 }

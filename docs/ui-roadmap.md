@@ -99,12 +99,23 @@ Main screens first; backend-dependent screens in the order their endpoints are r
 
 **Checked:** 12 hook tests plus 2 page tests against a fake socket; 9 of 9 mutations caught. A two-browser run against the local database: post in A appears in B; then kill the API server, keep B blocked while A reconnects and posts twice, unblock B, and B fills the gap; identical timelines, no duplicates. The run could not capture B's join payload (it went over HTTP polling), so `sinceId` on rejoin is proven by the unit test, not the browser run.
 
-### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")*
+### Item 5 — AI draft: request, confirm, reject *(schedule.md: "Confirm button")* — **DONE 2026-10-11**
 
 **Scope:** in the room page, a "Draft from context" action: `Textarea` (mono) for pasted log or scanner output, `kind` select (`log` / `scanner`), calls `requestAiDraft()`. The returned `ai_draft` entry renders with the brand-orange rule, `summary` / `why_it_matters` / `likely_fix` laid out, and two buttons: **Confirm** → `confirmAiDraft()` (entry becomes the caller's, rule colour drops to normal) and **Reject** → `rejectAiDraft()` (entry removed). The same entry arriving over the socket (Item 4) must not render twice. Error states for `504 upstream_error` ("the AI provider did not answer") and `409 already_approved` / `entry_state_changed` ("someone else got there first — refreshing").
 **Endpoint:** `POST /incidents/:id/ai-draft` → `201` entry; `PATCH …/:entry_id/confirmed` → `200` entry; `DELETE …/:entry_id/rejected` → `200` entry.
 **Deletes:** nothing (RoomAIAnalysis went in Item 3).
 **Done when:** draft → confirm → the entry shows as yours and `author_id` is set in the DB; draft → reject → gone; both broadcast to a second browser.
+
+**As built:** `components/timeline/AiDraftComposer.tsx`, Confirm / Reject on unconfirmed drafts in `Timeline.tsx`, handlers on `RoomDetailsPage`.
+- **Unconfirmed vs confirmed.** A draft with `author_id === null` is pending: orange rule, Confirm and Reject. Once confirmed it keeps its AI draft badge (ADR 0014: type never changes) and drops to the normal rule under the confirmer's name.
+- **Races.** `already_approved`, `entry_state_changed`, `entry_not_found` and `not_ai_draft` all mean someone got there first. The page says so and refetches the timeline, replacing rather than merging, because a rejected draft is deleted and a merge would keep it on screen.
+- **Failure wording is chosen by error code**, not the server's message ("Difficulty in responsiveness to the server" is for developers). A failed request keeps the pasted text.
+- **Reject is immediate, with no confirm dialog.** It deletes an entry nobody vouched for, and the same context regenerates it. The button row says "Rejecting deletes it."
+- **A real draft takes 7 to 21 seconds**, so the form says "Drafting. This usually takes 10 to 20 seconds." while it waits.
+
+**Found by running it for real.** The configured model (`gemini-2.5-flash`) is no longer available to new users, so every draft returned 504; the local `.env` now uses `gemini-3.8-flash`. And the server was silently retrying the provider 6 times (LangChain's default) despite ADR 0007's "no retry", which held a request open for minutes on a 503. That is its own server PR (`fix/ai-draft-no-retry`).
+
+**Checked:** 12 page tests, plus 12 mutations (11 caught first time, 1 gap found and closed). Two real browsers against the local database and the real provider: draft in A appears in B; B confirms and A flips with no click, `author_id` set in the DB; a rejected draft disappears from both and is deleted. 375 and 1440, no overflow.
 
 ### Item 6 — "Relevant to you" *(schedule.md: "Relevant-to-you section")* — **FIXTURE-BACKED**
 
