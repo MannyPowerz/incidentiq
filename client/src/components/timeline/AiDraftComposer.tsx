@@ -3,12 +3,15 @@ import type { FormEvent, JSX } from 'react';
 import { ApiError, NETWORK_ERROR, requestAiDraft } from '../../api';
 import type { TimelineEntry } from '../../api';
 import { Button, Select, Textarea } from '../ui';
+import type { LogEvent } from '../../hooks/useRoomLog';
 import './AiDraftComposer.css';
 
 type AiDraftComposerProps = {
     incidentId: number;
     // receives the stored draft from the POST response; the page merges it by id, so the socket echo is a no-op
     onDrafted: (entry: TimelineEntry) => void;
+    // for the activity log: asked, ready (with how long it took), or failed
+    onEvent?: (event: LogEvent) => void;
 };
 
 type Kind = 'log' | 'scanner';
@@ -38,7 +41,7 @@ export function draftErrorMessage(error: unknown): string {
  * author: it sits in the timeline until a human confirms or rejects it (ADR 0014). Nothing here
  * posts anything on its own.
  */
-export default function AiDraftComposer({ incidentId, onDrafted }: AiDraftComposerProps): JSX.Element {
+export default function AiDraftComposer({ incidentId, onDrafted, onEvent }: AiDraftComposerProps): JSX.Element {
     const [context, setContext] = useState('');
     const [kind, setKind] = useState<Kind>('log');
     const [error, setError] = useState<string | null>(null);
@@ -53,12 +56,18 @@ export default function AiDraftComposer({ incidentId, onDrafted }: AiDraftCompos
         }
         setDrafting(true);
         setError(null);
+        const started = Date.now();
+        onEvent?.({ source: 'ai', level: 'info', message: `Asking the AI to explain ${trimmed.split('\n').length} line(s) of ${kind} output` });
         try {
-            onDrafted(await requestAiDraft(incidentId, { context: trimmed, kind }));
+            const entry = await requestAiDraft(incidentId, { context: trimmed, kind });
+            onDrafted(entry);
+            onEvent?.({ source: 'ai', level: 'ok', message: `Draft #${entry.id} ready in ${((Date.now() - started) / 1000).toFixed(1)}s, waiting for a human to confirm` });
             // only a successful draft clears the paste: a failure keeps it so a retry is one click
             setContext('');
         } catch (err) {
-            setError(draftErrorMessage(err));
+            const message = draftErrorMessage(err);
+            setError(message);
+            onEvent?.({ source: 'ai', level: 'error', message: `Draft failed after ${((Date.now() - started) / 1000).toFixed(1)}s: ${message}` });
         } finally {
             setDrafting(false);
         }

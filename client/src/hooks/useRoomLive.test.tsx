@@ -13,6 +13,7 @@ import { refresh } from '../auth/api';
 import { fakeSocket } from '../test/fakeSocket';
 import { useRoomLive } from './useRoomLive';
 import type { EntriesUpdate } from './useRoomLive';
+import type { LogEvent } from './useRoomLog';
 
 vi.mock('../api', async (importOriginal) => ({
     ...(await importOriginal<typeof import('../api')>()),
@@ -37,10 +38,10 @@ const entry = (id: number, over: Partial<TimelineEntry> = {}): TimelineEntry => 
 });
 
 // holds entries the way RoomDetailsPage does and prints what the hook produces
-function Harness({ initial, incidentId = 5 }: { initial: TimelineEntry[]; incidentId?: number | null }) {
+function Harness({ initial, incidentId = 5, onEvent }: { initial: TimelineEntry[]; incidentId?: number | null; onEvent?: (e: LogEvent) => void }) {
     const [entries, setEntries] = useState(initial);
     const apply = useCallback((update: EntriesUpdate) => setEntries((current) => update(current)), []);
-    const live = useRoomLive({ incidentId, lastSeenId: entries.at(-1)?.id ?? 0, currentUserId: ME, apply });
+    const live = useRoomLive({ incidentId, lastSeenId: entries.at(-1)?.id ?? 0, currentUserId: ME, apply, onEvent });
     return (
         <>
             <p data-testid="ids">{entries.map((e) => `${e.id}:${e.author_id}`).join(',')}</p>
@@ -197,4 +198,35 @@ describe('useRoomLive', () => {
         expect(socket.listenerCount()).toBe(0);
         expect(socket.disconnect).toHaveBeenCalled();
     });
+
+    it('reports what actually happens, in order, for the activity log', () => {
+        const events: LogEvent[] = [];
+        render(<Harness initial={[entry(1)]} onEvent={(e) => events.push(e)} />);
+        // separate act() blocks, as real events arrive in separate ticks with a render between them
+        act(() => {
+            socket.serverEmit('connect');
+            socket.serverEmit('send-history', [entry(2)], vi.fn());
+        });
+        act(() => socket.serverEmit('new-message', entry(3, { type: 'finding' })));
+        act(() => socket.serverEmit('new-message', entry(4, { author_id: ME })));
+        act(() => socket.serverEmit('disconnect'));
+        act(() => socket.serverEmit('connect'));
+        act(() => {
+            socket.serverEmit('confirm-draft', entry(4, { type: 'ai_draft', author_id: 4 }));
+            socket.serverEmit('socket-error', { error: 'Incident room/id does not exist' });
+        });
+
+        expect(events.map((e) => `${e.level}: ${e.message}`)).toEqual([
+            'info: Connecting to room #5',
+            'info: Connected, joining the room',
+            'ok: Live. 1 entry caught up from the server',
+            'info: New finding #3 from User #4',
+            // entry 4 is your own echo: the composer already logged it, so the socket stays quiet
+            'warn: Connection lost, retrying',
+            'info: Reconnected, rejoining after entry #4',
+            'ok: AI draft #4 confirmed by User #4',
+            'error: Server error: Incident room/id does not exist',
+        ]);
+    });
 });
+

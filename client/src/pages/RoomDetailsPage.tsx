@@ -9,6 +9,8 @@ import type { LiveState } from '../components/ui';
 import { useRoomLive } from '../hooks/useRoomLive';
 import type { EntriesUpdate } from '../hooks/useRoomLive';
 import { useRelevance } from '../hooks/useRelevance';
+import { useRoomLog } from '../hooks/useRoomLog';
+import RoomLog from '../components/timeline/RoomLog';
 import Timeline from '../components/timeline/Timeline';
 import type { PendingEntry } from '../components/timeline/Timeline';
 import EntryComposer from '../components/timeline/EntryComposer';
@@ -49,6 +51,8 @@ export default function RoomDetailsPage(): JSX.Element {
     const [sending, setSending] = useState<PendingEntry | null>(null);
     const toast = useToast();
     const currentUserId = getCurrentUserId();
+    // the streaming activity log: filled by the socket, the room, and your own actions as they happen
+    const { lines: logLines, log } = useRoomLog();
 
     // hands socket arrivals to the same entries the HTTP load filled; a no-op until the room has loaded
     const applyLive = useCallback((update: EntriesUpdate) => {
@@ -61,6 +65,7 @@ export default function RoomDetailsPage(): JSX.Element {
         lastSeenId: ready ? state.entries.at(-1)?.id ?? 0 : 0,
         currentUserId,
         apply: applyLive,
+        onEvent: log,
     });
     // fixture-backed until the relevance endpoint ships; only asks about entries it has not seen
     const relevance = useRelevance(ready ? id : null, ready ? state.entries.map((e) => e.id) : []);
@@ -103,14 +108,17 @@ export default function RoomDetailsPage(): JSX.Element {
                 const confirmed = await confirmAiDraft(id, entry.id);
                 setState((s) => (s.status === 'ready' ? { ...s, entries: mergeEntries(s.entries, [confirmed]) } : s));
                 toast.show('success', 'Draft confirmed. It is now under your name.');
+                log({ source: 'ai', level: 'ok', message: `You confirmed AI draft #${entry.id}` });
             } else {
                 const rejected = await rejectAiDraft(id, entry.id);
                 setState((s) => (s.status === 'ready' ? { ...s, entries: s.entries.filter((e) => e.id !== rejected.id) } : s));
                 toast.show('success', 'Draft rejected and deleted.');
+                log({ source: 'ai', level: 'info', message: `You rejected AI draft #${entry.id}` });
             }
         } catch (error) {
             if (error instanceof ApiError && DRAFT_RACE_CODES.includes(error.code)) {
                 toast.show('info', 'Someone already handled this draft. Showing the latest timeline.');
+                log({ source: 'ai', level: 'warn', message: `AI draft #${entry.id} was already handled by someone else` });
                 await refreshTimeline();
             } else {
                 toast.show('error', error instanceof ApiError ? error.message : 'Could not update the draft.');
@@ -136,6 +144,7 @@ export default function RoomDetailsPage(): JSX.Element {
             const incident = await resolveIncident(id);
             setState((s) => (s.status === 'ready' ? { ...s, incident } : s));
             toast.show('success', 'Room resolved');
+            log({ source: 'room', level: 'ok', message: 'Room marked resolved' });
         } catch (error) {
             toast.show('error', error instanceof ApiError ? error.message : 'Could not resolve the room.');
         } finally {
@@ -239,12 +248,14 @@ export default function RoomDetailsPage(): JSX.Element {
             </section>
 
             <Card title="Add to the timeline">
-                <EntryComposer incidentId={incident.id} onPosted={handlePosted} onSendingChange={setSending} />
+                <EntryComposer incidentId={incident.id} onPosted={handlePosted} onSendingChange={setSending} onEvent={log} />
             </Card>
 
             <Card title="Draft with AI">
-                <AiDraftComposer incidentId={incident.id} onDrafted={handlePosted} />
+                <AiDraftComposer incidentId={incident.id} onDrafted={handlePosted} onEvent={log} />
             </Card>
+
+            <RoomLog lines={logLines} />
         </div>
     );
 }

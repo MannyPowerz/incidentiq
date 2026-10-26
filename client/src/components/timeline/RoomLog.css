@@ -1,0 +1,103 @@
+.room-log {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.room-log__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.room-log__title {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+}
+
+.room-log__count {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-3);
+}
+
+/* a terminal: mono, dense, its own scroll, newest at the bottom */
+.room-log__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    height: 14rem;
+    margin: 0;
+    padding: var(--space-3);
+    overflow-y: auto;
+    list-style: none;
+    border: var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-field-bg);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-body);
+}
+
+.room-log__lines:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.room-log__empty {
+    color: var(--color-text-3);
+}
+
+.room-log__line {
+    display: grid;
+    grid-template-columns: auto 4.5rem 1fr;
+    gap: var(--space-3);
+    align-items: baseline;
+    color: var(--color-text-2);
+    animation: room-log-in var(--dur-base) var(--ease);
+}
+
+.room-log__time {
+    color: var(--color-text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.room-log__source {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-3);
+}
+
+/* the agent's lines get the brand color, because they are the ones the product exists for */
+.room-log__source--agent { color: var(--color-primary-strong); }
+
+.room-log__message {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.room-log__line--ok .room-log__message { color: var(--color-success); }
+.room-log__line--warn .room-log__message { color: var(--sev-p2); }
+.room-log__line--error .room-log__message { color: var(--color-danger); }
+
+@keyframes room-log-in {
+    from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .room-log__line { animation: none; }
+}
+
+/* phone: time and source share one line above the message */
+@media (max-width: 479px) {
+    .room-log__line {
+        grid-template-columns: auto 1fr;
+        gap: 0 var(--space-2);
+    }
+
+    .room-log__message {
+        grid-column: 1 / -1;
+    }
+}
