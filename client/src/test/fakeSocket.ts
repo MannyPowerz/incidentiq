@@ -31,8 +31,12 @@ export function fakeSocket() {
         disconnect: vi.fn(() => socket),
         // the server's side
         serverEmit(event: string, ...args: unknown[]) {
-            handlers.get(event)?.forEach((fn) => fn(...args));
+            const listening = handlers.get(event);
+            // a real server's event to an unlistened socket is lost; in a test that is a race in the setup, so say so instead of passing silently
+            if (!listening?.size) throw new Error(`serverEmit('${event}'): nothing is listening yet. Wait for the page to subscribe before emitting.`);
+            listening.forEach((fn) => fn(...args));
         },
+        listening: (event: string) => (handlers.get(event)?.size ?? 0) > 0,
         listenerCount: () => [...handlers.values()].reduce((n, set) => n + set.size, 0),
         emitted,
     };

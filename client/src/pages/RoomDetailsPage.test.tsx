@@ -292,6 +292,8 @@ describe('RoomDetailsPage', () => {
             vi.mocked(listTimeline).mockResolvedValue(entries);
             renderRoom();
             await screen.findByRole('heading', { name: 'VPN drops' });
+            // the heading renders before the socket hook subscribes; emitting before then is a race in the test, not the app
+            await waitFor(() => expect(socket.listening('confirm-draft')).toBe(true));
         };
 
         it('requests a draft with the pasted text and kind, and shows it unconfirmed', async () => {
