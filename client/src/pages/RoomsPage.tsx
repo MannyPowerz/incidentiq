@@ -3,7 +3,7 @@ import type { JSX } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, listIncidents } from '../api';
 import type { Incident } from '../api';
-import { Badge, Button, EmptyState, ErrorState, Metric, Spinner, Table, useToast } from '../components/ui';
+import { Badge, Button, EmptyState, ErrorState, LiveDot, Metric, Spinner, Table, useToast } from '../components/ui';
 import type { TableColumn } from '../components/ui';
 import CreateRoomModal from '../components/rooms/CreateRoomModal';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
@@ -24,7 +24,11 @@ const COLUMNS: TableColumn<Incident>[] = [
         // a real link, not a clickable row: rows are not keyboard-reachable (Table.tsx)
         render: (incident) => (
             <Link className="rooms-page__room" to={`/rooms/${incident.id}`}>
-                <span className="rooms-page__room-title">{incident.title}</span>
+                <span className="rooms-page__room-title">
+                    {/* an open P1 is the one row that should catch the eye; the P1 badge already says it in text */}
+                    {isOpen(incident) && incident.severity === 'P1' && <LiveDot state="failing" label="Open P1" decorative />}
+                    {incident.title}
+                </span>
                 <span className="rooms-page__room-id">#{incident.id}</span>
             </Link>
         ),

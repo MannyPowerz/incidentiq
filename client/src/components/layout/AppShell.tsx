@@ -27,6 +27,12 @@ export default function AppShell(): JSX.Element {
 
     return (
         <div className="app-shell">
+            {/* the sign-in mesh, carried faintly behind every signed-in page so the glass top bar has color to refract */}
+            <div className="app-shell__mesh" aria-hidden="true">
+                <span className="app-shell__blob app-shell__blob--1" />
+                <span className="app-shell__blob app-shell__blob--2" />
+                <span className="app-shell__blob app-shell__blob--3" />
+            </div>
             <a className="app-shell__skip" href="#main">
                 Skip to content
             </a>

@@ -55,8 +55,20 @@
 }
 
 .rooms-page__room-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     font-weight: var(--weight-medium);
     transition: color var(--dur-fast) var(--ease);
+}
+
+/* pressed: the link sinks a pixel, the same feedback a button gives */
+.rooms-page__room {
+    transition: transform var(--dur-fast) var(--ease);
+}
+
+.rooms-page__room:active {
+    transform: translateY(1px);
 }
 
 .rooms-page__room:hover .rooms-page__room-title {
@@ -97,5 +109,29 @@
 
     .rooms-page td[data-label='Room']::before {
         display: none;
+    }
+}
+
+/* phone: a room card lifts when its link is hovered or focused, because the whole card is the way in */
+@media (max-width: 767px) {
+    .rooms-page tbody tr {
+        transition:
+            transform var(--dur-fast) var(--ease),
+            border-color var(--dur-fast) var(--ease),
+            box-shadow var(--dur-fast) var(--ease);
+    }
+
+    .rooms-page tbody tr:has(.rooms-page__room:hover),
+    .rooms-page tbody tr:has(.rooms-page__room:focus-visible) {
+        transform: translateY(-1px);
+        border-color: var(--color-border-strong);
+        box-shadow: var(--shadow-2);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rooms-page__room:active,
+    .rooms-page tbody tr:has(.rooms-page__room:hover) {
+        transform: none;
     }
 }

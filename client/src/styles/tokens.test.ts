@@ -115,4 +115,12 @@ describe('tokens.css contrast (WCAG AA)', () => {
         // .ui-glass promotes muted text to this tone; that promotion is what this line protects
         expect(ratio(rgb('--color-text-2'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
     });
+
+    // page titles and subtitles sit straight on the ambient mesh, with no card behind them
+    it.each(['--mesh-1', '--mesh-2', '--mesh-3'])('muted text reads over the ambient %s blob at its peak', (mesh) => {
+        const alpha = Number(resolveToken('--ambient-opacity'));
+        expect(alpha).toBeGreaterThan(0);
+        const composite = over(rgb(mesh), alpha, rgb('--color-bg'));
+        expect(ratio(rgb('--color-text-3'), composite)).toBeGreaterThanOrEqual(AA_TEXT);
+    });
 });

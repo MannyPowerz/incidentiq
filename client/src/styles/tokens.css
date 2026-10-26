@@ -108,6 +108,9 @@
     --mesh-1: var(--indigo-700);
     --mesh-2: var(--blue-600);
     --mesh-3: var(--orange-600);
+    /* how strongly the mesh shows behind signed-in pages: low, because page titles sit directly on it.
+       tokens.test.ts composites each mesh color at this opacity and holds muted text at AA over it. */
+    --ambient-opacity: 0.2;
 
     /* --- type --- */
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

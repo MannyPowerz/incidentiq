@@ -8,6 +8,9 @@ type LiveDotProps = {
     // spoken and, unless hidden, shown next to the dot — the dot alone is never the only signal
     label: string;
     hideLabel?: boolean;
+    // the dot only repeats something already said in text nearby (a P1 badge), so it is hidden from
+    // assistive tech instead of adding a second status region that says the same thing
+    decorative?: boolean;
 };
 
 const FALLBACK_LABEL: Record<LiveState, string> = {
@@ -21,8 +24,15 @@ const FALLBACK_LABEL: Record<LiveState, string> = {
  * LiveDot — the real-time status mark: scanner running, room connected, agent sync. Pulses while
  * live or syncing; goes static under reduced motion with the color still carrying the state.
  */
-export default function LiveDot({ state, label, hideLabel = false }: LiveDotProps): JSX.Element {
+export default function LiveDot({ state, label, hideLabel = false, decorative = false }: LiveDotProps): JSX.Element {
     const text = label || FALLBACK_LABEL[state];
+    if (decorative) {
+        return (
+            <span className={`ui-livedot ui-livedot--${state}`} aria-hidden="true">
+                <span className="ui-livedot__dot" />
+            </span>
+        );
+    }
     return (
         <span className={`ui-livedot ui-livedot--${state}`} role="status">
             <span className="ui-livedot__dot" aria-hidden="true" />
