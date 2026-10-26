@@ -5,6 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>client</title>
+    <!-- picks the theme before first paint so the page never flashes the wrong one; mirrors src/theme/theme.ts (key: iiq-theme) -->
+    <script>
+      try {
+        var c = localStorage.getItem('iiq-theme');
+        document.documentElement.dataset.theme =
+          c === 'light' || c === 'dark' ? c : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

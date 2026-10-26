@@ -21,5 +21,6 @@ export type { TableColumn } from './Table/Table';
 export { default as Textarea } from './Textarea/Textarea';
 export { ToastProvider, useToast } from './Toast/Toast';
 export type { ToastTone } from './Toast/Toast';
+export { default as ThemeToggle } from './ThemeToggle/ThemeToggle';
 export { default as TopBar } from './TopBar/TopBar';
 export type { TopBarLink } from './TopBar/TopBar';

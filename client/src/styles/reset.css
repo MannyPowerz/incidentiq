@@ -22,8 +22,6 @@ body {
     line-height: var(--leading-body);
     color: var(--color-text);
     background-color: var(--color-bg);
-    /* tells the browser the page is dark, so native selects, scrollbars, and checkboxes render dark too */
-    color-scheme: dark;
     accent-color: var(--color-primary);
     -webkit-font-smoothing: antialiased;
 }
